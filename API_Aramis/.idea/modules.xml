@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/API_SmartStack.iml" filepath="$PROJECT_DIR$/API_SmartStack.iml" />
+      <module fileurl="file://$PROJECT_DIR$/API_Aramis.iml" filepath="$PROJECT_DIR$/API_Aramis.iml" />
     </modules>
   </component>
 </project>
