@@ -26,4 +26,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.github.skjolber.3d-bin-container-packing/core -->
+        <dependency>
+            <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+            <artifactId>core</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+    </dependencies>
 </project>

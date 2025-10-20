@@ -82,8 +82,7 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `/position/update/id` **[POST]** : **modifier** un emplacement.
     - `/position/delete/id` **[POST]** : **supprimer** un emplacement.
     - `/position/id` **[GET]** : **consulter** un emplacement.
-- CRUD stocks
-Entré des stocks en import CSV :
+- CRUD stocks : entré des stocks en import CSV :
     - `/stock/import` **[GET]**.
     - `/stock/import` **[POST]**.
 - Génération d'une organisation optimale d'un support en fonction de son contenant et contenu.
