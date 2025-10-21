@@ -55,8 +55,8 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : manuelle.
 - (Gestion de la dictée vocale)
 - (Gestion de la commande vocal)
-- `/order/nextStep?CommandeID=xxx` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante.
-    - Si la **quantité validée == quantité servie** OU si il y a ** au moins un colis manquant** sur la quantité validée.
+- `/order/nextStep?CommandeID=xxx` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante sous la forme d'un tableau (étape) de tableau (objet) de deux tupples (position, dimension) de taille 3 pour `[[(x,y,z),(w,l,h)],[...], ...]`.
+    - Si la **quantité validée == quantité servie** OU s'il y a ** au moins un colis manquant** sur la quantité validée.
 - Calcul et envoi des statistiques pour superviseurs et préparateurs :
     - `/preparer/stats/id` **[GET]** : statistique du nombre de colis par heure pour un préparateur.
     - `/preparer/stats` **[GET]** : statistique générales de tous les préparateurs.

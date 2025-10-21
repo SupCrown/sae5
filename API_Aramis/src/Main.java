@@ -40,7 +40,14 @@ public class Main {
         if(result.isSuccess()) {
             Container match = result.get(0);
 
-            // ...
+            List<Placement> placements = match.getStack().getPlacements();
+
+            for (Placement placement : placements) {
+                System.out.println(placement);
+//                System.out.println(placement.getAbsoluteX());
+//                System.out.println(placement.getAbsoluteY());
+//                System.out.println(placement.getAbsoluteZ());
+            }
         }
     }
 }
