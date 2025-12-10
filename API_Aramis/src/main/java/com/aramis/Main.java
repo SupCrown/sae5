@@ -1,3 +1,5 @@
+package com.aramis;
+
 import com.github.skjolber.packing.api.*;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 
@@ -51,3 +53,5 @@ public class Main {
         }
     }
 }
+
+
