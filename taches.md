@@ -92,3 +92,9 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 ### Défition des données utilisées
 
 Définir les données nécessaire au front pour permettre à l'équipe back de définir une documentation d'api claire et précise au plus vite.
+
+## TODO 
+
+- [ ] dimensions(pLl) type de support dans BDD.
+- [ ] recalculer les placements optimaux des produits en cas de manquant.
+- [ ] corriger l'orthographe de la BDD. 
