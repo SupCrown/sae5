@@ -1,4 +1,4 @@
-package com.aramis.user;
+package com.aramis.models.aramis_user;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class User {
+public class AramisUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long UserID;

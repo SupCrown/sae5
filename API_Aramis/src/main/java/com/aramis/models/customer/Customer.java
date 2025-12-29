@@ -1,4 +1,4 @@
-package com.aramis.customer;
+package com.aramis.models.customer;
 
 import jakarta.persistence.*;
 import lombok.Getter;
