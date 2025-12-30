@@ -28,7 +28,7 @@ public class Location {
     public int BlueCode;
     @Column(nullable = false)
     public int LevelID;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     public int ProductID;
 }
 
