@@ -1,4 +1,4 @@
-package com.aramis.user;
+package com.aramis.models.support;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,16 +7,15 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class User {
+public class Support {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long UserID;
-    @Column(nullable = false, unique = true)
-    private int Login;
+    public int SupportID;
+    public String NestedProductsPlacement;
     @Column(nullable = false)
-    private String firstname;
+    public int TypeID;
     @Column(nullable = false)
-    private String lastname;
+    public int UserID;
     @Column(nullable = false)
-    private boolean IsAdmin;
+    public int OrderID;
 }
