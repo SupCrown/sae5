@@ -29,5 +29,5 @@ bin/
 .DS_Store
 
 ### Project ###
-
+/src/main/resources/application-development.properties
 target/
