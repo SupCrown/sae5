@@ -29,7 +29,12 @@
             <node kind="database" qname="@">
               <node kind="schema" qname="@" />
             </node>
-            <node kind="database" qname="aramis" />
+            <node kind="database" qname="aramis">
+              <node kind="schema">
+                <name qname="@" />
+                <name qname="public" />
+              </node>
+            </node>
           </node>
         </introspection-scope>
       </schema-mapping>

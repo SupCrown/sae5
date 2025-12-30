@@ -10,8 +10,10 @@ import lombok.Setter;
 public class Driveway {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long DrivewayID;
+    public Long DrivewayID;
     @Column(nullable = false)
-    private String Name;
+    public String Name;
+    @Column(nullable = false)
+    public int ZoneID;
 }
 
