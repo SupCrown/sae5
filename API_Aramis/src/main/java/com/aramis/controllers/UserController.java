@@ -2,18 +2,17 @@ package com.aramis.controllers;
 
 import com.aramis.models.user.User;
 import com.aramis.models.user.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/user")
-public class AramisUserController {
+public class UserController {
 
     private final UserRepository userRepository;
 
-    public AramisUserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

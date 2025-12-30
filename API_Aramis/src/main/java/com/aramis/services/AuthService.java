@@ -1,0 +1,64 @@
+package com.aramis.services;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+
+import com.aramis.models.user.User;
+import com.aramis.models.user.UserRepository;
+import org.hibernate.boot.model.process.internal.UserTypeResolution;
+import org.springframework.stereotype.Service;
+
+import com.aramis.utils.Role;
+import com.aramis.common.UserType;
+import com.aramis.configurations.AppConfigurationProperties;
+import com.aramis.dto.AuthRequest;
+import com.aramis.dto.AuthResponse;
+import com.aramis.common.JwtUtils;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+    private final JwtUtils jwtUtils;
+    private final AppConfigurationProperties properties;
+
+    public AuthResponse authenticate(AuthRequest request, UserRepository userRepository) {
+        validateAuthRequest(request);
+        Integer login = request.getLogin();
+
+        User user = userRepository.findByLogin(login);
+
+        if (user == null) {
+            log.error("Invalid login : {}", login);
+            throw new RuntimeException("Invalid login");
+        }
+
+        var userType = user.isIsAdmin() ? UserType.SUPERVISOR : UserType.PREPARATOR;
+        var role = user.isIsAdmin() ? Role.ADMIN : Role.USER;
+
+        var secretKey = jwtUtils.generateSecretKey(properties.getJwt().getSecret());
+
+        Map<String, String> claims = new HashMap<>();
+        claims.put("userType", userType.toString());
+        claims.put("role", role.toString());
+
+        String audience = user.getUserID().toString();
+
+        String username = user.getFirstname() + user.getLastname();
+
+        String token = jwtUtils.generateToken(username, audience, claims, properties.getJwt().getExpiresIn(), secretKey);
+        return AuthResponse.builder().username(username).userType(userType).role(role).token(token).build();
+    }
+
+    private void validateAuthRequest(AuthRequest request) {
+        Objects.requireNonNull(request, "Login cannot be null");
+        Objects.requireNonNull(request.getLogin(), "Login cannot be null");
+    }
+
+}
