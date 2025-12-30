@@ -1,4 +1,4 @@
-package com.aramis.supportType;
+package com.aramis.models.zone;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,12 +7,10 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class SupportType {
+public class Zone {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long TypeID;
+    private Long ZoneID;
     @Column(nullable = false)
-    private String Label;
-    @Column(nullable = false)
-    private int Capacity;
+    private String ZoneName;
 }

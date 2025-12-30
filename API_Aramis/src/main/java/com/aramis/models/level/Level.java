@@ -1,4 +1,4 @@
-package com.aramis.driveway;
+package com.aramis.models.level;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,11 +7,10 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Driveway {
+public class Level {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long DrivewayID;
+    private Long LevelID;
     @Column(nullable = false)
-    private String Name;
+    private int LevelValue;
 }
-
