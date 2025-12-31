@@ -70,7 +70,7 @@ public class AuthService {
             }
 
             if (accessDenied) {
-                log.error("Access denied for {}", payload.get("role")) ;
+                log.error("Access denied for {}", payload.get("role"));
                 throw new AccessDeniedException("Access denied");
             }
         } catch (AccessDeniedException e) {

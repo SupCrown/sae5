@@ -40,7 +40,7 @@ public class Main {
                     .build();
         }
 
-        if(result.isSuccess()) {
+        if (result.isSuccess()) {
             Container match = result.get(0);
 
             List<Placement> placements = match.getStack().getPlacements();

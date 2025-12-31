@@ -27,7 +27,7 @@ public class AuthorizeAspect {
 
     public AuthorizeAspect(AppConfigurationProperties properties, AuthService authService) {
         this.properties = properties;
-        this.authService= authService;
+        this.authService = authService;
     }
 
     @Pointcut("@annotation(com.aramis.annotations.Authorize)")
@@ -36,8 +36,8 @@ public class AuthorizeAspect {
 
 
     @Around(
-        value = "@annotation(authorize) && execution(* com.aramis..*(..))",
-        argNames = "pjp,authorize"
+            value = "@annotation(authorize) && execution(* com.aramis..*(..))",
+            argNames = "pjp,authorize"
     )
     public Object doSomething(ProceedingJoinPoint pjp, Authorize authorize) throws Throwable {
         HttpServletRequest req = getRequest();

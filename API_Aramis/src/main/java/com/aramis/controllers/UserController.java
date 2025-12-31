@@ -37,7 +37,7 @@ public class UserController {
         for (User user : users) {
             userResponseList.add(new UserResponse(user));
         }
-        return ResponseEntity.status(200).body(userResponseList) ;
+        return ResponseEntity.status(200).body(userResponseList);
     }
 
     @Authorize(roles = {Role.ADMIN, Role.USER})
@@ -45,13 +45,13 @@ public class UserController {
     public ResponseEntity<UserResponse> getUserById(@PathVariable Integer id) {
 
         return userRepository.findById(id)
-            .map(user -> ResponseEntity.ok(new UserResponse(user)))
-            .orElse(ResponseEntity.notFound().build());
+                .map(user -> ResponseEntity.ok(new UserResponse(user)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @Authorize(roles = Role.ADMIN)
     @PostMapping("/add")
-    public ResponseEntity<Object>  addNewUser (@Valid @RequestBody CreateUserRequest request) {
+    public ResponseEntity<Object> addNewUser(@Valid @RequestBody CreateUserRequest request) {
 
         User user = new User();
         user.setFirstname(request.getFirstname());
