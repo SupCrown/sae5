@@ -1,23 +1,21 @@
 package com.aramis.services;
 
-import java.nio.file.AccessDeniedException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import com.aramis.models.user.User;
-import com.aramis.models.user.UserRepository;
-import org.springframework.stereotype.Service;
-
-import com.aramis.utils.Role;
+import com.aramis.common.JwtUtils;
 import com.aramis.common.UserType;
 import com.aramis.configurations.AppConfigurationProperties;
 import com.aramis.dto.AuthRequest;
 import com.aramis.dto.AuthResponse;
-import com.aramis.common.JwtUtils;
-
+import com.aramis.models.user.User;
+import com.aramis.models.user.UserRepository;
+import com.aramis.utils.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.nio.file.AccessDeniedException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 
 @Slf4j

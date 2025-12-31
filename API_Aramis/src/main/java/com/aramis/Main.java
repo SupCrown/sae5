@@ -3,7 +3,8 @@ package com.aramis;
 import com.github.skjolber.packing.api.*;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {

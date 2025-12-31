@@ -1,8 +1,8 @@
 package com.aramis.dto;
 
 
-import com.aramis.utils.Role;
 import com.aramis.common.UserType;
+import com.aramis.utils.Role;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

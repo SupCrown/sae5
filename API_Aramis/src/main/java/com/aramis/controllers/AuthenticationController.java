@@ -4,16 +4,15 @@ import com.aramis.configurations.AppConfigurationProperties;
 import com.aramis.dto.AuthRequest;
 import com.aramis.models.user.UserRepository;
 import com.aramis.services.AuthService;
-
 import jakarta.servlet.http.HttpServletResponse;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.SameSiteCookies;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.WebUtils;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
