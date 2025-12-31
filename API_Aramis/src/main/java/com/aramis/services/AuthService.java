@@ -1,13 +1,12 @@
 package com.aramis.services;
 
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 import com.aramis.models.user.User;
 import com.aramis.models.user.UserRepository;
-import org.hibernate.boot.model.process.internal.UserTypeResolution;
 import org.springframework.stereotype.Service;
 
 import com.aramis.utils.Role;
@@ -50,7 +49,7 @@ public class AuthService {
 
         String audience = user.getUserID().toString();
 
-        String username = user.getFirstname() + user.getLastname();
+        String username = user.getFirstname() + " " + user.getLastname();
 
         String token = jwtUtils.generateToken(username, audience, claims, properties.getJwt().getExpiresIn(), secretKey);
         return AuthResponse.builder().username(username).userType(userType).role(role).token(token).build();
@@ -61,4 +60,26 @@ public class AuthService {
         Objects.requireNonNull(request.getLogin(), "Login cannot be null");
     }
 
+
+    public void validateAuthToken(String jwt, Role[] roles) throws AccessDeniedException, RuntimeException {
+        var secretKey = jwtUtils.generateSecretKey(properties.getJwt().getSecret());
+        try {
+            var payload = jwtUtils.getPayload(jwt, secretKey);
+
+            boolean accessDenied = true;
+            for (Role role : roles) {
+                accessDenied = accessDenied && !payload.get("role").equals(role.toString());
+            }
+
+            if (accessDenied) {
+                log.error("Access denied for {}", payload.get("role")) ;
+                throw new AccessDeniedException("Access denied");
+            }
+        } catch (AccessDeniedException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Authentication failed. Invalid token : {}", jwt);
+            throw new RuntimeException(String.format("Authentication failed. Invalid token : %s", jwt));
+        }
+    }
 }

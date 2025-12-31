@@ -13,24 +13,26 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.WebUtils;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth")
 public class AuthenticationController {
 
     private final AppConfigurationProperties properties;
     private final AuthService authService;
     private final UserRepository userRepository;
+    private final HttpServletResponse response;
 
-    public AuthenticationController(UserRepository userRepository, AppConfigurationProperties properties, AuthService authService) {
+    public AuthenticationController(UserRepository userRepository, AppConfigurationProperties properties, AuthService authService, HttpServletResponse response) {
         this.properties = properties;
         this.authService = authService;
         this.userRepository = userRepository;
+        this.response = response;
     }
 
-    @PostMapping("")
-    public ResponseEntity<Object>  login(@RequestBody AuthRequest request, HttpServletResponse response) {
+    @PostMapping("/login")
+    public ResponseEntity<Object> login(@RequestBody AuthRequest request) {
         try {
             var auth = authService.authenticate(request, userRepository);
 
@@ -50,5 +52,19 @@ public class AuthenticationController {
             log.error("Error authenticating user", e);
             return ResponseEntity.status(401).body("Authentication failed: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        // Create cookie with no lifetime
+        ResponseCookie cookie = ResponseCookie.from(properties.getCookie().getName(), "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite(SameSiteCookies.STRICT.toString())
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.status(200).body("Logout successful.");
     }
 }
