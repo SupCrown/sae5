@@ -19,7 +19,7 @@ import java.util.UUID;
 @Component
 public class JwtUtils {
 
-    public Claims getPayload(String jwt, SecretKey secretKey) {
+    public static Claims getPayload(String jwt, SecretKey secretKey) {
         Objects.requireNonNull(secretKey, "Secret key must not be null");
 
         try {
@@ -40,7 +40,7 @@ public class JwtUtils {
         }
     }
 
-    public String generateToken(String subject, String audience, Map<String, ?> claims, int expiresIn,
+    public static String generateToken(String subject, String audience, Map<String, ?> claims, int expiresIn,
                                 SecretKey secretKey) {
         validateInputs(subject, audience, secretKey);
 
@@ -64,14 +64,14 @@ public class JwtUtils {
                 .compact();
     }
 
-    public SecretKey generateSecretKey(String signingKey) {
+    public static SecretKey generateSecretKey(String signingKey) {
         if (Objects.isNull(signingKey) || signingKey.trim().isEmpty()) {
             throw new IllegalArgumentException("Authentication signing key is missing.");
         }
         return Keys.hmacShaKeyFor(signingKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    private void validateInputs(String subject, String audience, SecretKey secretKey) {
+    private static void validateInputs(String subject, String audience, SecretKey secretKey) {
         Objects.requireNonNull(subject, "Token subject must not be null");
         Objects.requireNonNull(audience, "Token audience must not be null");
         Objects.requireNonNull(secretKey, "Secret key must not be null");

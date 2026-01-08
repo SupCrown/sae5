@@ -10,6 +10,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -46,17 +47,17 @@ public class AuthorizeAspect {
             Cookie authCookie = WebUtils.getCookie(req, properties.getCookie().getName());
 
             if (authCookie == null) {
-                return ResponseEntity.status(401).body("Authentication failed: No authentication token detected.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: No authentication token detected.");
             } else {
                 String jwt = authCookie.getValue();
                 authService.validateAuthToken(jwt, authorize.roles());
             }
         } catch (AccessDeniedException e) {
             log.error("Access denied");
-            return ResponseEntity.status(403).body("Access denied");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
         } catch (Exception e) {
             log.error("Error authenticating user", e);
-            return ResponseEntity.status(401).body("Authentication failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: " + e.getMessage());
         }
 
         return pjp.proceed();

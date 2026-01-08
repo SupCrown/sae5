@@ -40,7 +40,7 @@ public class UserController {
         for (User user : users) {
             userResponseList.add(new UserResponse(user));
         }
-        return ResponseEntity.status(200).body(userResponseList);
+        return ResponseEntity.ok(userResponseList);
     }
 
     @Authorize(roles = {Role.ADMIN, Role.USER})
@@ -79,7 +79,7 @@ public class UserController {
                     .body(response);
         } catch (Exception e) {
             log.error("Error authenticating user", e);
-            return ResponseEntity.status(400).body("Bad Request: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
         }
 
     }
