@@ -18,7 +18,11 @@ public class SupportType {
     @Column(nullable = false)
     private String Label;
     @Column(nullable = false)
-    private int Capacity;
+    private int InnerWidth;
+    @Column(nullable = false)
+    private int InnerLength;
+    @Column(nullable = false)
+    private int InnerHeight;
     @Column(nullable = false)
     public Timestamp DateCreation;
     @Column(nullable = false)
