@@ -1,14 +1,16 @@
 package com.aramis.models.order;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity(name = "_order")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,5 +20,9 @@ public class Order {
     public EOrderStatus Status;
     @Column(nullable = false)
     public int CustomerID;
+    @Column(nullable = false)
+    public Timestamp DateCreation;
+    @Column(nullable = false)
+    public Timestamp DateModification;
 }
 
