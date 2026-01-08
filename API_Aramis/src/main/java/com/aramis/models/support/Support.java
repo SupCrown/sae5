@@ -1,12 +1,16 @@
 package com.aramis.models.support;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Support {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,4 +22,8 @@ public class Support {
     public int UserID;
     @Column(nullable = false)
     public int OrderID;
+    @Column(nullable = false)
+    public Timestamp DateCreation;
+    @Column(nullable = false)
+    public Timestamp DateModification;
 }
