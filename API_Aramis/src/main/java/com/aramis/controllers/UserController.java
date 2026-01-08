@@ -14,8 +14,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.aramis.utils.Utils.getCurrentTimestamp;
 
 @Slf4j
 @RestController
@@ -57,6 +60,8 @@ public class UserController {
         user.setFirstname(request.getFirstname());
         user.setLastname(request.getLastname());
         user.setLogin(request.getLogin());
+        user.setDateCreation(getCurrentTimestamp());
+        user.setDateModification(getCurrentTimestamp());
 
         try {
             User savedUser = userRepository.save(user);
