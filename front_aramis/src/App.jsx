@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import Home from "./pages/Home";
+import StartCommande from "./pages/StartCommande";
 
 export default function App() {
   return (
@@ -25,6 +26,11 @@ export default function App() {
       >
 
       </header>
+
+      {/* Main Content */}
+      <main style={{ flex: 1, padding: "16px" }}>
+        <StartCommande />
+      </main>
     </div>
   );
 }
