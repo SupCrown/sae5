@@ -1,24 +1,23 @@
 package com.aramis.controllers;
 
 import com.aramis.annotations.Authorize;
-import com.aramis.dto.CreateUserRequest;
+import com.aramis.common.JwtUtils;
+import com.aramis.configurations.AppConfigurationProperties;
 import com.aramis.dto.OrderResponse;
-import com.aramis.dto.UserResponse;
 import com.aramis.models.order.Order;
 import com.aramis.models.order.OrderRepository;
-import com.aramis.models.user.User;
-import com.aramis.models.user.UserRepository;
 import com.aramis.utils.Role;
-import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.aramis.services.AuthService.getUserID;
 
 @Slf4j
 @RestController
@@ -26,9 +25,13 @@ import java.util.List;
 public class OrderController {
 
     private final OrderRepository orderRepository;
+    private final HttpServletRequest request;
+    private final AppConfigurationProperties properties;
 
-    public OrderController(OrderRepository orderRepository) {
+    public OrderController(OrderRepository orderRepository, HttpServletRequest request, AppConfigurationProperties properties) {
         this.orderRepository = orderRepository;
+        this.request = request;
+        this.properties = properties;
     }
 
     @Authorize(roles = Role.ADMIN)
@@ -40,6 +43,21 @@ public class OrderController {
         for (Order order : orders) {
             orderResponseList.add(new OrderResponse(order));
         }
-        return ResponseEntity.status(200).body(orderResponseList);
+        return ResponseEntity.ok(orderResponseList);
+    }
+    @Authorize(roles = Role.USER)
+    @GetMapping("autoAssign")
+    public ResponseEntity<Object> autoAssign() {
+        Integer userID = getUserID(request, properties);
+
+        List<Order> orders = orderRepository.findAllByOrderByDateCreationAsc();
+
+        if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+
+
+        return ResponseEntity.ok(orders);
     }
 }
