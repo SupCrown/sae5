@@ -5,15 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@IdClass(LocationCompsiteKey.class)
 @Getter
 @Setter
 public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int LocationID;
-    @Id
-    public int DrivewayID;
     @Column(nullable = false)
     public String LocationCode;
     @Column(nullable = false)
@@ -26,6 +23,8 @@ public class Location {
     public int YellowCode;
     @Column(nullable = false)
     public int BlueCode;
+    @Column(nullable = false)
+    public int DrivewayID;
     @Column(nullable = false)
     public int LevelID;
     @Column(nullable = false, unique = true)
