@@ -12,6 +12,7 @@
     "electron": "electron ."
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "electron-is-dev": "^3.0.1",

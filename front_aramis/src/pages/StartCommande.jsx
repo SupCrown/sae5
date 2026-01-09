@@ -10,9 +10,8 @@ export default function StartCommande() {
 
     setDate(
       new Date().toLocaleDateString("fr-FR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
+        day: "2-digit",
+        month: "2-digit",
         year: "numeric",
       })
     );
@@ -20,13 +19,18 @@ export default function StartCommande() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-900 text-white">
-      <h3 className="font-normal text-2xl">{username}</h3>
-      <p className="opacity-90">{date}</p>
+      <h3 className="font-bold font-inter text-[30px] m-[5px]">
+        {username}
+      </h3>
 
-      <button className="bg-[#000] text-[#fff] px-[60px] py-[30px] rounded-[5px] border-[#000]">
+      <p className="text-[30px] mb-[150px] font-bold">
+        {date}
+      </p>
+
+      <button className="bg-[#000] text-[#fff] px-[50px] py-[50px] rounded-[10px] font-medium font-inter text-[30px] focus:bg-[#333] transition-colors">
         Commencer la journée
       </button>
-      
     </div>
   );
 }
+

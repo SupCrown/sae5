@@ -4,6 +4,8 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import Home from "./pages/Home";
 import StartCommande from "./pages/StartCommande";
+import RecupCommande from "./pages/RecupCommande";
+import DataLoading from "./pages/DataLoading";
 
 export default function App() {
   return (
@@ -29,7 +31,9 @@ export default function App() {
 
       {/* Main Content */}
       <main style={{ flex: 1, padding: "16px" }}>
-        <StartCommande />
+        {/*<StartCommande />*/}
+        {/*<RecupCommande />*/}
+        <DataLoading />
       </main>
     </div>
   );
