@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import Usericone from "../assets/images/ProfileIcon.png";
+
 
 export default function StartCommande() {
   const [username, setUsername] = useState("");
@@ -19,11 +21,13 @@ export default function StartCommande() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-900 text-white">
+      <img src={Usericone} alt="Usericone" className="w-40 h-40 mb-[50px]" />
+
       <h3 className="font-bold font-inter text-[30px] m-[5px]">
         {username}
       </h3>
 
-      <p className="text-[30px] mb-[150px] font-bold">
+      <p className="text-[30px] mb-[100px] font-bold">
         {date}
       </p>
 

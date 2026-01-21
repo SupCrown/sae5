@@ -32,8 +32,8 @@ export default function App() {
       {/* Main Content */}
       <main style={{ flex: 1, padding: "16px" }}>
         {/*<StartCommande />*/}
-        {/*<RecupCommande />*/}
-        <DataLoading />
+        <RecupCommande />
+        {/*<DataLoading />*/}
       </main>
     </div>
   );
