@@ -52,8 +52,11 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - trier les colis en fonction du sens de circulation **(I-008-0001 -> H-001-0144)**.
 - Attribution des commandes :
     - `/order/autoAssign` **[POST]** : automatique (au chargement de l'application) en f° d'un PreparateurID.
-        - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente. Status : `200`.
-        - **Sinon** : récupération d'une commande en cours en cas de crash. Status : `307`.
+        - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente.
+          - `200` : la commande est assignée,
+          - `204` : aucune commande à assigner a été trouvée.
+        - **Sinon** : récupération d'une commande en cours en cas de crash. 
+          - `307` : la prépration de la commande n'avait pas été finalisée à la dernière fermeture de l'application.
     - `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : manuelle.
 - (Gestion de la dictée vocale)
 - (Gestion de la commande vocal)
