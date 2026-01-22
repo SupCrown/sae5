@@ -20,7 +20,7 @@ export default function RecupCommande() {
   }, []);
 
   return (
-    <body className="relative bg-white text-black">
+    <div className="bg-white text-black">
       <img
         src={cerclePng}
         alt=""
@@ -34,17 +34,17 @@ export default function RecupCommande() {
       />
 
       <div className="relative z-10 flex flex-col items-center justify-center gap-4">
-        <img src={Usericone} alt="Usericone" className="w-[80px] h-40 mb-[60px] mt-[90px]" />
+        <img src={Usericone} alt="Usericone" className="w-[90px] h-40 mb-[60px] mt-[100px]" />
 
-        <h3 className="font-bold font-inter text-[30px] m-[5px] intermache">{username}</h3>
+        <h3 className="font-bold font-inter text-[30px] m-[5px] mt-[0px] font-intermache">{username}</h3>
 
         <p className="text-[30px] mb-[80px] font-bold">{date}</p>
 
-        <button className="bg-black text-white px-[50px] py-[50px] rounded-[10px] font-medium font-inter text-[30px] focus:bg-[#333] transition-colors">
+        <button className="bg-[#fff] text-[#000] px-[50px] py-[50px] rounded-[10px] font-medium font-inter text-[30px] focus:bg-[#333] transition-colors">
           Récupérer X palette(s)
         </button>
       </div>
-    </body>
+    </div>
   );
 }
 

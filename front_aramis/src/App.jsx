@@ -24,9 +24,9 @@ export default function App() {
 
       {/* Main Content */}
       <main style={{ flex: 1, padding: "16px" }}>
-        {/*<StartCommande />*/}
+        <StartCommande />
         {/*<RecupCommande />*/}
-        <DataLoading />
+        {/*<DataLoading />*/}
       </main>
     </div>
   );
