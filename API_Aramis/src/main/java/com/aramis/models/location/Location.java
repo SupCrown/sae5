@@ -31,8 +31,6 @@ public class Location {
     public int DrivewayID;
     @Column(nullable = false)
     public int LevelID;
-    @Column(nullable = false, unique = true)
-    public int ProductID;
     @Column(nullable = false)
     public Timestamp DateCreation;
     @Column(nullable = false)

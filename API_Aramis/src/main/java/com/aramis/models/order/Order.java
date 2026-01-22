@@ -20,6 +20,8 @@ public class Order {
     public EOrderStatus Status;
     @Column(nullable = false)
     public int CustomerID;
+    public boolean IsAPriority;
+    public Timestamp PriorityModificationDate;
     @Column(nullable = false)
     public Timestamp DateCreation;
     @Column(nullable = false)

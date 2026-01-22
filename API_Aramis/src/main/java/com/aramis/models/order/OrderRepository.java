@@ -12,4 +12,9 @@ public interface OrderRepository extends CrudRepository<Order, Integer> {
 
     @Query("SELECT o FROM _order o ORDER BY o.DateCreation ASC")
     List<Order> findAllByOrderByDateCreationAsc();
+
+    List<Order> findAllPriority();
+
+    @Query("SELECT o FROM _order o JOIN Support s ON o.OrderID == s.OrderID WHERE s.UserID IS NOT NULL")
+    Order findByUserId(Integer userID);
 }
