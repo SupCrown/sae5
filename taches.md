@@ -43,14 +43,17 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 ### API
 
 - Authentification :
-    -  `/login` **[POST]**.: Récupérer le JWT d'authentification.
-    -   `/logout` **[POST]** : Supprimer le JWT d'authentification.
+    - `/login` **[POST]**.: Récupérer le JWT d'authentification.
+      - `200` : Utilisateur connecté,
+      - `401` : Aucune authentification détectée,
+      - `403` : Accès refusé par manque de droits.
+    - `/logout` **[POST]** : Supprimer le JWT d'authentification.
 - `/order/id?[etape=xxx]` **[GET]**  : Chargement d'une commande en f° d'un id (et en f° ou non d'une étape précise).
     - trier les colis en fonction du sens de circulation **(I-008-0001 -> H-001-0144)**.
 - Attribution des commandes :
     - `/order/autoAssign` **[POST]** : automatique (au chargement de l'application) en f° d'un PreparateurID.
-        - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente.
-        - **Sinon** : récupération d'une commande en cours en cas de crash.
+        - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente. Status : `200`.
+        - **Sinon** : récupération d'une commande en cours en cas de crash. Status : `307`.
     - `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : manuelle.
 - (Gestion de la dictée vocale)
 - (Gestion de la commande vocal)
