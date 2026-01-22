@@ -10,13 +10,6 @@ import DataLoading from "./pages/DataLoading";
 export default function App() {
   return (
     <div
-      style={{
-        minHeight: "100vh",
-        border: "4px solid black",     
-        boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "column",
-      }}
     >
       {/* Header */}
       <header
@@ -32,8 +25,8 @@ export default function App() {
       {/* Main Content */}
       <main style={{ flex: 1, padding: "16px" }}>
         {/*<StartCommande />*/}
-        <RecupCommande />
-        {/*<DataLoading />*/}
+        {/*<RecupCommande />*/}
+        <DataLoading />
       </main>
     </div>
   );

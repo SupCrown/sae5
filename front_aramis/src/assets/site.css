@@ -1,0 +1,13 @@
+@font-face {
+  font-family: "INTERMARCHE";
+  src: url("../fonts/Intermarche.ttf") format("truetype");
+  font-weight: normal;
+}
+
+body {
+  font-family: "INTERMARCHE", sans-serif;
+}
+
+.font-intermache {
+  font-family: "INTERMARCHE", sans-serif;
+}
