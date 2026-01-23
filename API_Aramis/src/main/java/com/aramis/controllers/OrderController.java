@@ -70,7 +70,7 @@ public class OrderController {
     public ResponseEntity<List<List<Placement>>> autoAssign() {
         Integer userID = getUserID(request, properties);
 
-        Order order = orderRepository.findByUserId(userID);
+        Order order = orderRepository.findUncompletedOrderByUserId(userID);
         if (order == null) {
             List<Order> priorityOrders = orderRepository.findAllPriority();
 
