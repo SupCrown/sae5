@@ -1,30 +1,44 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import Home from "./pages/Home";
+import { useEffect, useState } from "react";
+import "./App.css";
+import NextProduct from "./pages/NextProduct";
+import Usericone from "./assets/images/ProfileIcon.png";
 
 export default function App() {
+  const [username, setUsername] = useState("Utilisateur");
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("username");
+    setUsername(storedUser || "Utilisateur");
+  }, []);
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        border: "4px solid black",     
-        boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* Header */}
+    <div>
       <header
         style={{
-          padding: "16px",
-          borderBottom: "10px solid #AD211B", 
-          textAlign: "center",
+          padding: "12px 16px",
+          borderBottom: "10px solid #AD211B",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
+        <div style={{ display: "flex", alignItems: "right"}}>
+          <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
+          {username}
+        </h3>
 
+        <img
+          src={Usericone}
+          alt="User"
+          style={{ width: 44, height: 44 }}
+        />
+        </div>
+        
       </header>
+
+      <main style={{ padding: "16px" }}>
+        <NextProduct />
+      </main>
     </div>
   );
 }
