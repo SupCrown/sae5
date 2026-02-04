@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long UserID;
+    private long UserID;
     @Column(nullable = false, unique = true)
     private int Login;
     @Column(nullable = false)

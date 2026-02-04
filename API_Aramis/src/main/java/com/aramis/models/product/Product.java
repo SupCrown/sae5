@@ -1,44 +1,25 @@
 package com.aramis.models.product;
 
-import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
 
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.util.Date;
 
-@Entity
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 public class Product {
+    // Getters et Setters standard...
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer ProductID;
-    @Column(nullable = false)
-    private int ProductCode;
-    @Column(nullable = false)
-    private String Libelle;
-    @Column(nullable = false)
-    private int Height;
-    @Column(nullable = false)
-    private int Length;
-    @Column(nullable = false)
-    private int Width;
-    @Column(nullable = false)
-    private int LocationID;
-    @Column(nullable = false)
-    public Timestamp DateCreation;
-    @Column(nullable = false)
-    public Timestamp DateModification;
+    private Long productId;
 
-    public BoxItem toBoxItem() {
-        return new BoxItem(Box.newBuilder().withId(this.ProductID.toString()).withSize(this.Width, this.Length, this.Height).withWeight(1).withRotate3D().build());
-    }
+    private String productCode;
 
-    public Product clone() {
-        return new Product(ProductID, ProductCode, Libelle, Height, Length, Width, LocationID, DateCreation, DateModification);
-    }
+    // Dimensions pour l'algorithme (en cm par exemple)
+    private int width;
+    private int height;
+    private int length;
+    private int weight; // en grammes
+
+    // Ajoute les setters...
 }
