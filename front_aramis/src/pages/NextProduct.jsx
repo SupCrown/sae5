@@ -2,10 +2,10 @@ import cerclePng from "../assets/images/cercle.png";
 
 export default function NextProduct() {
   return (
-    <div className="relative h-[768px] bg-white text-black flex flex-col">
-
+    <div className="relative h-screen overflow-hidden bg-white text-black flex flex-col">
       {/* CONTENU CENTRAL */}
-      <div className="flex-1 flex flex-col items-center justify-start gap-6">
+      <div className="flex flex-col items-center gap-6 mt-[80px]">
+
         <img
           src={cerclePng}
           alt=""

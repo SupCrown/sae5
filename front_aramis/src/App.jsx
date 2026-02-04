@@ -14,27 +14,26 @@ export default function App() {
   return (
     <div>
       <header
-        style={{
-          padding: "12px 16px",
-          borderBottom: "10px solid #AD211B",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "right"}}>
-          <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-          {username}
-        </h3>
+  style={{
+    padding: "12px 16px",
+    borderBottom: "10px solid #AD211B",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  }}
+>
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
+      {username}
+    </h3>
 
-        <img
-          src={Usericone}
-          alt="User"
-          style={{ width: 44, height: 44 }}
-        />
-        </div>
-        
-      </header>
+    <img
+      src={Usericone}
+      alt="User"
+      style={{ width: 44, height: 44 }}
+    />
+  </div>
+</header>
 
       <main style={{ padding: "16px" }}>
         <NextProduct />
