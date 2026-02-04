@@ -2,22 +2,24 @@ package com.aramis.models.product;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
-@Entity
+import java.util.Date;
+
 @Getter
-@Setter
+@Entity
 public class Product {
+    // Getters et Setters standard...
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ProductID;
-    @Column(nullable = false)
-    private int ProductCode;
-    @Column(nullable = false)
-    private int Height;
-    @Column(nullable = false)
-    private int Length;
-    @Column(nullable = false)
-    private int Width;
+    private Long productId;
 
+    private String productCode;
+
+    // Dimensions pour l'algorithme (en cm par exemple)
+    private int width;
+    private int height;
+    private int length;
+    private int weight; // en grammes
+
+    // Ajoute les setters...
 }
