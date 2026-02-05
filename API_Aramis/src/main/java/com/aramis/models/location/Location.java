@@ -18,16 +18,6 @@ public class Location {
     @Column(nullable = false)
     public String LocationCode;
     @Column(nullable = false)
-    public int WhiteCode;
-    @Column(nullable = false)
-    public int RedCode;
-    @Column(nullable = false)
-    public int GreenCode;
-    @Column(nullable = false)
-    public int YellowCode;
-    @Column(nullable = false)
-    public int BlueCode;
-    @Column(nullable = false)
     public int DrivewayID;
     @Column(nullable = false)
     public int LevelID;
