@@ -45,7 +45,7 @@ public class AuthService {
         claims.put("userType", userType.toString());
         claims.put("role", role.toString());
 
-        String audience = user.getUserID().toString();
+        String audience = String.valueOf(user.getUserID());
 
         String username = user.getFirstname() + " " + user.getLastname();
 
