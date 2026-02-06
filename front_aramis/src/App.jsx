@@ -1,10 +1,6 @@
 import './App.css'
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import ListenPage from "./pages/ListenPage";
 import Home from "./pages/Home";
-import StartCommande from "./pages/StartCommande";
-import RecupCommande from "./pages/RecupCommande";
-import DataLoading from "./pages/DataLoading";
 
 export default function App() {
   return (
