@@ -9,6 +9,7 @@ import DataLoading from "./pages/DataLoading";
 
 export default function App() {
   return (
+<<<<<<< HEAD
     <div
     >
       {/* Header */}
@@ -19,6 +20,12 @@ export default function App() {
           textAlign: "center",
         }}
       >
+=======
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Header / test Tailwind */}
+      <div className="p-6 text-center">
+      </div>
+>>>>>>> c5951db697601e6dd7193a8d29fb7e077c61484c
 
       </header>
 
