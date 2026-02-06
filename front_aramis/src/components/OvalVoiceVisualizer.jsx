@@ -30,8 +30,8 @@ export default function OvalVoiceVisualizer({ isActive }) {
   return (
     <div
       style={{
-        width: 260,
-        height: 140,
+        width: 200,
+        height: 90,
         borderRadius: 9999,
         background: "#000",
         display: "flex",
@@ -56,7 +56,7 @@ export default function OvalVoiceVisualizer({ isActive }) {
             alignItems: "flex-end",
             justifyContent: "center",
             gap: 6,
-            height: "60%",
+            height: "35%",
           }}
         >
           {levels.map((lvl, i) => (

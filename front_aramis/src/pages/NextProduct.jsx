@@ -9,13 +9,13 @@ export default function NextProduct() {
         <img
           src={cerclePng}
           alt=""
-          className="pointer-events-none select-none absolute top-[70px] left-1/2 -translate-x-1/2 w-[350px] opacity-25"
+          className="pointer-events-none select-none absolute top-[70px] left-1/2 -translate-x-1/2 w-[350px] opacity-25 z-[-1000]"
         />
 
         <img
           src={cerclePng}
           alt=""
-          className="pointer-events-none select-none absolute top-[200px] left-[60px] w-[350px] opacity-25"
+          className="pointer-events-none select-none absolute top-[200px] left-[60px] w-[350px] opacity-25 z-[-1000]"
         />
 
         <h1 className="text-[70px] font-bold">Prochain colis</h1>
