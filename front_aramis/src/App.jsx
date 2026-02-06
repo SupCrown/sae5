@@ -8,12 +8,6 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-gray-900 text-white">
 
-        <div className="p-6 text-center">
-          <h1 className="text-4xl font-bold text-blue-400">
-            Vite + Tailwind OK
-          </h1>
-        </div>
-
         <div className="flex justify-center gap-4">
           <Link to="/">
             <button>Accueil</button>
