@@ -9,9 +9,6 @@ export default function App() {
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header / test Tailwind */}
       <div className="p-6 text-center">
-        <h1 className="text-4xl font-bold text-blue-400">
-          Vite + Tailwind OK
-        </h1>
       </div>
 
       {/* Page principale */}
