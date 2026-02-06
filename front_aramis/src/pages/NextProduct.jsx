@@ -2,9 +2,9 @@ import cerclePng from "../assets/images/cercle.png";
 
 export default function NextProduct() {
   return (
-    <div className="relative h-screen overflow-hidden bg-white text-black flex flex-col">
+    <div className="relative overflow-hidden bg-white text-black h-[560px]">
       {/* CONTENU CENTRAL */}
-      <div className="flex flex-col items-center gap-6 mt-[80px]">
+      <div className="flex flex-col items-center gap-6 mt-[60px]">
 
         <img
           src={cerclePng}
@@ -24,7 +24,7 @@ export default function NextProduct() {
       </div>
 
       {/* ZONE BOUTONS (BAS DE PAGE) */}
-      <div className="flex justify-between items-end px-8 pb-8">
+      <div className="flex justify-between items-end mt-auto">
         <button className="bg-[#870000] text-white px-[100px] py-[100px] rounded-tr-[15px] text-[20px]">
           image
         </button>

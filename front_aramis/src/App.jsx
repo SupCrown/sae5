@@ -64,7 +64,7 @@ export default function App() {
         </div>
       </header>
 
-      <main style={{ padding: "16px" }}>
+      <main style={{ padding: "16px", height: "560px" }}>
         <NextProduct speak={speak} />
       </main>
     </div>

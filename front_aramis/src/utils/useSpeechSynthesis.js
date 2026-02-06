@@ -6,7 +6,7 @@ export function useSpeechSynthesis(options = {}) {
     rate = 1,
     pitch = 1,
     volume = 1,
-    voiceNameIncludes, // ex: ["Thomas", "Paul", "male"]
+    voiceNameIncludes, 
   } = options;
 
   const pickVoice = () => {
