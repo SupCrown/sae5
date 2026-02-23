@@ -41,7 +41,7 @@ public class AuthenticationController {
                     .secure(true)
                     .path("/")
                     .maxAge(properties.getCookie().getExpiresIn())
-                    .sameSite(SameSiteCookies.STRICT.toString())
+                    .sameSite(SameSiteCookies.LAX.toString())
                     .build();
 
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

@@ -28,7 +28,7 @@ test_job:
 deploy_job:
   stage: deploy
   only:
-    - main  # Le déploiement ne se fait que lors d'un push sur la branche main
+    - dokerisation  # Le déploiement ne se fait que lors d'un push sur la branche main
   script:
     - echo "Déploiement de l'infrastructure avec Docker Compose..."
     - docker-compose down
