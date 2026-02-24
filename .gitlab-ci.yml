@@ -33,6 +33,6 @@ deploy_job:
   script:
     - echo "Déploiement de l'infrastructure avec Docker Compose..."
     - cd API_Aramis
-    - docker-compose down
-    - docker-compose up --build -d
+    - docker compose down
+    - docker compose up --build -d
     - echo "Application déployée avec succès !"
