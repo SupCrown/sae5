@@ -3,18 +3,11 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import Home from "./pages/Home";
+import SaisieStocks from "./pages/SaisieStocks";
 
 export default function App() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        border: "4px solid black",     
-        boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div>
       {/* Header */}
       <header
         style={{
@@ -25,6 +18,11 @@ export default function App() {
       >
 
       </header>
+
+      {/* Main Content */}
+      <main style={{ padding: "16px" }}>
+        <SaisieStocks />
+      </main>
     </div>
   );
 }
