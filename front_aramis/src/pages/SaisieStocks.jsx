@@ -1,8 +1,12 @@
 
+import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import plusIcon from "../assets/saisie-stocks-plus.png";
+
 function SaisieStocks() {
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState("");
-  const navigate = useNavigate(); 
+  const navigate = useNavigate(); // ✅ navigation
 
   const handleClick = () => {
     fileInputRef.current.click();
@@ -21,7 +25,7 @@ function SaisieStocks() {
   };
 
   const goToGestion = () => {
-    navigate("/gestion-stocks"); 
+    navigate("/gestion-stocks"); // ✅ chemin vers la page
   };
 
   return (
@@ -32,10 +36,14 @@ function SaisieStocks() {
         onClick={handleClick}
         className="flex flex-col items-center gap-2 px-[400px] py-[70px] mt-[40px] text-[20px] font-bold bg-blue-600 text-white rounded-[10px]"
       >
-       
+        {fileName ? (
+          <span>{fileName}</span>
+        ) : (
+          <>
             <label>Ajouter un fichier CSV</label>
             <img src={plusIcon} alt="Plus Icon" className="w-[52px] h-[52px] m-[20px]" />
-          
+          </>
+        )}
       </button>
 
       <input
@@ -49,7 +57,7 @@ function SaisieStocks() {
       {/* Bouton Créer / Modifier */}
       <button
         onClick={goToGestion}
-        className="flex flex-col items-center gap-2 px-[100px] py-[30px] mt-[40px] text-[20px] font-[800] bg-blue-600 text-white rounded-[80px]"
+        className="flex flex-col items-center gap-2 px-[100px] py-[30px] mt-[40px] text-[20px] font-bold bg-blue-600 text-white rounded-[80px]"
       >
         Créer / Modifier
       </button>
