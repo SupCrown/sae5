@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-function ModifStocks() {
+function ModifEmpl() {
 
   return (
     <div className="p-4 mt-[200px] flex flex-col items-center">
@@ -49,7 +49,7 @@ function ModifStocks() {
 
         {/* BOUTON */}
         <button
-          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#CCB5A5] rounded-[50px]"
+          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-[800] bg-[#CCB5A5] rounded-[50px]"
         >
           Modifier
         </button>
@@ -59,4 +59,4 @@ function ModifStocks() {
   );
 }
 
-export default ModifStocks;
+export default ModifEmpl;

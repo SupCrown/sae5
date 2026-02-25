@@ -4,7 +4,7 @@ import SuppBut from "../assets/SuppBut.png";
 import ModifBut from "../assets/ModifBut.png";
 import { useNavigate } from "react-router-dom";
 
-function GestionStocks() {
+function GestionEmpl() {
   const navigate = useNavigate();
 
   // ✅ rows en state pour pouvoir supprimer visuellement
@@ -22,8 +22,8 @@ function GestionStocks() {
   // ✅ popup succès
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToModif = () => navigate("/modif-stocks");
-  const goToCreer = () => navigate("/creer-stocks");
+  const goToModif = () => navigate("/modif-empl");
+  const goToCreer = () => navigate("/creer-empl");
 
   // Ouvre le popup confirmation
   const handleDelete = (idx) => {
@@ -151,4 +151,4 @@ function GestionStocks() {
   );
 }
 
-export default GestionStocks;
+export default GestionEmpl;
