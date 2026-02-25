@@ -4,6 +4,7 @@ import com.aramis.annotations.Authorize;
 import com.aramis.common.JwtUtils;
 import com.aramis.configurations.AppConfigurationProperties;
 import com.aramis.dto.OrderResponse;
+import com.aramis.dto.ProductPlacement;
 import com.aramis.models.contain.ContainRepository;
 import com.aramis.models.order.Order;
 import com.aramis.models.order.OrderRepository;
@@ -23,10 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static com.aramis.services.AuthService.getUserID;
 
@@ -67,7 +65,7 @@ public class OrderController {
 
     @Authorize(roles = Role.USER)
     @GetMapping("autoAssign")
-    public ResponseEntity<List<List<Placement>>> autoAssign() {
+    public ResponseEntity<List<List<ProductPlacement>>> autoAssign() {
         Integer userID = getUserID(request, properties);
 
         Order order = orderRepository.findUncompletedOrderByUserId(userID);
@@ -94,7 +92,27 @@ public class OrderController {
 
         List<Support> supports = supportRepository.findSupportsByOrderId(order.getOrderID());
 
-        List<List<Placement>> productsPlacements = new ArrayList<>();
+        List<List<ProductPlacement>> productsPlacements = new ArrayList<>();
+        for (Support support : supports) {
+            List<Product> products = productRepository.findProductsBySupportID(support.getSupportID());
+            var type = supportTypeRepository.findById(support.TypeID);
+
+            if (type.isPresent()) {
+                productsPlacements.add(SupportService.calculateOptimisedSupport(products, type.get()));
+            } else {
+                throw new RuntimeException("Type not found");
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(productsPlacements);
+    }
+
+    @Authorize(roles = Role.USER)
+    @GetMapping("testPlacement")
+    public ResponseEntity<List<List<ProductPlacement>>> testPlacement() {
+        List<Support> supports = supportRepository.findSupportsByOrderId(1);
+
+        List<List<ProductPlacement>> productsPlacements = new ArrayList<>();
         for (Support support : supports) {
             List<Product> products = productRepository.findProductsBySupportID(support.getSupportID());
             var type = supportTypeRepository.findById(support.TypeID);

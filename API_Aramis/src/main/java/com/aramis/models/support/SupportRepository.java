@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface SupportRepository extends CrudRepository<Support, Integer> {
     @Query("SELECT s FROM Support s WHERE s.OrderID = ?1")
-    List<Support> findSupportsByOrderId(int orderID);
+    List<Support> findSupportsByOrderId(Integer orderID);
 }
