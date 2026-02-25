@@ -1,19 +1,18 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
-import SaisieStocks from "./pages/SaisieStocks.jsx";
-import ModifStocks from "./pages/ModifStocks.jsx";
-import GestionStocks from "./pages/GestionStocks.jsx";
-import CreerStocks from "./pages/CreerStocks.jsx";
+import GestionPrep from "./pages/GestionPrep.jsx";
+import CreerPrep from "./pages/CreerPrep.jsx";
+import ModifPrep from "./pages/ModifPrep.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <SaisieStocks /> },
-      { path: "gestion-stocks", element: <GestionStocks /> },
-      { path: "modif-stocks", element: <ModifStocks /> },
-      { path: "creer-stocks", element: <CreerStocks /> },
+      { index: true, element: <GestionPrep /> },
+      { path: "gestion-prep", element: <GestionPrep /> },
+      { path: "modif-prep", element: <ModifPrep /> },
+      { path: "creer-prep", element: <CreerPrep /> },
     ],
   },
 ]);
