@@ -49,7 +49,7 @@ function SaisieStocks() {
       {/* Bouton Créer / Modifier */}
       <button
         onClick={goToGestion}
-        className="flex flex-col items-center gap-2 px-[100px] py-[30px] mt-[40px] text-[20px] font-bold bg-blue-600 text-white rounded-[80px]"
+        className="flex flex-col items-center gap-2 px-[100px] py-[30px] mt-[40px] text-[20px] font-[800] bg-blue-600 text-white rounded-[80px]"
       >
         Créer / Modifier
       </button>

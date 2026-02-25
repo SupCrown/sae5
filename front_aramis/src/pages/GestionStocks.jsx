@@ -111,7 +111,7 @@ function GestionStocks() {
           <div className="bg-white w-[650px] border-2 border-black">
             <div className="p-6">
               <p className="text-center text-[22px] font-bold">
-                Voulez-vous vraiment supprimer cette emplacement ?
+                Voulez-vous vraiment supprimer ce stock ?
               </p>
               <div className="border-b border-black mt-4" />
             </div>
@@ -140,7 +140,7 @@ function GestionStocks() {
       {successOpen && (
         <div className="fixed w-full flex justify-center">
           <div className="w-[650px] border-2 bg-white px-[30px] py-[20px] flex items-center justify-between rounded-[40px] bg-[#FFFFFF]">
-            <span className="font-bold">Emplacement supprimer avec succès !</span>
+            <span className="font-bold">Stock supprimer avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓
             </div>

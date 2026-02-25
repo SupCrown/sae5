@@ -49,7 +49,7 @@ function CreerStocks() {
 
         {/* BOUTON */}
         <button
-          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#CCB5A5] rounded-[50px]"
+          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-[800] bg-[#CCB5A5] rounded-[50px]"
         >
           Créer
         </button>
