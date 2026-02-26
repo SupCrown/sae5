@@ -33,3 +33,6 @@ bin/
 target/
 /aramis.iml
 /.idea/modules.xml
+/.idea/dataSources.local.xml
+/.idea/dataSources.xml
+/.env
