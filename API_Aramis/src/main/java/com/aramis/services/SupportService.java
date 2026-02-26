@@ -75,6 +75,6 @@ public class SupportService {
                 clearedProductPlacements.add(productPlacement);
             }
         }
-        return cl
+        return clearedProductPlacements;
     }
 }
