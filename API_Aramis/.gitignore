@@ -31,3 +31,5 @@ bin/
 ### Project ##
 /src/main/resources/application-development.properties
 target/
+/aramis.iml
+/.idea/modules.xml
