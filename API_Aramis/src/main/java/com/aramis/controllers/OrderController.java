@@ -4,6 +4,7 @@ import com.aramis.annotations.Authorize;
 import com.aramis.common.JwtUtils;
 import com.aramis.configurations.AppConfigurationProperties;
 import com.aramis.dto.OrderResponse;
+import com.aramis.dto.ProductPlacement;
 import com.aramis.models.contain.ContainRepository;
 import com.aramis.models.order.Order;
 import com.aramis.models.order.OrderRepository;
@@ -23,10 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static com.aramis.services.AuthService.getUserID;
 
@@ -63,49 +61,5 @@ public class OrderController {
             orderResponseList.add(new OrderResponse(order));
         }
         return ResponseEntity.ok(orderResponseList);
-    }
-
-    @Authorize(roles = Role.USER)
-    @GetMapping("autoAssign")
-    public ResponseEntity<List<List<Placement>>> autoAssign() {
-        Integer userID = getUserID(request, properties);
-
-        Order order = orderRepository.findUncompletedOrderByUserId(userID);
-        if (order == null) {
-            List<Order> priorityOrders = orderRepository.findAllPriority();
-
-            List<Order> orders = null;
-            if (priorityOrders.isEmpty()) {
-                orders = orderRepository.findAllByOrderByDateCreationAsc();
-                if (orders.isEmpty()) {
-                    return ResponseEntity.noContent().build();
-                }
-            }
-
-            List<Order> sortedOrders = null;
-            if (!priorityOrders.isEmpty()) {
-                sortedOrders = priorityOrders.stream().sorted(Comparator.comparing(Order::getPriorityModificationDate)).toList();
-            } else {
-                sortedOrders = orders.stream().sorted(Comparator.comparing(Order::getOrderDate)).toList();
-            }
-
-            order = sortedOrders.get(0);
-        }
-
-        List<Support> supports = supportRepository.findSupportsByOrderId(order.getOrderID());
-
-        List<List<Placement>> productsPlacements = new ArrayList<>();
-        for (Support support : supports) {
-            List<Product> products = productRepository.findProductsBySupportID(support.getSupportID());
-            var type = supportTypeRepository.findById(support.TypeID);
-
-            if (type.isPresent()) {
-                productsPlacements.add(SupportService.calculateOptimisedSupport(products, type.get()));
-            } else {
-                throw new RuntimeException("Type not found");
-            }
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(productsPlacements);
     }
 }

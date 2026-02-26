@@ -14,14 +14,13 @@ import java.sql.Timestamp;
 public class Support {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int SupportID;
+    public Integer SupportID;
     public String NestedProductsPlacement;
     @Column(nullable = false)
-    public int TypeID;
+    public Integer TypeID;
+    public Integer UserID;
     @Column(nullable = false)
-    public int UserID;
-    @Column(nullable = false)
-    public int OrderID;
+    public Integer OrderID;
     @Column(nullable = false)
     public Timestamp DateCreation;
     @Column(nullable = false)

@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ProductRepository extends CrudRepository<Product, Integer> {
     @Query("SELECT p FROM Contain c JOIN Product p ON c.ProductID = p.ProductID WHERE c.SupportID = ?1 ")
-    List<Product> findProductsBySupportID(int supportID);
+    List<Product> findProductsBySupportID(Integer supportID);
 }

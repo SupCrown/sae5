@@ -20,6 +20,8 @@ public class Product {
     @Column(nullable = false)
     private int ProductCode;
     @Column(nullable = false)
+    private String Libelle;
+    @Column(nullable = false)
     private int Height;
     @Column(nullable = false)
     private int Length;
@@ -33,6 +35,6 @@ public class Product {
     public Timestamp DateModification;
 
     public BoxItem toBoxItem() {
-        return new BoxItem(Box.newBuilder().withId(this.ProductID.toString()).withSize(this.Width, this.Length, this.Height).withRotate3D().build());
+        return new BoxItem(Box.newBuilder().withId(this.ProductID.toString()).withSize(this.Width, this.Length, this.Height).withWeight(1).withRotate3D().build());
     }
 }
