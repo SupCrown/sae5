@@ -1,7 +1,10 @@
 package com.aramis.dto;
 
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Surface;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,6 +19,7 @@ public class ProductPlacement {
     int Width;
     int Length;
     int Height;
+    List<Surface> Surfaces;
 
     public ProductPlacement(Placement placement) {
         ProductId = Integer.parseInt(placement.getBoxItem().getBox().getId());
@@ -25,5 +29,6 @@ public class ProductPlacement {
         Width = placement.getStackValue().getDx();
         Length = placement.getStackValue().getDy();
         Height = placement.getStackValue().getDz();
+        Surfaces = placement.getStackValue().getSurfaces();
     }
 }
