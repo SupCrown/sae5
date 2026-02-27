@@ -1,9 +1,12 @@
 package com.aramis.dto;
 
+import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.Surface;
+import com.github.skjolber.packing.ep.points3d.Default3DPlanePoint3D;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -11,24 +14,37 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Jacksonized
 public class ProductPlacement {
-    int ProductId;
-    int X;
-    int Y;
-    int Z;
-    int Width;
-    int Length;
-    int Height;
-    List<Surface> Surfaces;
+    int productId;
+    int x;
+    int y;
+    int z;
+    int width;
+    int length;
+    int height;
+    List<Surface> surfaces;
 
     public ProductPlacement(Placement placement) {
-        ProductId = Integer.parseInt(placement.getBoxItem().getBox().getId());
-        X = placement.getAbsoluteX();
-        Y = placement.getAbsoluteY();
-        Z = placement.getAbsoluteZ();
-        Width = placement.getStackValue().getDx();
-        Length = placement.getStackValue().getDy();
-        Height = placement.getStackValue().getDz();
-        Surfaces = placement.getStackValue().getSurfaces();
+        productId = Integer.parseInt(placement.getBoxItem().getBox().getId());
+        x = placement.getAbsoluteX();
+        y = placement.getAbsoluteY();
+        z = placement.getAbsoluteZ();
+        width = placement.getStackValue().getDx();
+        length = placement.getStackValue().getDy();
+        height = placement.getStackValue().getDz();
+        surfaces = new ArrayList<>();
+        for (com.github.skjolber.packing.api.Surface surface : placement.getStackValue().getSurfaces()) {
+            surfaces.add(new Surface(surface));
+        }
     }
+
+//    public Placement toPlacement() {
+//        List<com.github.skjolber.packing.api.Surface> packingSurfaces = new ArrayList<>();
+//        for (Surface surface : surfaces) {
+//            packingSurfaces.add(new com.github.skjolber.packing.api.Surface(surface.label, surface.attributes));
+//        }
+//
+//        return new Placement(new BoxStackValue(width, length, height, packingSurfaces, productId), new Default3DPlanePoint3D())
+//    }
 }

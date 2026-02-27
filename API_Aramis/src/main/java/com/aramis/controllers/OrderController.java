@@ -18,9 +18,7 @@ import com.aramis.utils.Role;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +26,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.github.skjolber.packing.api.Stack;
 
 import java.util.*;
 
@@ -78,13 +75,12 @@ public class OrderController {
         for (Support support : supports) {
             List<Product> products = productRepository.findProductsBySupportID(support.getSupportID());
 
-            // ObjectMapper instance for JSON processing
-            ObjectMapper objectMapper = new ObjectMapper();
-
             var type = supportTypeRepository.findById(support.TypeID);
 
             if (type.isPresent()) {
                 List<ProductPlacement> productPlacements = SupportService.calculateOptimisedSupport(products, type.get());
+
+                ObjectMapper objectMapper = new ObjectMapper();
                 support.NestedProductsPlacement = objectMapper.writeValueAsString(productPlacements);
                 supportRepository.save(support);
                 productsPlacements.add(productPlacements);
@@ -105,19 +101,24 @@ public class OrderController {
         for (Support support : supports) {
             List<Product> products = productRepository.findProductsBySupportID(support.getSupportID());
 
-            // ObjectMapper instance for JSON processing
             ObjectMapper objectMapper = new ObjectMapper();
-
-            // Converting JSON string to a Person object
-            List<ProductPlacement> productPlacements = objectMapper.readValue(support.NestedProductsPlacement, new TypeReference<List<ProductPlacement>>() {});
+            List<ProductPlacement> productPlacements = objectMapper.readValue(support.getNestedProductsPlacement(), new TypeReference<>() {});
 
             var type = supportTypeRepository.findById(support.TypeID);
 
             if (type.isPresent()) {
-                List<ProductPlacement> newProductPlacements = SupportService.calculateOptimisedSupport(products, type.get());
-                support.NestedProductsPlacement = objectMapper.writeValueAsString(productPlacements);
-                supportRepository.save(support);
-                productsPlacements.add(productPlacements);
+                List<Integer> placedProductIds = containRepository.findAllPlacedProductIdsBySupportId(support.getSupportID());
+                List<ProductPlacement> placedProductsPlacements = SupportService.clearNonPlacedProducts(productPlacements, placedProductIds);
+
+//                Stack productPlacementStack = new Stack();
+//                for (ProductPlacement productPlacement : placedProductsPlacements) {
+//                    productPlacementStack.add(productPlacement.toPlacement());
+//                }
+//
+//                List<ProductPlacement> newProductPlacements = SupportService.calculatePartialOptimisedSupport(products, , type.get());
+//                support.NestedProductsPlacement = objectMapper.writeValueAsString(newProductPlacements);
+//                supportRepository.save(support);
+//                productsPlacements.add(productPlacements);
             } else {
                 throw new RuntimeException("Type not found");
             }
