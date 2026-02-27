@@ -1,18 +1,18 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
-import GestionPrep from "./pages/GestionPrep.jsx";
-import CreerPrep from "./pages/CreerPrep.jsx";
-import ModifPrep from "./pages/ModifPrep.jsx";
+import GestionEmpl from "./pages/GestionEmpl.jsx";
+import ModifEmpl from "./pages/ModifEmpl.jsx";
+import CreerEmpl from "./pages/CreerEmpl.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <GestionPrep /> },
-      { path: "gestion-prep", element: <GestionPrep /> },
-      { path: "modif-prep", element: <ModifPrep /> },
-      { path: "creer-prep", element: <CreerPrep /> },
+      { index: true, element: <GestionEmpl /> },
+      { path: "gestion-empl", element: <GestionEmpl /> },
+      { path: "modif-empl", element: <ModifEmpl /> },
+      { path: "creer-empl", element: <CreerEmpl /> },
     ],
   },
 ]);
