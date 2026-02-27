@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import plusIcon from "../assets/saisie-stocks-plus.png";
-import SuppBut from "../assets/SuppBut.png";
-import ModifBut from "../assets/ModifBut.png";
+import plusIcon from "../../assets/saisie-stocks-plus.png";
+import SuppBut from "../../assets/SuppBut.png";
+import ModifBut from "../../assets/ModifBut.png";
 import { useNavigate } from "react-router-dom";
 
-function GestionEmpl() {
+function GestionStocks() {
   const navigate = useNavigate();
 
   // ✅ rows en state pour pouvoir supprimer visuellement
@@ -22,8 +22,8 @@ function GestionEmpl() {
   // ✅ popup succès
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToModif = () => navigate("/modif-empl");
-  const goToCreer = () => navigate("/creer-empl");
+  const goToModif = () => navigate("/modif-stocks");
+  const goToCreer = () => navigate("/creer-stocks");
 
   // Ouvre le popup confirmation
   const handleDelete = (idx) => {
@@ -151,4 +151,4 @@ function GestionEmpl() {
   );
 }
 
-export default GestionEmpl;
+export default GestionStocks;

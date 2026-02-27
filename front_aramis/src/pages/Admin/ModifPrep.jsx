@@ -1,10 +1,8 @@
 import { useNavigate } from "react-router-dom";
 
-<<<<<<<< HEAD:front_aramis/src/pages/ModifPrep.jsx
+
 function ModifPrep() {
-========
-function ModifEmpl() {
->>>>>>>> front-10-gestion_des_emplacements:front_aramis/src/pages/ModifEmpl.jsx
+
 
   return (
     <div className="p-4 mt-[200px] flex flex-col items-center">
@@ -55,8 +53,6 @@ function ModifEmpl() {
   );
 }
 
-<<<<<<<< HEAD:front_aramis/src/pages/ModifPrep.jsx
+
 export default ModifPrep;
-========
-export default ModifEmpl;
->>>>>>>> front-10-gestion_des_emplacements:front_aramis/src/pages/ModifEmpl.jsx
+

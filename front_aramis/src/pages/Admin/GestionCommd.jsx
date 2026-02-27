@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import plusIcon from "../assets/saisie-stocks-plus.png";
-import SuppBut from "../assets/SuppBut.png";
-import ModifBut from "../assets/ModifBut.png";
+import plusIcon from "../../assets/saisie-stocks-plus.png";
+import SuppBut from "../../assets/SuppBut.png";
+import ModifBut from "../../assets/ModifBut.png";
 import { useNavigate } from "react-router-dom";
 
 function GestionStocks() {
@@ -9,10 +9,10 @@ function GestionStocks() {
 
   // ✅ rows en state pour pouvoir supprimer visuellement
   const [rows, setRows] = useState([
-    { name: "Bloise Damien", codeprep: "356", colistot: "745652" },
-    { name: "Bloise Damien", codeprep: "356", colistot: "745652" },
-    { name: "Bloise Damien", codeprep: "356", colistot: "745652" },
-    { name: "Bloise Damien", codeprep: "356", colistot: "745652" },
+    { CdeCmd: "H-004-0101-00", nbcolis: "38" },
+    { CdeCmd: "H-004-0101-00", nbcolis: "42" },
+    { CdeCmd: "H-004-0101-00", nbcolis: "29" },
+    { CdeCmd: "H-004-0101-00", nbcolis: "31" },
   ]);
 
   // ✅ popup confirmation
@@ -22,8 +22,8 @@ function GestionStocks() {
   // ✅ popup succès
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToModif = () => navigate("/modif-prep");
-  const goToCreer = () => navigate("/creer-prep");
+  const goToModif = () => navigate("/modif-commd");
+  const goToCreer = () => navigate("/creer-commd");
 
   // Ouvre le popup confirmation
   const handleDelete = (idx) => {
@@ -65,9 +65,8 @@ function GestionStocks() {
         <table className="w-full border-collapse text-center">
           <thead>
             <tr className="border-b-2 border-black">
-              <th className="py-2 font-bold text-[30px]">Nom Prénom</th>
-              <th className="py-2 font-bold text-[30px]">Code Préparateur</th>
-              <th className="py-2 font-bold text-[30px]">Colis total</th>
+              <th className="py-2 font-bold text-[30px]">Code Commande</th>
+              <th className="py-2 font-bold text-[30px]">Nombre de colis</th>
               <th className="py-2 font-bold text-[30px]">Actions</th>
             </tr>
           </thead>
@@ -78,9 +77,8 @@ function GestionStocks() {
 
               return (
                 <tr key={idx} className={`border-b border-black ${rowClass}`}>
-                  <td className="py-[10px] font-bold text-[20px]">{r.name}</td>
-                  <td className="py-[10px] font-bold text-[20px]">{r.codeprep}</td>
-                  <td className="py-[10px] font-bold text-[20px]">{r.colistot}</td>
+                  <td className="py-[10px] font-bold text-[20px]">{r.CdeCmd}</td>
+                  <td className="py-[10px] font-bold text-[20px]">{r.nbcolis}</td>
 
                   <td className="py-[10px] font-bold">
                     <button
@@ -111,7 +109,7 @@ function GestionStocks() {
           <div className="bg-white w-[650px] border-2 border-black">
             <div className="p-6">
               <p className="text-center text-[22px] font-bold">
-                Voulez-vous vraiment supprimer ce stock ?
+                Voulez-vous vraiment supprimer cette commande ?
               </p>
               <div className="border-b border-black mt-4" />
             </div>
@@ -140,7 +138,7 @@ function GestionStocks() {
       {successOpen && (
         <div className="fixed w-full flex justify-center">
           <div className="w-[650px] border-2 bg-white px-[30px] py-[20px] flex items-center justify-between rounded-[40px] bg-[#FFFFFF]">
-            <span className="font-bold">Stock supprimer avec succès !</span>
+            <span className="font-bold">Commande supprimer avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓
             </div>
