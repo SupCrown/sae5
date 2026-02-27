@@ -68,7 +68,7 @@ public class SupportService {
         }
     }
 
-    public static List<ProductPlacement> clearAlreadyPlacedProducts(List<ProductPlacement> currentProductPlacement, List<Integer> placedProductsIDs) {
+    public static List<ProductPlacement> clearNonPlacedProducts(List<ProductPlacement> currentProductPlacement, List<Integer> placedProductsIDs) {
         List<ProductPlacement> clearedProductPlacements = new ArrayList<>();
         for (ProductPlacement productPlacement : currentProductPlacement) {
             if (placedProductsIDs.contains(productPlacement.getProductId())) {
