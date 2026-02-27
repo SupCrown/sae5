@@ -9,10 +9,10 @@ function GestionStocks() {
 
   // ✅ rows en state pour pouvoir supprimer visuellement
   const [rows, setRows] = useState([
-    { zone: "H", allee: "08", emplacement: "023" },
-    { zone: "H", allee: "08", emplacement: "023" },
-    { zone: "H", allee: "08", emplacement: "023" },
-    { zone: "H", allee: "08", emplacement: "023" },
+    { name: "Bloise Damien", codeprep: "356", colistot: "745652" },
+    { name: "Bloise Damien", codeprep: "356", colistot: "745652" },
+    { name: "Bloise Damien", codeprep: "356", colistot: "745652" },
+    { name: "Bloise Damien", codeprep: "356", colistot: "745652" },
   ]);
 
   // ✅ popup confirmation
@@ -22,8 +22,8 @@ function GestionStocks() {
   // ✅ popup succès
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToModif = () => navigate("/modif-stocks");
-  const goToCreer = () => navigate("/creer-stocks");
+  const goToModif = () => navigate("/modif-prep");
+  const goToCreer = () => navigate("/creer-prep");
 
   // Ouvre le popup confirmation
   const handleDelete = (idx) => {
@@ -65,9 +65,9 @@ function GestionStocks() {
         <table className="w-full border-collapse text-center">
           <thead>
             <tr className="border-b-2 border-black">
-              <th className="py-2 font-bold text-[30px]">Zone</th>
-              <th className="py-2 font-bold text-[30px]">Allée</th>
-              <th className="py-2 font-bold text-[30px]">Emplacement</th>
+              <th className="py-2 font-bold text-[30px]">Nom Prénom</th>
+              <th className="py-2 font-bold text-[30px]">Code Préparateur</th>
+              <th className="py-2 font-bold text-[30px]">Colis total</th>
               <th className="py-2 font-bold text-[30px]">Actions</th>
             </tr>
           </thead>
@@ -78,9 +78,9 @@ function GestionStocks() {
 
               return (
                 <tr key={idx} className={`border-b border-black ${rowClass}`}>
-                  <td className="py-[10px] font-bold text-[20px]">{r.zone}</td>
-                  <td className="py-[10px] font-bold text-[20px]">{r.allee}</td>
-                  <td className="py-[10px] font-bold text-[20px]">{r.emplacement}</td>
+                  <td className="py-[10px] font-bold text-[20px]">{r.name}</td>
+                  <td className="py-[10px] font-bold text-[20px]">{r.codeprep}</td>
+                  <td className="py-[10px] font-bold text-[20px]">{r.colistot}</td>
 
                   <td className="py-[10px] font-bold">
                     <button
