@@ -6,7 +6,7 @@ import plusIcon from "../assets/saisie-stocks-plus.png";
 function SaisieStocks() {
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState("");
-  const navigate = useNavigate(); // ✅ navigation
+  const navigate = useNavigate(); 
 
   const handleClick = () => {
     fileInputRef.current.click();
@@ -25,7 +25,7 @@ function SaisieStocks() {
   };
 
   const goToGestion = () => {
-    navigate("/gestion-stocks"); // ✅ chemin vers la page
+    navigate("/gestion-stocks");
   };
 
   return (
