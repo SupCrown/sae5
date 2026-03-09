@@ -6,7 +6,7 @@ export default function App() {
 
   const goToPrep = () => navigate("/gestion-prep");
   const goToEmpl = () => navigate("/gestion-empl");
-  const goToCommd = () => navigate("/gestion-commd");
+  const goToCommd = () => navigate("/gestion-commd*");
   const goToStocks = () => navigate("/saisie-stocks");
 
   return (
