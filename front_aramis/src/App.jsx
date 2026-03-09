@@ -3,18 +3,11 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import Home from "./pages/Home";
+import Stat from "./pages/Stat";
 
 export default function App() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        border: "4px solid black",     
-        boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div>
       {/* Header */}
       <header
         style={{
@@ -25,6 +18,12 @@ export default function App() {
       >
 
       </header>
+
+      {/* Main content */}
+      <main style={{ padding: "16px" }}>
+        <Stat />
+      </main>
+
     </div>
   );
 }
