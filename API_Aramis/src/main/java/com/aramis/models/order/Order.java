@@ -19,9 +19,11 @@ public class Order {
     public int OrderID;
     public Date OrderDate;
     @Column(nullable = false)
-    public EOrderStatus Status;
+    public int Status;
     @Column(nullable = false)
     public int CustomerID;
+    @Column(name = "priority", columnDefinition = "boolean default false")
+    private boolean priority;
     @Column(nullable = false)
     public Timestamp DateCreation;
     @Column(nullable = false)
