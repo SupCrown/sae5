@@ -110,15 +110,15 @@ public class OrderController {
                 List<Integer> placedProductIds = containRepository.findAllPlacedProductIdsBySupportId(support.getSupportID());
                 List<ProductPlacement> placedProductsPlacements = SupportService.clearNonPlacedProducts(productPlacements, placedProductIds);
 
-//                Stack productPlacementStack = new Stack();
-//                for (ProductPlacement productPlacement : placedProductsPlacements) {
-//                    productPlacementStack.add(productPlacement.toPlacement());
-//                }
-//
-//                List<ProductPlacement> newProductPlacements = SupportService.calculatePartialOptimisedSupport(products, , type.get());
-//                support.NestedProductsPlacement = objectMapper.writeValueAsString(newProductPlacements);
-//                supportRepository.save(support);
-//                productsPlacements.add(productPlacements);
+                Stack productPlacementStack = new Stack();
+                for (ProductPlacement productPlacement : placedProductsPlacements) {
+                    productPlacementStack.add(productPlacement.toPlacement());
+                }
+
+                List<ProductPlacement> newProductPlacements = SupportService.calculatePartialOptimisedSupport(products, productPlacementStack, type.get());
+                support.NestedProductsPlacement = objectMapper.writeValueAsString(newProductPlacements);
+                supportRepository.save(support);
+                productsPlacements.add(productPlacements);
             } else {
                 throw new RuntimeException("Type not found");
             }
