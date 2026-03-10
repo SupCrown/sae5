@@ -1,8 +1,12 @@
 package com.aramis.services;
 
 import com.aramis.dto.ProductPlacement;
+import com.aramis.models.contain.Contain;
 import com.aramis.models.product.Product;
 import com.aramis.models.supportType.SupportType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.skjolber.packing.api.*;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 
@@ -15,26 +19,10 @@ public class SupportService {
         List<BoxItem> boxItems = products.stream().map(Product::toBoxItem).toList();
 
         Container container = Container.newBuilder()
-            .withSize(supportType.getInnerWidth(), supportType.getInnerLength(), supportType.getInnerHeight())
-            .withMaxLoadWeight(1500)
-            .build();
-
-        return getProductPlacements(container, boxItems, supportType);
-    }
-
-    public static List<ProductPlacement> calculatePartialOptimisedSupport(List<Product> products, Stack alreadyPlacedProducts, SupportType supportType) {
-        List<BoxItem> boxItems = products.stream().map(Product::toBoxItem).toList();
-
-        Container container = Container.newBuilder()
                 .withSize(supportType.getInnerWidth(), supportType.getInnerLength(), supportType.getInnerHeight())
                 .withMaxLoadWeight(1500)
-                .withStack(alreadyPlacedProducts)
                 .build();
 
-        return getProductPlacements(container, boxItems, supportType);
-    }
-
-    private static List<ProductPlacement> getProductPlacements(Container container, List<BoxItem> boxItems, SupportType supportType) {
         List<ContainerItem> containerItems = ContainerItem
                 .newListBuilder()
                 .withContainer(container)
@@ -58,11 +46,10 @@ public class SupportService {
             List<Placement> placements = match.getStack().getPlacements();
             List<ProductPlacement> productsPlacements = new ArrayList<>();
             for (Placement placement : placements) {
-                System.out.println(placement);
                 productsPlacements.add(new ProductPlacement(placement, supportType));
             }
-
             return productsPlacements;
+
         } else {
             throw new RuntimeException("Impossible de calculer un position optimale pour les colis et le type de support.");
         }
@@ -76,5 +63,24 @@ public class SupportService {
             }
         }
         return clearedProductPlacements;
+    }
+
+    public static List<Product> calculSupport(List<Product> products, List<Contain> contains) {
+        List<Product> calculatedProducts = new ArrayList<>();
+        for (Product product : products) {
+            Contain contain = contains.stream().filter(filterdContain -> filterdContain.getProductID() == product.getProductID()).findFirst().orElse(null);
+            if (contain != null) {
+                int quantity = contain.MissingItems ? contain.ServedQuantity : contain.ApprovedQuantity;
+                for (int i = 0; i < quantity; i++) {
+                    calculatedProducts.add(product.clone());
+                }
+            }
+        }
+        return  calculatedProducts;
+    }
+
+    public static List<ProductPlacement> deserializeNestedProductsPlacements(String nestedProductsPlacement) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(nestedProductsPlacement, new TypeReference<>() {});
     }
 }

@@ -1,10 +1,10 @@
 package com.aramis.controllers;
 
 import com.aramis.annotations.Authorize;
-import com.aramis.common.JwtUtils;
 import com.aramis.configurations.AppConfigurationProperties;
 import com.aramis.dto.OrderResponse;
 import com.aramis.dto.ProductPlacement;
+import com.aramis.models.contain.Contain;
 import com.aramis.models.contain.ContainRepository;
 import com.aramis.models.order.Order;
 import com.aramis.models.order.OrderRepository;
@@ -16,9 +16,7 @@ import com.aramis.models.supportType.SupportTypeRepository;
 import com.aramis.services.SupportService;
 import com.aramis.utils.Role;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.skjolber.packing.api.Stack;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -28,8 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-
-import static com.aramis.services.AuthService.getUserID;
 
 @Slf4j
 @RestController
@@ -73,10 +69,10 @@ public class OrderController {
 
         List<List<ProductPlacement>> productsPlacements = new ArrayList<>();
         for (Support support : supports) {
-            List<Product> products = productRepository.findProductsBySupportID(support.getSupportID());
+            List<Contain> contains = containRepository.findAllBySupportId(support.getSupportID());
+            List<Product> products = SupportService.calculSupport(productRepository.findProductsBySupportID(support.getSupportID()), contains);
 
             var type = supportTypeRepository.findById(support.TypeID);
-
             if (type.isPresent()) {
                 List<ProductPlacement> productPlacements = SupportService.calculateOptimisedSupport(products, type.get());
 
@@ -91,40 +87,4 @@ public class OrderController {
 
         return ResponseEntity.status(HttpStatus.OK).body(productsPlacements);
     }
-
-    @Authorize(roles = Role.USER)
-    @GetMapping("testReplacementPlacement")
-    public ResponseEntity<List<List<ProductPlacement>>> testReplacementPlacement() throws JsonProcessingException {
-        List<Support> supports = supportRepository.findSupportsByOrderId(1);
-
-        List<List<ProductPlacement>> productsPlacements = new ArrayList<>();
-        for (Support support : supports) {
-            List<Product> products = productRepository.findProductsBySupportID(support.getSupportID());
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            List<ProductPlacement> productPlacements = objectMapper.readValue(support.getNestedProductsPlacement(), new TypeReference<>() {});
-
-            var type = supportTypeRepository.findById(support.TypeID);
-
-            if (type.isPresent()) {
-                List<Integer> placedProductIds = containRepository.findAllPlacedProductIdsBySupportId(support.getSupportID());
-                List<ProductPlacement> placedProductsPlacements = SupportService.clearNonPlacedProducts(productPlacements, placedProductIds);
-
-                Stack productPlacementStack = new Stack();
-                for (ProductPlacement productPlacement : placedProductsPlacements) {
-                    productPlacementStack.add(productPlacement.toPlacement());
-                }
-
-                List<ProductPlacement> newProductPlacements = SupportService.calculatePartialOptimisedSupport(products, productPlacementStack, type.get());
-                support.NestedProductsPlacement = objectMapper.writeValueAsString(newProductPlacements);
-                supportRepository.save(support);
-                productsPlacements.add(productPlacements);
-            } else {
-                throw new RuntimeException("Type not found");
-            }
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(productsPlacements);
-    }
-
 }
