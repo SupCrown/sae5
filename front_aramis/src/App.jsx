@@ -11,7 +11,8 @@ export default function App() {
 
   return (
     <div>
-       <header
+      {/* Header */}
+      <header
         style={{
           padding: "16px",
           borderBottom: "10px solid #AD211B", 
