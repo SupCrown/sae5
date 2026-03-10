@@ -8,12 +8,15 @@ import lombok.*;
 import java.sql.Date;
 import java.sql.Timestamp;
 
-@Entity
+import java.util.Date;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 public class Product {
+    // Getters et Setters standard...
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer ProductID;

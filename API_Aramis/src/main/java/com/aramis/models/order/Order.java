@@ -2,6 +2,7 @@ package com.aramis.models.order;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.aramis.models.product.*; // Ou ton import correct pour Product
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -12,6 +13,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Order {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int OrderID;
@@ -25,4 +27,3 @@ public class Order {
     @Column(nullable = false)
     public Timestamp DateModification;
 }
-

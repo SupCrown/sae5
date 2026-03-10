@@ -1,10 +1,14 @@
 package com.aramis.models.support;
 
+import com.aramis.models.order.Order;
+import com.aramis.models.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -12,6 +16,8 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Support {
+    // Getters Setters...
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer SupportID;

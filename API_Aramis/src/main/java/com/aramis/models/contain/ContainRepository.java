@@ -15,4 +15,6 @@ public interface ContainRepository extends CrudRepository<Contain, ContainCompos
 
     @Query("SELECT c FROM Contain c where c.SupportID = ?1")
     List<Contain> findAllBySupportId(Integer supportID);
+
+    List<Contain> findBySupport(Support support);
 }
