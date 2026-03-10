@@ -13,6 +13,7 @@ import SaisieStocks from "./pages/Admin/SaisieStocks.jsx";
 import ModifStocks from "./pages/Admin/ModifStocks.jsx";
 import GestionStocks from "./pages/Admin/GestionStocks.jsx";
 import CreerStocks from "./pages/Admin/CreerStocks.jsx";
+import Stat from "./pages/Admin/Stat.jsx";
 
 
 const router = createBrowserRouter([
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
       { path: "modif-stocks", element: <ModifStocks /> },
       { path: "gestion-stocks", element: <GestionStocks /> },
       { path: "creer-stocks", element: <CreerStocks /> },
+      { path: "stat", element: <Stat /> },
     ],
   },
 ]);

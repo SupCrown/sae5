@@ -115,7 +115,7 @@ function Stat() {
   }, [periode]);
 
   return (
-    <div className="bg-[#f3f3f3] flex flex-col items-center pt-[30px]">
+    <div className="flex flex-col items-center pt-[30px]">
       <div className="mb-[35px]">
         <select
           value={periode}
