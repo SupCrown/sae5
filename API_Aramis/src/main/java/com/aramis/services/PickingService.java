@@ -84,17 +84,25 @@ public class PickingService {
         User user = userRepo.findByLogin(login);
         if (user == null) throw new RuntimeException("User introuvable Login: " + login);
 
-        // Règle métier : On empêche l'assignation manuelle si l'utilisateur a DÉJÀ une commande en cours
-        Optional<Support> currentSupport = supportRepo.findByPreparedByAndStatus(user, STATUS_SUPPORT_IN_PROGRESS);
-        if (currentSupport.isPresent()) {
-            throw new RuntimeException("Action impossible : Vous avez déjà un support en cours de préparation.");
-        }
-
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Commande introuvable ID: " + orderId));
 
         if (order.getStatus() != STATUS_ORDER_TODO) {
             throw new RuntimeException("Cette commande ne peut pas être préparée (Statut: " + order.getStatus() + ")");
+        }
+
+        // Si l'utilisateur a déjà une commande en cours, on met simplement cette commande
+        // en "file d'attente" pour être la prochaine (priorité) et on ne crée PAS
+        // de nouveau support tout de suite.
+        Optional<Support> currentSupport = supportRepo.findByPreparedByAndStatus(user, STATUS_SUPPORT_IN_PROGRESS);
+        if (currentSupport.isPresent()) {
+            order.setPriority(true);
+            orderRepo.save(order);
+
+            PickingTaskResponse queued = new PickingTaskResponse();
+            queued.setType("QUEUED");
+            queued.setSupportId(null);
+            return queued;
         }
 
         // On délègue la création du carton à la méthode commune
