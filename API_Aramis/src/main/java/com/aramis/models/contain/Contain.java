@@ -10,6 +10,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 
 @Entity
+@IdClass(ContainCompositeKey.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,21 +27,4 @@ public class Contain {
     public Timestamp DateCreation;
     @Column(nullable = false)
     public Timestamp DateModification;
-}
-
-    @ManyToOne
-    @JoinColumn(name = "supportid")
-    private Support support;
-
-    @ManyToOne
-    @JoinColumn(name = "productid")
-    private Product product;
-
-    private int servedQuantity;
-
-    private int approvedQuantity;
-
-    // --- CORRECTION : AJOUT DU CHAMP MANQUANT ---
-    @Column(name = "missing_items") // Attention à l'underscore ici, l'erreur l'indiquait explicitement
-    private boolean missingItems;
 }
