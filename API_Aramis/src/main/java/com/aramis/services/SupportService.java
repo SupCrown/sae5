@@ -19,7 +19,7 @@ public class SupportService {
             .withMaxLoadWeight(1500)
             .build();
 
-        return getProductPlacements(container, boxItems);
+        return getProductPlacements(container, boxItems, supportType);
     }
 
     public static List<ProductPlacement> calculatePartialOptimisedSupport(List<Product> products, Stack alreadyPlacedProducts, SupportType supportType) {
@@ -31,10 +31,10 @@ public class SupportService {
                 .withStack(alreadyPlacedProducts)
                 .build();
 
-        return getProductPlacements(container, boxItems);
+        return getProductPlacements(container, boxItems, supportType);
     }
 
-    private static List<ProductPlacement> getProductPlacements(Container container, List<BoxItem> boxItems) {
+    private static List<ProductPlacement> getProductPlacements(Container container, List<BoxItem> boxItems, SupportType supportType) {
         List<ContainerItem> containerItems = ContainerItem
                 .newListBuilder()
                 .withContainer(container)
@@ -59,7 +59,7 @@ public class SupportService {
             List<ProductPlacement> productsPlacements = new ArrayList<>();
             for (Placement placement : placements) {
                 System.out.println(placement);
-                productsPlacements.add(new ProductPlacement(placement));
+                productsPlacements.add(new ProductPlacement(placement, supportType));
             }
 
             return productsPlacements;
