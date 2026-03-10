@@ -1,32 +1,29 @@
 package com.aramis.models.order;
 
 import jakarta.persistence.*;
-import java.util.List;
+import lombok.*;
 import com.aramis.models.product.*; // Ou ton import correct pour Product
-import lombok.Getter;
-import lombok.Setter;
 
-@Setter
+import java.sql.Date;
+import java.sql.Timestamp;
+
+@Entity(name = "_order")
 @Getter
-@Entity
-@Table(name = "_order") // "_order" est souvent utilisé car "ORDER" est un mot clé SQL réservé
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderId;
-
-    // C'EST CE CHAMP QUI MANQUAIT ET QUI FAISAIT PLANTER
-    private int status;
-
-    // Relation vers les produits (si tu l'as déjà)
-    // @OneToMany... ou @ManyToMany...
-    // private List<Product> products;
-
-    public Order() {
-    }
-
-    // --- GETTERS ET SETTERS ---
-
-    // Ajoute les getters/setters pour les produits si tu as ajouté la liste
+    public int OrderID;
+    public Date OrderDate;
+    @Column(nullable = false)
+    public EOrderStatus Status;
+    @Column(nullable = false)
+    public int CustomerID;
+    @Column(nullable = false)
+    public Timestamp DateCreation;
+    @Column(nullable = false)
+    public Timestamp DateModification;
 }

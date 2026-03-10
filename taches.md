@@ -43,15 +43,22 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 ### API
 
 - Authentification :
-    -  `/login` **[GET]**.
-    -  `/login` **[POST]**.
-    -   `/logout` **[POST]** : Décconnecter un utilisateur.
+    - `/login` **[POST]**.: Récupérer le JWT d'authentification.
+      - `login` : entier à trois chiffres (`000 - 999`)
+      - Réponses :
+        - `200` : Utilisateur connecté,
+        - `401` : Aucune authentification détectée,
+        - `403` : Accès refusé par manque de droits.
+    - `/logout` **[POST]** : Supprimer le JWT d'authentification.
 - `/order/id?[etape=xxx]` **[GET]**  : Chargement d'une commande en f° d'un id (et en f° ou non d'une étape précise).
     - trier les colis en fonction du sens de circulation **(I-008-0001 -> H-001-0144)**.
 - Attribution des commandes :
     - `/order/autoAssign` **[POST]** : automatique (au chargement de l'application) en f° d'un PreparateurID.
         - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente.
-        - **Sinon** : récupération d'une commande en cours en cas de crash.
+          - `200` : la commande est assignée,
+          - `204` : aucune commande à assigner a été trouvée.
+        - **Sinon** : récupération d'une commande en cours en cas de crash. 
+          - `307` : la prépration de la commande n'avait pas été finalisée à la dernière fermeture de l'application.
     - `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : manuelle.
 - (Gestion de la dictée vocale)
 - (Gestion de la commande vocal)
@@ -61,29 +68,23 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `/preparer/stats/id` **[GET]** : statistique du nombre de colis par heure pour un préparateur.
     - `/preparer/stats` **[GET]** : statistique générales de tous les préparateurs.
 - CRUD préparateurs :
-    - `/preparer/create` **[GET]** : **créer** un préparateur.
     - `/preparer/create` **[POST]** : **créer** un préparateur.
-    - `/preparer/update/id` **[GET]** : **modifier** un préparateur.
     - `/preparer/update/id` **[POST]** : **modifier** un préparateur.
     - `/preparer/delete/id` **[POST]** : **supprimer** un préparateur.
     - `/preparer/id` **[GET]** : **consulter** un préparateur.
 - CRUD commandes :
-    - `/order/create` **[GET]** : **créer** un commande.
     - `/order/create` **[POST]** : **créer** un commande.
-    - `/order/update/id` **[GET]** : **modifier** un commande.
     - `/order/update/id` **[POST]** : **modifier** un commande.
     - `/order/delete/id` **[POST]** : **supprimer** un commande.
-    - `/order/id` **[GET]** : **consulter** un commande.
+    - `/order/id` **[GET]** : **consulter** une commande.
+    - `/order/all` **[GET]** : **consulter** toutes les commandes.
     - `/order/import` **[POST]** : import CSV.
 - CRUD emplacements :
-    - `/position/create` **[GET]** : **créer** un emplacement.
     - `/position/create` **[POST]** : **créer** un emplacement.
-    - `/position/update/id` **[GET]** : **modifier** un emplacement.
     - `/position/update/id` **[POST]** : **modifier** un emplacement.
     - `/position/delete/id` **[POST]** : **supprimer** un emplacement.
     - `/position/id` **[GET]** : **consulter** un emplacement.
 - CRUD stocks : entré des stocks en import CSV :
-    - `/stock/import` **[GET]**.
     - `/stock/import` **[POST]**.
 - Génération d'une organisation optimale d'un support en fonction de son contenant et contenu.
 

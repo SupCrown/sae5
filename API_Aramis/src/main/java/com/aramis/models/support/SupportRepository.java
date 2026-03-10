@@ -1,11 +1,13 @@
 package com.aramis.models.support; // Adapte si tu es dans com.aramis.repositories
 
-import com.aramis.models.support.Support; // ATTENTION : Utilise le package de TA classe Support
-import com.aramis.models.user.User;       // ATTENTION : Utilise le package de TA classe User
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.Optional;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 
-public interface SupportRepository extends JpaRepository<Support, Long> {
-    // Cette méthode manquait et causait l'erreur "cannot find symbol"
+import java.util.List;
+
+public interface SupportRepository extends CrudRepository<Support, Integer> {
+    @Query("SELECT s FROM Support s WHERE s.OrderID = ?1")
+    List<Support> findSupportsByOrderId(Integer orderID);
+
     Optional<Support> findByPreparedByAndStatus(User preparedBy, String status);
 }

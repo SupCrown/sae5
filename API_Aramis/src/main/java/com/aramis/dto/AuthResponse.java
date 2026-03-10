@@ -11,6 +11,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class AuthResponse {
+    private long userID;
     private String username;
     private UserType userType;
     private Role role;

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.SameSiteCookies;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,7 +50,7 @@ public class AuthenticationController {
             return ResponseEntity.ok(auth);
         } catch (Exception e) {
             log.error("Error authenticating user", e);
-            return ResponseEntity.status(401).body("Authentication failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: " + e.getMessage());
         }
     }
 
@@ -64,6 +65,6 @@ public class AuthenticationController {
                 .sameSite(SameSiteCookies.STRICT.toString())
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        return ResponseEntity.status(200).body("Logout successful.");
+        return ResponseEntity.ok("Logout successful.");
     }
 }
