@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ProductID;
+    private Integer ProductID;
     @Column(nullable = false)
     private int ProductCode;
     @Column(nullable = false)
@@ -36,5 +36,9 @@ public class Product {
 
     public BoxItem toBoxItem() {
         return new BoxItem(Box.newBuilder().withId(this.ProductID.toString()).withSize(this.Width, this.Length, this.Height).withWeight(1).withRotate3D().build());
+    }
+
+    public Product clone() {
+        return new Product(ProductID, ProductCode, Libelle, Height, Length, Width, LocationID, DateCreation, DateModification);
     }
 }
