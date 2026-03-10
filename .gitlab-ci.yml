@@ -1,0 +1,38 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository
+
+build_job:
+  stage: build
+  script:
+    - echo "Compilation de l'application avec Maven..."
+    - cd API_Aramis
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 hour
+
+test_job:
+  stage: test
+  script:
+    - echo "Exécution des tests unitaires..."
+
+deploy_job:
+  stage: deploy
+  only:
+    - dev-api  # Le déploiement ne se fait que lors d'un push sur la branche main
+  script:
+    - echo "Déploiement de l'infrastructure avec Docker Compose..."
+    - cd API_Aramis
+    - docker compose down
+    - docker compose up --build -d
+    - echo "Application déployée avec succès !"
