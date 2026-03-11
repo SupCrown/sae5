@@ -12,6 +12,7 @@ import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SupportService {
 
@@ -68,9 +69,9 @@ public class SupportService {
     public static List<Product> calculSupport(List<Product> products, List<Contain> contains) {
         List<Product> calculatedProducts = new ArrayList<>();
         for (Product product : products) {
-            Contain contain = contains.stream().filter(filterdContain -> filterdContain.getProductID() == product.getProductID()).findFirst().orElse(null);
+            Contain contain = contains.stream().filter(filterdContain -> Objects.equals(filterdContain.getContainID(), product.getProductID())).findFirst().orElse(null);
             if (contain != null) {
-                int quantity = contain.MissingItems ? contain.ServedQuantity : contain.ApprovedQuantity;
+                int quantity = contain.isMissingItems() ? contain.getServedQuantity() : contain.getApprovedQuantity();
                 for (int i = 0; i < quantity; i++) {
                     calculatedProducts.add(product.clone());
                 }

@@ -1,45 +1,45 @@
 package com.aramis.models.support;
 
 import com.aramis.models.order.Order;
+import com.aramis.models.supportType.SupportType;
 import com.aramis.models.user.User;
+import com.aramis.utils.EPrepareStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.util.List;
+import java.sql.Timestamp;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Support {
     // Getters Setters...
     @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long supportId;
+    public Integer supportID;
 
-    // C'est ici qu'on va stocker le résultat de Main.java
-    @Setter
-    @Getter
-    @Column(columnDefinition = "TEXT")
-    private String nestedProductsPlacements;
+    public String nestedProductsPlacements;
 
-    @Setter
-    @Getter
-    private String status;
+    private EPrepareStatus status;
 
-    @Setter
-    @Getter
     @ManyToOne
     @JoinColumn(name = "userid")
     private User preparedBy;
 
-    @Setter
     @ManyToOne
-    @JoinColumn(name = "orderid")
+    @JoinColumn(nullable = false, name = "orderid")
     private Order order;
 
-    @Setter
-    @Getter
-    @Column(name = "typeid") // Correspond à la colonne NOT NULL en base
-    private Integer typeId;
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "typeid")
+    private SupportType type;
 
+    @Column(nullable = false)
+    public Timestamp dateCreation;
+
+    @Column(nullable = false)
+    public Timestamp dateModification;
 }

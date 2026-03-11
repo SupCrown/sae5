@@ -3,16 +3,19 @@ package com.aramis.models.contain;
 import com.aramis.models.product.Product;
 import com.aramis.models.support.Support;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Contain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer containID;
 
     @ManyToOne
     @JoinColumn(name = "supportid")
@@ -22,11 +25,15 @@ public class Contain {
     @JoinColumn(name = "productid")
     private Product product;
 
-    private int servedQuantity;
+    public Integer servedQuantity;
 
-    private int approvedQuantity;
+    public Integer approvedQuantity;
 
-    // --- CORRECTION : AJOUT DU CHAMP MANQUANT ---
-    @Column(name = "missing_items") // Attention à l'underscore ici, l'erreur l'indiquait explicitement
     private boolean missingItems;
+
+    @Column(nullable = false)
+    public Timestamp dateCreation;
+
+    @Column(nullable = false)
+    public Timestamp dateModification;
 }

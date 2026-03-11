@@ -14,17 +14,23 @@ import java.sql.Timestamp;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long UserID;
+    private Integer userID;
+
     @Column(nullable = false, unique = true)
-    private int Login;
+    private Integer login;
+
     @Column(nullable = false)
     private String firstname;
+
     @Column(nullable = false)
     private String lastname;
+
     @Column(nullable = false)
-    private boolean IsAdmin;
+    private boolean isAdmin;
+
     @Column(nullable = false)
-    public Timestamp DateCreation;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public Timestamp DateModification;
+    public Timestamp dateModification;
 }

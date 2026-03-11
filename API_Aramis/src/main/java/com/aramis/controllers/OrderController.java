@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import com.aramis.dto.PickingTaskResponse;
+import com.aramis.services.PickingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,8 +41,9 @@ public class OrderController {
     private final AppConfigurationProperties properties;
     private final ContainRepository containRepository;
     private final SupportTypeRepository supportTypeRepository;
+    private final PickingService pickingService;
 
-    public OrderController(OrderRepository orderRepository, SupportRepository supportRepository, ProductRepository productRepository, HttpServletRequest request, AppConfigurationProperties properties, ContainRepository containRepository, SupportTypeRepository supportTypeRepository) {
+    public OrderController(OrderRepository orderRepository, SupportRepository supportRepository, ProductRepository productRepository, HttpServletRequest request, AppConfigurationProperties properties, ContainRepository containRepository, SupportTypeRepository supportTypeRepository, PickingService pickingService) {
         this.orderRepository = orderRepository;
         this.supportRepository = supportRepository;
         this.productRepository = productRepository;
@@ -48,6 +51,38 @@ public class OrderController {
         this.properties = properties;
         this.containRepository = containRepository;
         this.supportTypeRepository = supportTypeRepository;
+        this.pickingService = pickingService;
+    }
+
+    // Endpoint 1 : Attribution Automatique
+    @Authorize(roles = Role.USER)
+    @PostMapping("/autoAssign")
+    public ResponseEntity<PickingTaskResponse> autoAssign(
+            @RequestParam(name = "PreparateurID") int preparateurId
+    ) {
+        PickingTaskResponse task = pickingService.getNextTask(preparateurId);
+        return ResponseEntity.ok(task);
+    }
+
+    // Endpoint 2 : Attribution Manuelle
+    @Authorize(roles = Role.ADMIN)
+    @PostMapping("/manualAssign")
+    public ResponseEntity<PickingTaskResponse> manualAssign(
+            @RequestParam(name = "PreparateurID") int preparateurId,
+            @RequestParam(name = "CommandeID") int orderId) {
+
+        PickingTaskResponse task = pickingService.assignOrderManually(preparateurId, orderId);
+        return ResponseEntity.ok(task);
+    }
+
+    // Endpoint 3 : Étape suivante de la commande
+    @Authorize(roles = Role.USER)
+    @PostMapping("/nextStep")
+    public ResponseEntity<java.util.List<java.util.List<java.util.List<Integer>>>> nextStep(
+            @RequestParam(name = "CommandeID") int orderId
+    ) {
+        var nextStep = pickingService.getNextStep(orderId);
+        return ResponseEntity.ok(nextStep);
     }
 
     @Authorize(roles = Role.ADMIN)
@@ -72,12 +107,12 @@ public class OrderController {
             List<Contain> contains = containRepository.findAllBySupportId(support.getSupportID());
             List<Product> products = SupportService.calculSupport(productRepository.findProductsBySupportID(support.getSupportID()), contains);
 
-            var type = supportTypeRepository.findById(support.TypeID);
+            var type = supportTypeRepository.findById(support.getType().getTypeID());
             if (type.isPresent()) {
                 List<ProductPlacement> productPlacements = SupportService.calculateOptimisedSupport(products, type.get());
 
                 ObjectMapper objectMapper = new ObjectMapper();
-                support.NestedProductsPlacement = objectMapper.writeValueAsString(productPlacements);
+                support.setNestedProductsPlacements(objectMapper.writeValueAsString(productPlacements));
                 supportRepository.save(support);
                 productsPlacements.add(productPlacements);
             } else {

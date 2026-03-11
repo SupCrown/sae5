@@ -71,7 +71,7 @@ public class UserController {
                     savedUser.getFirstname(),
                     savedUser.getLastname(),
                     savedUser.getLogin(),
-                    savedUser.isIsAdmin()
+                    savedUser.isAdmin()
             );
 
             return ResponseEntity

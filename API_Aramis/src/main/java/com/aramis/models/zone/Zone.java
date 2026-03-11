@@ -1,6 +1,7 @@
 package com.aramis.models.zone;
 
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
 import java.sql.Date;
@@ -14,11 +15,14 @@ import java.sql.Timestamp;
 public class Zone {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ZoneID;
+    private Integer zoneID;
+
     @Column(nullable = false)
-    private String ZoneName;
+    private String zoneName;
+
     @Column(nullable = false)
-    public Timestamp DateCreation;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public Timestamp DateModification;
+    public Timestamp dateModification;
 }
