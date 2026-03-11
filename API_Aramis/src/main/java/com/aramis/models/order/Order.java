@@ -1,5 +1,8 @@
 package com.aramis.models.order;
 
+import com.aramis.models.customer.Customer;
+import com.aramis.models.level.Level;
+import com.aramis.utils.EPrepareStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import com.aramis.models.product.*; // Ou ton import correct pour Product
@@ -16,16 +19,23 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int OrderID;
-    public Date OrderDate;
+    public Integer orderID;
+
+    public Date orderDate;
+
     @Column(nullable = false)
-    public int Status;
-    @Column(nullable = false)
-    public int CustomerID;
+    public EPrepareStatus Status;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "customerid")
+    private Customer customer;
+
     @Column(name = "priority", columnDefinition = "boolean default false")
     private boolean priority;
+
     @Column(nullable = false)
-    public Timestamp DateCreation;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public Timestamp DateModification;
+    public Timestamp dateModification;
 }

@@ -69,7 +69,7 @@ public class OrderController {
     @PostMapping("/manualAssign")
     public ResponseEntity<PickingTaskResponse> manualAssign(
             @RequestParam(name = "PreparateurID") int preparateurId,
-            @RequestParam(name = "CommandeID") Long orderId) {
+            @RequestParam(name = "CommandeID") int orderId) {
 
         PickingTaskResponse task = pickingService.assignOrderManually(preparateurId, orderId);
         return ResponseEntity.ok(task);
@@ -79,7 +79,7 @@ public class OrderController {
     @Authorize(roles = Role.USER)
     @PostMapping("/nextStep")
     public ResponseEntity<java.util.List<java.util.List<java.util.List<Integer>>>> nextStep(
-            @RequestParam(name = "CommandeID") Long orderId
+            @RequestParam(name = "CommandeID") int orderId
     ) {
         var nextStep = pickingService.getNextStep(orderId);
         return ResponseEntity.ok(nextStep);
@@ -107,12 +107,12 @@ public class OrderController {
             List<Contain> contains = containRepository.findAllBySupportId(support.getSupportID());
             List<Product> products = SupportService.calculSupport(productRepository.findProductsBySupportID(support.getSupportID()), contains);
 
-            var type = supportTypeRepository.findById(support.TypeID);
+            var type = supportTypeRepository.findById(support.getType().getTypeID());
             if (type.isPresent()) {
                 List<ProductPlacement> productPlacements = SupportService.calculateOptimisedSupport(products, type.get());
 
                 ObjectMapper objectMapper = new ObjectMapper();
-                support.NestedProductsPlacement = objectMapper.writeValueAsString(productPlacements);
+                support.setNestedProductsPlacements(objectMapper.writeValueAsString(productPlacements));
                 supportRepository.save(support);
                 productsPlacements.add(productPlacements);
             } else {

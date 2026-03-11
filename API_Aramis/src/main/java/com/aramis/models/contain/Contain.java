@@ -1,30 +1,41 @@
 package com.aramis.models.contain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
+import com.aramis.models.product.Product;
+import com.aramis.models.support.Support;
+import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
 import java.sql.Date;
 import java.sql.Timestamp;
 
 @Entity
-@IdClass(ContainCompositeKey.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Contain {
     @Id
-    public int ProductID;
-    @Id
-    public int SupportID;
-    public int ServedQuantity;
-    public int ApprovedQuantity;
-    public boolean MissingItems;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer containID;
+
+    @ManyToOne
+    @JoinColumn(name = "supportid")
+    private Support support;
+
+    @ManyToOne
+    @JoinColumn(name = "productid")
+    private Product product;
+
+    public Integer servedQuantity;
+
+    public Integer approvedQuantity;
+
+    public boolean missingItems;
+
     @Column(nullable = false)
-    public Timestamp DateCreation;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public Timestamp DateModification;
+    public Timestamp dateModification;
 }

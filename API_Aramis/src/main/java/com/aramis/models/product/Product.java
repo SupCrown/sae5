@@ -1,14 +1,14 @@
 package com.aramis.models.product;
 
+import com.aramis.models.customer.Customer;
+import com.aramis.models.location.Location;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
-import java.sql.Date;
 import java.sql.Timestamp;
-
-import java.util.Date;
 
 @Getter
 @Setter
@@ -19,29 +19,38 @@ public class Product {
     // Getters et Setters standard...
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer ProductID;
+    private Integer productID;
+
     @Column(nullable = false)
-    private int ProductCode;
+    private Integer productCode;
+
     @Column(nullable = false)
-    private String Libelle;
+    private String libelle;
+
     @Column(nullable = false)
-    private int Height;
+    private Integer height;
+
     @Column(nullable = false)
-    private int Length;
+    private Integer length;
+
     @Column(nullable = false)
-    private int Width;
+    private Integer width;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "locationid")
+    private Location location;
+
     @Column(nullable = false)
-    private int LocationID;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public Timestamp DateCreation;
-    @Column(nullable = false)
-    public Timestamp DateModification;
+    public Timestamp dateModification;
 
     public BoxItem toBoxItem() {
-        return new BoxItem(Box.newBuilder().withId(this.ProductID.toString()).withSize(this.Width, this.Length, this.Height).withWeight(1).withRotate3D().build());
+        return new BoxItem(Box.newBuilder().withId(this.productID.toString()).withSize(this.width, this.length, this.height).withWeight(1).withRotate3D().build());
     }
 
     public Product clone() {
-        return new Product(ProductID, ProductCode, Libelle, Height, Length, Width, LocationID, DateCreation, DateModification);
+        return new Product(productID, productCode, libelle, height, length, width, location, dateCreation, dateModification);
     }
 }
