@@ -41,8 +41,8 @@ public class AuthService {
             throw new RuntimeException("Invalid login");
         }
 
-        var userType = user.isIsAdmin() ? UserType.SUPERVISOR : UserType.PREPARATOR;
-        var role = user.isIsAdmin() ? Role.ADMIN : Role.USER;
+        var userType = user.isAdmin() ? UserType.SUPERVISOR : UserType.PREPARATOR;
+        var role = user.isAdmin() ? Role.ADMIN : Role.USER;
 
         var secretKey = generateSecretKey(properties.getJwt().getSecret());
 

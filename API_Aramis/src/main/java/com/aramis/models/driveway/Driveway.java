@@ -1,5 +1,7 @@
 package com.aramis.models.driveway;
 
+import com.aramis.models.product.Product;
+import com.aramis.models.zone.Zone;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,14 +16,19 @@ import java.sql.Timestamp;
 public class Driveway {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long DrivewayID;
+    public Integer drivewayID;
+
     @Column(nullable = false)
-    public String Name;
+    public String name;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "zoneid")
+    private Zone zone;
+
     @Column(nullable = false)
-    public int ZoneID;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public Timestamp DateCreation;
-    @Column(nullable = false)
-    public Timestamp DateModification;
+    public Timestamp dateModification;
 }
 

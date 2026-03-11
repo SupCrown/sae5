@@ -1,6 +1,7 @@
 package com.aramis.models.supportType;
 
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
 import java.sql.Date;
@@ -14,17 +15,23 @@ import java.sql.Timestamp;
 public class SupportType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long TypeID;
+    private Integer typeID;
+
     @Column(nullable = false)
-    private String Label;
+    private String label;
+
     @Column(nullable = false)
-    private int InnerWidth;
+    private Integer innerWidth;
+
     @Column(nullable = false)
-    private int InnerLength;
+    private Integer innerLength;
+
     @Column(nullable = false)
-    private int InnerHeight;
+    private Integer innerHeight;
+
     @Column(nullable = false)
-    public Timestamp DateCreation;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public Timestamp DateModification;
+    public Timestamp dateModification;
 }

@@ -1,14 +1,13 @@
 package com.aramis.models.support;
 
 import com.aramis.models.order.Order;
+import com.aramis.models.supportType.SupportType;
 import com.aramis.models.user.User;
+import com.aramis.utils.EPrepareStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Date;
 import java.sql.Timestamp;
-
-import java.util.List;
 
 @Entity
 @Getter
@@ -20,15 +19,27 @@ public class Support {
     @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Integer SupportID;
-    public String NestedProductsPlacement;
+    public Integer supportID;
+
+    public String nestedProductsPlacements;
+
+    private EPrepareStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "userid")
+    private User preparedBy;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "orderid")
+    private Order order;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "typeid")
+    private SupportType type;
+
     @Column(nullable = false)
-    public Integer TypeID;
-    public Integer UserID;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public Integer OrderID;
-    @Column(nullable = false)
-    public Timestamp DateCreation;
-    @Column(nullable = false)
-    public Timestamp DateModification;
+    public Timestamp dateModification;
 }

@@ -4,6 +4,9 @@ import com.aramis.dto.PickingTaskResponse;
 import com.aramis.dto.PlacementData;
 import com.aramis.models.contain.Contain;
 import com.aramis.models.contain.ContainRepository;
+import com.aramis.models.supportType.SupportType;
+import com.aramis.models.supportType.SupportTypeRepository;
+import com.aramis.utils.EPrepareStatus;
 import com.aramis.models.order.Order;
 import com.aramis.models.order.OrderRepository;
 import com.aramis.models.product.Product;
@@ -32,18 +35,16 @@ public class PickingService {
     private final OrderRepository orderRepo;
     private final UserRepository userRepo;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private static final String STATUS_SUPPORT_IN_PROGRESS = "2";
-    private static final String STATUS_SUPPORT_FINISHED = "4";
-    private static final int STATUS_ORDER_TODO = 1;
+    private final SupportTypeRepository supportTypeRepository;
 
     public PickingService(SupportRepository supportRepo, ContainRepository containRepo,
-                          ProductRepository productRepo, OrderRepository orderRepo, UserRepository userRepo) {
+                          ProductRepository productRepo, OrderRepository orderRepo, UserRepository userRepo, SupportTypeRepository supportTypeRepository) {
         this.supportRepo = supportRepo;
         this.containRepo = containRepo;
         this.productRepo = productRepo;
         this.orderRepo = orderRepo;
         this.userRepo = userRepo;
+        this.supportTypeRepository = supportTypeRepository;
     }
 
     // ========================================================================
@@ -54,7 +55,7 @@ public class PickingService {
         User user = userRepo.findByLogin(login);
         if (user == null) throw new RuntimeException("User introuvable Login: " + login);
 
-        Optional<Support> currentSupport = supportRepo.findByPreparedByAndStatus(user, STATUS_SUPPORT_IN_PROGRESS);
+        Optional<Support> currentSupport = supportRepo.findByPreparedByAndStatus(user, EPrepareStatus.Preparing);
 
         if (currentSupport.isPresent()) {
             return calculateNextProduct(currentSupport.get());
@@ -64,7 +65,7 @@ public class PickingService {
     }
 
     private PickingTaskResponse startNewSupport(User user) {
-        List<Order> orders = orderRepo.findByStatusOrderByPriorityDesc(STATUS_ORDER_TODO);
+        List<Order> orders = orderRepo.findByStatusOrderByPriorityDesc(EPrepareStatus.Pending);
         if (orders.isEmpty()) {
             PickingTaskResponse r = new PickingTaskResponse();
             r.setType("NO_ORDERS");
@@ -80,21 +81,21 @@ public class PickingService {
     // LOGIQUE : ASSIGNATION MANUELLE
     // ========================================================================
     @Transactional
-    public PickingTaskResponse assignOrderManually(int login, Long orderId) {
+    public PickingTaskResponse assignOrderManually(int login, int orderId) {
         User user = userRepo.findByLogin(login);
         if (user == null) throw new RuntimeException("User introuvable Login: " + login);
 
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Commande introuvable ID: " + orderId));
 
-        if (order.getStatus() != STATUS_ORDER_TODO) {
+        if (order.getStatus() != EPrepareStatus.Preparing) {
             throw new RuntimeException("Cette commande ne peut pas être préparée (Statut: " + order.getStatus() + ")");
         }
 
         // Si l'utilisateur a déjà une commande en cours, on met simplement cette commande
         // en "file d'attente" pour être la prochaine (priorité) et on ne crée PAS
         // de nouveau support tout de suite.
-        Optional<Support> currentSupport = supportRepo.findByPreparedByAndStatus(user, STATUS_SUPPORT_IN_PROGRESS);
+        Optional<Support> currentSupport = supportRepo.findByPreparedByAndStatus(user, EPrepareStatus.Preparing);
         if (currentSupport.isPresent()) {
             order.setPriority(true);
             orderRepo.save(order);
@@ -126,9 +127,9 @@ public class PickingService {
         List<BoxItem> productsToPack = new ArrayList<>();
         for (Product p : productsFromOrder) {
             Box box = Box.newBuilder()
-                    .withId(String.valueOf(p.getProductId()))
+                    .withId(String.valueOf(p.getProductID()))
                     .withSize(p.getWidth(), p.getHeight(), p.getLength())
-                    .withWeight(p.getWeight())
+                    .withWeight(p.getWidth())
                     .withRotate3D()
                     .build();
             productsToPack.add(new BoxItem(box, 1));
@@ -170,11 +171,13 @@ public class PickingService {
             placementsToSave.add(pd);
         }
 
+        Optional<SupportType> type = supportTypeRepository.findById(1);
+
         Support support = new Support();
         support.setPreparedBy(user);
         support.setOrder(order);
-        support.setStatus(STATUS_SUPPORT_IN_PROGRESS);
-        support.setTypeId(1);
+        support.setStatus(EPrepareStatus.Preparing);
+        support.setType(type.orElse(null));
 
         try {
             support.setNestedProductsPlacements(objectMapper.writeValueAsString(placementsToSave));
@@ -194,7 +197,7 @@ public class PickingService {
 
         PickingTaskResponse resp = new PickingTaskResponse();
         resp.setType("NEW_SUPPORT");
-        resp.setSupportId(support.getSupportId());
+        resp.setSupportId(support.getSupportID());
         return resp;
     }
 
@@ -219,10 +222,10 @@ public class PickingService {
             }
 
             for (PlacementData step : plan) {
-                Long pId = Long.valueOf(step.getProductId());
+                Integer pId = Integer.valueOf(step.getProductId());
 
                 Optional<Contain> match = tempState.stream()
-                        .filter(c -> c.getProduct() != null && c.getProduct().getProductId().equals(pId))
+                        .filter(c -> c.getProduct() != null && c.getProduct().getProductID().equals(pId))
                         .findFirst();
 
                 if (match.isPresent() && match.get().getServedQuantity() > 0) {
@@ -238,7 +241,7 @@ public class PickingService {
                 }
             }
 
-            support.setStatus(STATUS_SUPPORT_FINISHED);
+            support.setStatus(EPrepareStatus.Done);
             supportRepo.save(support);
             PickingTaskResponse r = new PickingTaskResponse();
             r.setType("FINISHED");
@@ -256,11 +259,11 @@ public class PickingService {
     // ou marquées comme manquantes.
     // ========================================================================
     @Transactional
-    public List<List<List<Integer>>> getNextStep(Long orderId) {
+    public List<List<List<Integer>>> getNextStep(int orderId) {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Commande introuvable ID: " + orderId));
 
-        Support support = supportRepo.findFirstByOrderOrderBySupportIdDesc(order)
+        Support support = supportRepo.findFirstByOrderOrderBySupportIDDesc(order)
                 .orElseThrow(() -> new RuntimeException("Aucun support associé à cette commande"));
 
         try {
@@ -287,7 +290,7 @@ public class PickingService {
                 Long pId = Long.valueOf(step.getProductId());
 
                 Optional<Contain> match = tempState.stream()
-                        .filter(c -> c.getProduct() != null && c.getProduct().getProductId().equals(pId))
+                        .filter(c -> c.getProduct() != null && c.getProduct().getProductID().equals(pId))
                         .findFirst();
 
                 if (match.isEmpty()) {
@@ -316,7 +319,7 @@ public class PickingService {
 
             // Si on arrive ici, toutes les lignes sont soit servies,
             // soit marquées avec des colis manquants : on clôt le support.
-            support.setStatus(STATUS_SUPPORT_FINISHED);
+            support.setStatus(EPrepareStatus.Preparing);
             supportRepo.save(support);
 
             // On retourne un tableau vide pour signifier qu'il n'y a plus d'étape.
