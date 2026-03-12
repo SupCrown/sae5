@@ -21,15 +21,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>
-                                AramisApplication
-                            </mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -48,7 +39,6 @@
             <artifactId>core</artifactId>
             <version>4.0.0</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
