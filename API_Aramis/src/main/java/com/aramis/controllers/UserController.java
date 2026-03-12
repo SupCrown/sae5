@@ -14,8 +14,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.aramis.utils.Utils.getCurrentTimestamp;
 
 @Slf4j
 @RestController
@@ -37,7 +40,7 @@ public class UserController {
         for (User user : users) {
             userResponseList.add(new UserResponse(user));
         }
-        return ResponseEntity.status(200).body(userResponseList);
+        return ResponseEntity.ok(userResponseList);
     }
 
     @Authorize(roles = {Role.ADMIN, Role.USER})
@@ -57,6 +60,8 @@ public class UserController {
         user.setFirstname(request.getFirstname());
         user.setLastname(request.getLastname());
         user.setLogin(request.getLogin());
+        user.setDateCreation(getCurrentTimestamp());
+        user.setDateModification(getCurrentTimestamp());
 
         try {
             User savedUser = userRepository.save(user);
@@ -66,7 +71,7 @@ public class UserController {
                     savedUser.getFirstname(),
                     savedUser.getLastname(),
                     savedUser.getLogin(),
-                    savedUser.isIsAdmin()
+                    savedUser.isAdmin()
             );
 
             return ResponseEntity
@@ -74,7 +79,7 @@ public class UserController {
                     .body(response);
         } catch (Exception e) {
             log.error("Error authenticating user", e);
-            return ResponseEntity.status(400).body("Bad Request: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
         }
 
     }

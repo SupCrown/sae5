@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserResponse {
-    private Long id;
+    private Integer id;
     private String firstname;
     private String lastname;
     private Integer login;
@@ -20,6 +20,6 @@ public class UserResponse {
         this.firstname = user.getFirstname();
         this.lastname = user.getLastname();
         this.login = user.getLogin();
-        this.admin = user.isIsAdmin();
+        this.admin = user.isAdmin();
     }
 }

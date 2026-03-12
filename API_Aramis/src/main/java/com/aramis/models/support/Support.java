@@ -1,21 +1,45 @@
 package com.aramis.models.support;
 
+import com.aramis.models.order.Order;
+import com.aramis.models.supportType.SupportType;
+import com.aramis.models.user.User;
+import com.aramis.utils.EPrepareStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Support {
+    // Getters Setters...
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int SupportID;
-    public String NestedProductsPlacement;
+    public Integer supportID;
+
+    public String nestedProductsPlacements;
+
+    private EPrepareStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "userid")
+    private User preparedBy;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "orderid")
+    private Order order;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "typeid")
+    private SupportType type;
+
     @Column(nullable = false)
-    public int TypeID;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public int UserID;
-    @Column(nullable = false)
-    public int OrderID;
+    public Timestamp dateModification;
 }

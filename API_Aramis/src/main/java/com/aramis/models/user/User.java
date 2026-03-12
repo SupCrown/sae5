@@ -1,22 +1,36 @@
 package com.aramis.models.user;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity(name = "_user")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long UserID;
+    private Integer userID;
+
     @Column(nullable = false, unique = true)
-    private int Login;
+    private Integer login;
+
     @Column(nullable = false)
     private String firstname;
+
     @Column(nullable = false)
     private String lastname;
+
     @Column(nullable = false)
-    private boolean IsAdmin;
+    private boolean isAdmin;
+
+    @Column(nullable = false)
+    public Timestamp dateCreation;
+
+    @Column(nullable = false)
+    public Timestamp dateModification;
 }

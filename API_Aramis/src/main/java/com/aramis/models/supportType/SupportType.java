@@ -1,18 +1,37 @@
 package com.aramis.models.supportType;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import lombok.*;
+
+import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class SupportType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long TypeID;
+    private Integer typeID;
+
     @Column(nullable = false)
-    private String Label;
+    private String label;
+
     @Column(nullable = false)
-    private int Capacity;
+    private Integer innerWidth;
+
+    @Column(nullable = false)
+    private Integer innerLength;
+
+    @Column(nullable = false)
+    private Integer innerHeight;
+
+    @Column(nullable = false)
+    public Timestamp dateCreation;
+
+    @Column(nullable = false)
+    public Timestamp dateModification;
 }

@@ -8,21 +8,26 @@ import com.aramis.dto.AuthResponse;
 import com.aramis.models.user.User;
 import com.aramis.models.user.UserRepository;
 import com.aramis.utils.Role;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.WebUtils;
 
 import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Objects;
+
+import static com.aramis.common.JwtUtils.*;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final JwtUtils jwtUtils;
     private final AppConfigurationProperties properties;
 
     public AuthResponse authenticate(AuthRequest request, UserRepository userRepository) {
@@ -36,21 +41,22 @@ public class AuthService {
             throw new RuntimeException("Invalid login");
         }
 
-        var userType = user.isIsAdmin() ? UserType.SUPERVISOR : UserType.PREPARATOR;
-        var role = user.isIsAdmin() ? Role.ADMIN : Role.USER;
+        var userType = user.isAdmin() ? UserType.SUPERVISOR : UserType.PREPARATOR;
+        var role = user.isAdmin() ? Role.ADMIN : Role.USER;
 
-        var secretKey = jwtUtils.generateSecretKey(properties.getJwt().getSecret());
+        var secretKey = generateSecretKey(properties.getJwt().getSecret());
 
         Map<String, String> claims = new HashMap<>();
         claims.put("userType", userType.toString());
         claims.put("role", role.toString());
+        claims.put("id", user.getUserID().toString());
 
-        String audience = user.getUserID().toString();
+        String audience = String.valueOf(user.getUserID());
 
         String username = user.getFirstname() + " " + user.getLastname();
 
-        String token = jwtUtils.generateToken(username, audience, claims, properties.getJwt().getExpiresIn(), secretKey);
-        return AuthResponse.builder().username(username).userType(userType).role(role).token(token).build();
+        String token = generateToken(username, audience, claims, properties.getJwt().getExpiresIn(), secretKey);
+        return AuthResponse.builder().username(username).userType(userType).role(role).token(token).userID(user.getUserID()).build();
     }
 
     private void validateAuthRequest(AuthRequest request) {
@@ -60,9 +66,9 @@ public class AuthService {
 
 
     public void validateAuthToken(String jwt, Role[] roles) throws AccessDeniedException, RuntimeException {
-        var secretKey = jwtUtils.generateSecretKey(properties.getJwt().getSecret());
+        var secretKey = generateSecretKey(properties.getJwt().getSecret());
         try {
-            var payload = jwtUtils.getPayload(jwt, secretKey);
+            var payload = getPayload(jwt, secretKey);
 
             boolean accessDenied = true;
             for (Role role : roles) {
@@ -79,5 +85,26 @@ public class AuthService {
             log.error("Authentication failed. Invalid token : {}", jwt);
             throw new RuntimeException(String.format("Authentication failed. Invalid token : %s", jwt));
         }
+    }
+
+    public static Integer getUserID(HttpServletRequest req, AppConfigurationProperties properties) throws RuntimeException {
+        Cookie authCookie = WebUtils.getCookie(req, properties.getCookie().getName());
+
+        if (authCookie == null) {
+            throw new RuntimeException("Aucun cookie de connexion détécté.");
+        }
+
+        String jwt = authCookie.getValue();
+        var secretKey = generateSecretKey(properties.getJwt().getSecret());
+
+        var payload = getPayload(jwt, secretKey);
+        String id = (String) payload.get("id");
+
+        if (id == null) {
+            log.error("UserID is missing in auth token.");
+            throw new MissingResourceException("UserID is missing.", "AuthResponse", "UserID");
+        }
+
+        return Integer.getInteger(id);
     }
 }

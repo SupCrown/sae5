@@ -1,33 +1,41 @@
 package com.aramis.models.location;
 
+import com.aramis.models.driveway.Driveway;
+import com.aramis.models.level.Level;
+import com.aramis.models.zone.Zone;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import lombok.*;
+import org.eclipse.collections.impl.map.primitive.LongKeysMap;
+
+import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int LocationID;
+    public Integer locationID;
+
     @Column(nullable = false)
-    public String LocationCode;
+    public String locationCode;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "drivewayid")
+    private Driveway driveway;
+
+    @ManyToOne
+    @JoinColumn(nullable = false, name = "levelid")
+    private Level level;
+
     @Column(nullable = false)
-    public int WhiteCode;
+    public Timestamp dateCreation;
+
     @Column(nullable = false)
-    public int RedCode;
-    @Column(nullable = false)
-    public int GreenCode;
-    @Column(nullable = false)
-    public int YellowCode;
-    @Column(nullable = false)
-    public int BlueCode;
-    @Column(nullable = false)
-    public int DrivewayID;
-    @Column(nullable = false)
-    public int LevelID;
-    @Column(nullable = false, unique = true)
-    public int ProductID;
+    public Timestamp dateModification;
 }
 
