@@ -26,7 +26,7 @@ public class Support {
     private EPrepareStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "userid")
+    @JoinColumn(nullable = true, name = "userid")
     private User preparedBy;
 
     @ManyToOne
