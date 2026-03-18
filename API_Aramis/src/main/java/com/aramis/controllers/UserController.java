@@ -60,8 +60,6 @@ public class UserController {
         user.setFirstname(request.getFirstname());
         user.setLastname(request.getLastname());
         user.setLogin(request.getLogin());
-        user.setDateCreation(getCurrentTimestamp());
-        user.setDateModification(getCurrentTimestamp());
 
         try {
             User savedUser = userRepository.save(user);

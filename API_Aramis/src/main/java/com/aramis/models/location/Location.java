@@ -37,5 +37,10 @@ public class Location {
 
     @Column(nullable = false)
     public Timestamp dateModification;
+
+    @Override
+    public String toString() {
+        return driveway.toString() + " - "  + String.format("%04d", Integer.parseInt(locationCode))  + " - " + level.toString();
+    }
 }
 

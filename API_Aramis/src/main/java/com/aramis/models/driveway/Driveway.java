@@ -30,5 +30,10 @@ public class Driveway {
 
     @Column(nullable = false)
     public Timestamp dateModification;
+
+    @Override
+    public String toString() {
+        return zone.toString() + " - " + String.format("%03d", Integer.parseInt(name));
+    }
 }
 

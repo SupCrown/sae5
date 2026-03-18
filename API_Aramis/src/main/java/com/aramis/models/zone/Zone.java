@@ -25,4 +25,9 @@ public class Zone {
 
     @Column(nullable = false)
     public Timestamp dateModification;
+
+    @Override
+    public String toString() {
+        return zoneName;
+    }
 }
