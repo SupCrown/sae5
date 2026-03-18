@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sound.sampled.Port;
 import java.util.*;
 
 @Slf4j
@@ -30,6 +31,14 @@ public class ProductController {
     public ProductController(ProductRepository productRepository, LocationRepository locationRepository) {
         this.productRepository = productRepository;
         this.locationRepository = locationRepository;
+    }
+
+    @Authorize(roles = Role.ADMIN)
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponse> getProductByID(@PathVariable Integer id) {
+        Optional<Product> product = productRepository.findById(id);
+
+        return product.map(value -> ResponseEntity.ok(new ProductResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Authorize(roles = Role.ADMIN)
