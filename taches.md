@@ -31,6 +31,8 @@
 
 ## API
 
+IP : 147.93.55.68
+
 ### Documentation API
 
 Définir les endpoints avant de les développer pour permettre à l'equipe front de travailler sans se poser de questions.
