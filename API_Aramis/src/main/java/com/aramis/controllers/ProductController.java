@@ -62,8 +62,12 @@ public class ProductController {
         Optional<Location> location = locationRepository.findByCodeLevelDrivewayAndZone(request.getLocation(), request.getLevel(), request.getDriveway(), request.getZone());
 
         if (location.isPresent()) {
-            Product product = request.toProduct(location.get());
+            Optional<Product> alreadyPlacedProduct = productRepository.findByLocation(location.get());
+            if (alreadyPlacedProduct.isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request : emplacement déjà utilisé.");
+            }
 
+            Product product = request.toProduct(location.get());
             try {
                 productRepository.save(product);
 
