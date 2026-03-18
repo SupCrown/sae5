@@ -25,4 +25,9 @@ public class Level {
 
     @Column(nullable = false)
     public Timestamp dateModification;
+
+    @Override
+    public String toString() {
+        return String.format("%02d", levelValue);
+    }
 }
