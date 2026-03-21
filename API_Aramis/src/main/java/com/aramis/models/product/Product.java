@@ -40,17 +40,11 @@ public class Product {
     @JoinColumn(nullable = false, name = "locationid")
     private Location location;
 
-    @Column(nullable = false)
-    public Timestamp dateCreation;
-
-    @Column(nullable = false)
-    public Timestamp dateModification;
-
     public BoxItem toBoxItem() {
         return new BoxItem(Box.newBuilder().withId(this.productID.toString()).withSize(this.width, this.length, this.height).withWeight(1).withRotate3D().build());
     }
 
     public Product clone() {
-        return new Product(productID, productCode, libelle, height, length, width, location, dateCreation, dateModification);
+        return new Product(productID, productCode, libelle, height, length, width, location);
     }
 }

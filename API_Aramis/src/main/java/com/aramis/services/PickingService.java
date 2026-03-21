@@ -22,6 +22,8 @@ import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +57,7 @@ public class PickingService {
         User user = userRepo.findByLogin(login);
         if (user == null) throw new RuntimeException("User introuvable Login: " + login);
 
-        Optional<Support> currentSupport = supportRepo.findByPreparedByAndStatus(user, EPrepareStatus.Preparing);
+        Optional<Support> currentSupport = supportRepo.findByUserAndStatus(user, EPrepareStatus.Preparing);
 
         if (currentSupport.isPresent()) {
             return calculateNextProduct(currentSupport.get());
@@ -95,7 +97,7 @@ public class PickingService {
         // Si l'utilisateur a déjà une commande en cours, on met simplement cette commande
         // en "file d'attente" pour être la prochaine (priorité) et on ne crée PAS
         // de nouveau support tout de suite.
-        Optional<Support> currentSupport = supportRepo.findByPreparedByAndStatus(user, EPrepareStatus.Preparing);
+        Optional<Support> currentSupport = supportRepo.findByUserAndStatus(user, EPrepareStatus.Preparing);
         if (currentSupport.isPresent()) {
             order.setPriority(true);
             orderRepo.save(order);
@@ -174,7 +176,7 @@ public class PickingService {
         Optional<SupportType> type = supportTypeRepository.findById(1);
 
         Support support = new Support();
-        support.setPreparedBy(user);
+        support.setUser(user);
         support.setOrder(order);
         support.setStatus(EPrepareStatus.Preparing);
         support.setType(type.orElse(null));
@@ -320,6 +322,7 @@ public class PickingService {
             // Si on arrive ici, toutes les lignes sont soit servies,
             // soit marquées avec des colis manquants : on clôt le support.
             support.setStatus(EPrepareStatus.Preparing);
+            support.setDatePreparation(Date.valueOf(LocalDate.now()));
             supportRepo.save(support);
 
             // On retourne un tableau vide pour signifier qu'il n'y a plus d'étape.
