@@ -277,13 +277,13 @@ public class OrderController {
     private List<SupportResponse> getSupportResponses(Order order) {
         Iterable<Support> supports = supportRepository.findAllByOrder(order);
 
-        List<SupportResponse> supportsResponses = new ArrayList<>();
+         List<SupportResponse> supportsResponses = new ArrayList<>();
         for (Support support : supports) {
-            Iterable<Product> products = productRepository.findAllProductBySupportID(support.getSupportID());
+            Iterable<ProductSupportFormBD> products = productRepository.findAllProductBySupportID(support.getSupportID());
 
-            List<ProductResponse> productsResponses = new ArrayList<>();
-            for (Product product : products) {
-                productsResponses.add(new ProductResponse(product));
+            List<ProductSupportResponse> productsResponses = new ArrayList<>();
+            for (ProductSupportFormBD product : products) {
+                productsResponses.add(new ProductSupportResponse(product.toProduct(), product.getSupportQuantity()));
             }
 
             supportsResponses.add(new SupportResponse(support, productsResponses));

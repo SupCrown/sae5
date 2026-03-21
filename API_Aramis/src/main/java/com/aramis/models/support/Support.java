@@ -5,6 +5,7 @@ import com.aramis.models.supportType.SupportType;
 import com.aramis.models.user.User;
 import com.aramis.utils.EPrepareStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -29,6 +30,7 @@ public class Support {
 
     @ManyToOne
     @JoinColumn(name = "userid")
+    @Null
     private User user;
 
     @ManyToOne

@@ -24,13 +24,15 @@ public class SupportResponse {
     private UserResponse preparer;
     private SupportType type;
     public Date datePreparation;
-    public List<ProductResponse> products;
+    public List<ProductSupportResponse> products;
 
-    public SupportResponse(Support support, List<ProductResponse> products) {
+    public SupportResponse(Support support, List<ProductSupportResponse> products) {
         supportID = support.getSupportID();
         nestedProductsPlacements = support.getNestedProductsPlacements();
         status = support.getStatus();
-        preparer = new UserResponse(support.getUser());
+        if (support.getUser() != null) {
+            preparer = new UserResponse(support.getUser());
+        }
         datePreparation = support.getDatePreparation();
         this.products = products;
     }
