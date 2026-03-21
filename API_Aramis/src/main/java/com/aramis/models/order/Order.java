@@ -34,10 +34,10 @@ public class Order {
     @Column(name = "priority", columnDefinition = "boolean default false")
     private boolean priority;
 
-    @Column(nullable = false)
+    @Transient
     public Timestamp dateCreation;
 
-    @Column(nullable = false)
+    @Transient
     public Timestamp dateModification;
 
     @Override
