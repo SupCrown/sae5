@@ -35,8 +35,6 @@ public class PreparerController {
         user.setLastname(request.getLastname());
         user.setLogin(request.getLogin());
         user.setAdmin(false);
-        user.setDateCreation(now);
-        user.setDateModification(now);
 
         User saved = userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(new UserResponse(saved));
@@ -60,7 +58,6 @@ public class PreparerController {
         existing.setFirstname(request.getFirstname());
         existing.setLastname(request.getLastname());
         existing.setLogin(request.getLogin());
-        existing.setDateModification(new Timestamp(System.currentTimeMillis()));
 
         User saved = userRepository.save(existing);
         return ResponseEntity.ok(new UserResponse(saved));
