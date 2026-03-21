@@ -28,9 +28,9 @@ public class User {
     @Column(nullable = false)
     private boolean isAdmin;
 
-    @Column(nullable = false)
+    @Transient
     public Timestamp dateCreation;
 
-    @Column(nullable = false)
+    @Transient
     public Timestamp dateModification;
 }
