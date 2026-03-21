@@ -31,6 +31,8 @@
 
 ## API
 
+IP : 147.93.55.68
+
 ### Documentation API
 
 Définir les endpoints avant de les développer pour permettre à l'equipe front de travailler sans se poser de questions.
@@ -85,7 +87,26 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `/position/delete/id` **[POST]** : **supprimer** un emplacement.
     - `/position/id` **[GET]** : **consulter** un emplacement.
 - CRUD stocks : entré des stocks en import CSV :
-    - `/stock/import` **[POST]**.
+    - `/product/{id}` **[GET]** / **SUPERVISEUR** : récupérer les infos d'un produit agrâce à son identifiant.
+    - `/product/all` **[GET]** / **SUPERVISEUR** : récupérer la liste de tous les produits.
+    - `/product/add` **[POST]** / **SUPERVISEUR**: ajouter une quantité de stockage à un produit.
+        - `productID`: id de l'objet au quel ajouter une quantité X à la quantité actuelle.
+        - `quantityToAdd`: quantité X à ajouter.
+    - `/product/take` **[POST]** / **SUPERVISEUR** : retier une quantité X à la quantité actuelle. Si la quantité à retirer est supréieure à la quantité en stock, le nouveau stock sera de 0.
+        - `productID`: id de l'objet au quel retier une quantité X à la quantité actuelle. 
+        - `quantityToTake`: quantité X à retirer.
+    - `/product/create` **[POST]** / **SUPERVISEUR** : ajout un nouveau produit à la liste. Si l'emplacement au quel ajouter ce produit est déjà lié à un autre porduit une `BadRequest` est retrounée.
+        - `productCode`: code du produit.
+        - `quantity`: quantité initiale.
+        - `libel` : nom du produit.
+        - `height` : hauteur du produit.
+        - `length` : longueur du produit.
+        - `width` : largeur du produit.
+        - `zone` : nom de la zone de stockage du produit.
+        - `driveway` : nom de l'allée de stockage du produit.
+        - `location` : numéro d'emplacment de stockage du produit.
+        - `level` : numéro du niveau de stockage sur l'empalcement du produit.
+    - `/product/delete/{id}` **[DELETE]** / **SUPERVISEUR**.
 - Génération d'une organisation optimale d'un support en fonction de son contenant et contenu.
 
 ## Front
