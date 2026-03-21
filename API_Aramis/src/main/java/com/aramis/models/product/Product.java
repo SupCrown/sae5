@@ -25,6 +25,9 @@ public class Product {
     private Integer productCode;
 
     @Column(nullable = false)
+    private Integer quantity = 0;
+
+    @Column(nullable = false)
     private String libelle;
 
     @Column(nullable = false)
@@ -45,6 +48,6 @@ public class Product {
     }
 
     public Product clone() {
-        return new Product(productID, productCode, libelle, height, length, width, location);
+        return new Product(productID, productCode, quantity, libelle, height, length, width, location);
     }
 }
