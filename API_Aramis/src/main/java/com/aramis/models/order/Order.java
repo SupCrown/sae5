@@ -9,6 +9,7 @@ import com.aramis.models.product.*; // Ou ton import correct pour Product
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 @Entity(name = "_order")
 @Getter
@@ -38,4 +39,17 @@ public class Order {
 
     @Column(nullable = false)
     public Timestamp dateModification;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return Objects.equals(orderID, order.orderID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(orderID);
+    }
 }
