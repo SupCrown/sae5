@@ -24,6 +24,7 @@ public class Support {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer supportID;
 
+    @Column(columnDefinition="text")
     public String nestedProductsPlacements;
 
     private EPrepareStatus status;

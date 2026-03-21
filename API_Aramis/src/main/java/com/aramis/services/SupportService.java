@@ -69,7 +69,7 @@ public class SupportService {
     public static List<Product> calculSupport(List<Product> products, List<Contain> contains) {
         List<Product> calculatedProducts = new ArrayList<>();
         for (Product product : products) {
-            Contain contain = contains.stream().filter(filterdContain -> Objects.equals(filterdContain.getContainID(), product.getProductID())).findFirst().orElse(null);
+            Contain contain = contains.stream().filter(filteredContain -> Objects.equals(filteredContain.getProduct().getProductID(), product.getProductID())).findFirst().orElse(null);
             if (contain != null) {
                 int quantity = contain.isMissingItems() ? contain.getServedQuantity() : contain.getApprovedQuantity();
                 for (int i = 0; i < quantity; i++) {
