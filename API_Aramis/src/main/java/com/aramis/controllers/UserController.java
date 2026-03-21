@@ -62,9 +62,14 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/create")
+    public ResponseEntity<CreateUserRequest> createForm() {
+        return ResponseEntity.ok(new CreateUserRequest());
+    }
+
     @Authorize(roles = Role.ADMIN)
-    @PostMapping("/add")
-    public ResponseEntity<Object> addNewUser(@Valid @RequestBody CreateUserRequest request) {
+    @PostMapping("/create")
+    public ResponseEntity<Object> createUser(@Valid @RequestBody CreateUserRequest request) {
         User user = new User();
         user.setFirstname(request.getFirstname());
         user.setLastname(request.getLastname());
@@ -89,6 +94,40 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
         }
 
+    }
+
+    @Authorize(roles = Role.ADMIN)
+    @GetMapping("/update/{id}")
+    public ResponseEntity<UserResponse> getForUpdate(@PathVariable Integer id) {
+        Optional<User> user = userRepository.findById(id);
+        return user.map(value -> ResponseEntity.ok(new UserResponse(value)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Authorize(roles = Role.ADMIN)
+    @PostMapping("/update/{id}")
+    public ResponseEntity<UserResponse> update(@PathVariable Integer id, @Valid @RequestBody CreateUserRequest request) {
+        Optional<User> existingOpt = userRepository.findById(id);
+        if (existingOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User existing = existingOpt.get();
+        existing.setFirstname(request.getFirstname());
+        existing.setLastname(request.getLastname());
+        existing.setLogin(request.getLogin());
+
+        User saved = userRepository.save(existing);
+        return ResponseEntity.ok(new UserResponse(saved));
+    }
+    @Authorize(roles = Role.ADMIN)
+    @PostMapping("/delete/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        userRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @Authorize(roles = {Role.ADMIN, Role.USER})

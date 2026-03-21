@@ -114,6 +114,7 @@ public class OrderController {
         return ResponseEntity.ok(orderResponseList);
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/create")
     public ResponseEntity<Order> createForm() {
         Order order = new Order();
@@ -121,6 +122,7 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/create")
     public ResponseEntity<OrderResponse> create(@RequestBody OrderRequest request) {
         Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
@@ -142,12 +144,14 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new OrderResponse(saved, null));
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/update/{id}")
     public ResponseEntity<Order> getForUpdate(@PathVariable Integer id) {
         Optional<Order> order = orderRepository.findById(id);
         return order.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/update/{id}")
     public ResponseEntity<Order> update(@PathVariable Integer id, @RequestBody OrderRequest request) {
         Optional<Order> existingOpt = orderRepository.findById(id);
@@ -171,6 +175,7 @@ public class OrderController {
         return ResponseEntity.ok(saved);
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         if (!orderRepository.existsById(id)) {
@@ -180,6 +185,7 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/import")
     public ResponseEntity<List<Order>> importCsv(@RequestParam("file") MultipartFile file) {
         List<Order> imported = new ArrayList<>();
