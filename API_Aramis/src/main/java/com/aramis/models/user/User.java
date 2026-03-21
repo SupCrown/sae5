@@ -27,10 +27,4 @@ public class User {
 
     @Column(nullable = false)
     private boolean isAdmin;
-
-    @Column(nullable = false)
-    public Timestamp dateCreation;
-
-    @Column(nullable = false)
-    public Timestamp dateModification;
 }

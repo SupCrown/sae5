@@ -13,8 +13,10 @@ public interface SupportRepository extends CrudRepository<Support, Integer> {
     @Query("SELECT s FROM Support s WHERE s.order.orderID = ?1")
     List<Support> findSupportsByOrderId(Integer orderID);
 
-    Optional<Support> findByPreparedByAndStatus(User preparedBy, EPrepareStatus status);
+    Optional<Support> findByUserAndStatus(User user, EPrepareStatus status);
 
     // Récupère le dernier support associé à une commande donnée
     Optional<Support> findFirstByOrderOrderBySupportIDDesc(Order order);
+
+    List<Support> findAllByUser(User user);
 }
