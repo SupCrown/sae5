@@ -1,6 +1,7 @@
 package com.aramis.models.product;
 
 import com.aramis.models.location.Location;
+import com.aramis.models.support.Support;
 import com.aramis.models.user.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,7 @@ public interface ProductRepository extends CrudRepository<Product, Integer> {
     Iterable<Product> findAll(Pageable pageable);
 
     Optional<Product> findByLocation(Location location);
+
+    @Query("SELECT p FROM Product p JOIN Contain c ON p.productID = c.product.productID WHERE c.support.supportID = ?1")
+    Iterable<Product> findAllProductBySupportID(Integer id);
 }

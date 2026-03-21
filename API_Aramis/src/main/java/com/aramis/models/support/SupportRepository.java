@@ -19,4 +19,6 @@ public interface SupportRepository extends CrudRepository<Support, Integer> {
     Optional<Support> findFirstByOrderOrderBySupportIDDesc(Order order);
 
     List<Support> findAllByUser(User user);
+
+    Iterable<Support> findAllByOrder(Order order);
 }

@@ -1,5 +1,6 @@
 package com.aramis.models.contain;
 
+import com.aramis.models.product.Product;
 import com.aramis.models.support.Support;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

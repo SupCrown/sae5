@@ -1,20 +1,24 @@
 package com.aramis.dto;
 
+import com.aramis.models.support.Support;
 import com.aramis.utils.EPrepareStatus;
 import com.aramis.models.order.Order;
 
 import java.sql.Date;
+import java.util.List;
 
 public class OrderResponse {
-    public int OrderID;
-    public Date OrderDate;
-    public EPrepareStatus Status;
-    public int CustomerID;
+    public int orderID;
+    public Date orderDate;
+    public EPrepareStatus status;
+    public int customerID;
+    public List<SupportResponse> supports;
 
-    public OrderResponse(Order order) {
-        this.OrderID = order.getOrderID();
-        this.OrderDate = order.getOrderDate();
-        this.Status = order.getStatus();
-        this.CustomerID = order.getCustomer().getCustomerID();
+    public OrderResponse(Order order, List<SupportResponse> supports) {
+        this.orderID = order.getOrderID();
+        this.orderDate = order.getOrderDate();
+        this.status = order.getStatus();
+        this.customerID = order.getCustomer().getCustomerID();
+        this.supports = supports;
     }
 }
