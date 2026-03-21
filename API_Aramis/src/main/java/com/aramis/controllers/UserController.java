@@ -53,15 +53,15 @@ public class UserController {
         return ResponseEntity.ok(userResponseList);
     }
 
-    @Authorize(roles = {Role.ADMIN, Role.USER})
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Integer id) {
-
         return userRepository.findById(id)
                 .map(user -> ResponseEntity.ok(new UserResponse(user)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/create")
     public ResponseEntity<CreateUserRequest> createForm() {
         return ResponseEntity.ok(new CreateUserRequest());

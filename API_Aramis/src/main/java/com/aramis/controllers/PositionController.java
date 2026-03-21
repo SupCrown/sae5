@@ -1,5 +1,6 @@
 package com.aramis.controllers;
 
+import com.aramis.annotations.Authorize;
 import com.aramis.dto.LocationRequest;
 import com.aramis.models.driveway.Driveway;
 import com.aramis.models.driveway.DrivewayRepository;
@@ -7,6 +8,7 @@ import com.aramis.models.level.Level;
 import com.aramis.models.level.LevelRepository;
 import com.aramis.models.location.Location;
 import com.aramis.models.location.LocationRepository;
+import com.aramis.utils.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,11 +30,13 @@ public class PositionController {
         this.levelRepository = levelRepository;
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/create")
     public ResponseEntity<LocationRequest> createForm() {
         return ResponseEntity.ok(new LocationRequest());
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/create")
     public ResponseEntity<Location> create(@RequestBody LocationRequest request) {
         Optional<Driveway> drivewayOpt = drivewayRepository.findById(request.getDrivewayId());
@@ -55,12 +59,14 @@ public class PositionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/update/{id}")
     public ResponseEntity<Location> getForUpdate(@PathVariable Integer id) {
         Optional<Location> location = locationRepository.findById(id);
         return location.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/update/{id}")
     public ResponseEntity<Location> update(@PathVariable Integer id, @RequestBody LocationRequest request) {
         Optional<Location> existingOpt = locationRepository.findById(id);
@@ -85,6 +91,7 @@ public class PositionController {
         return ResponseEntity.ok(saved);
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         if (!locationRepository.existsById(id)) {
@@ -94,6 +101,7 @@ public class PositionController {
         return ResponseEntity.noContent().build();
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<Location> getById(@PathVariable Integer id) {
         Optional<Location> location = locationRepository.findById(id);

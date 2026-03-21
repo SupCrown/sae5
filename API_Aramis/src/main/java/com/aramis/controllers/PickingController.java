@@ -1,7 +1,9 @@
 package com.aramis.controllers;
 
+import com.aramis.annotations.Authorize;
 import com.aramis.dto.PickingTaskResponse;
 import com.aramis.services.PickingService;
+import com.aramis.utils.Role;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +17,7 @@ public class PickingController {
         this.pickingService = pickingService;
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/next")
     public ResponseEntity<PickingTaskResponse> getNextStep(@RequestParam int login) {
         // Appelle le service qui contient toute la logique
