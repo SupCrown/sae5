@@ -23,9 +23,9 @@ public class Customer {
     @Column(nullable = false)
     private Integer code;
 
-    @Column(nullable = false)
+    @Transient
     public Timestamp dateCreation;
 
-    @Column(nullable = false)
+    @Transient
     public Timestamp dateModification;
 }
