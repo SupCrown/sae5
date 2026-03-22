@@ -1,7 +1,9 @@
 package com.aramis.controllers;
 
 import com.aramis.annotations.Authorize;
+import com.aramis.dto.LevelResponse;
 import com.aramis.dto.LocationRequest;
+import com.aramis.dto.LocationResponse;
 import com.aramis.models.driveway.Driveway;
 import com.aramis.models.driveway.DrivewayRepository;
 import com.aramis.models.level.Level;
@@ -56,7 +58,7 @@ public class PositionController {
 
         try {
             Location saved = locationRepository.save(location);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new LocationResponse(saved));
         } catch (Exception e) {
             log.error("Error while creating location", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
@@ -85,7 +87,7 @@ public class PositionController {
 
         try {
             Location saved = locationRepository.save(existing);
-            return ResponseEntity.ok(saved);
+            return ResponseEntity.ok(new LocationResponse(saved));
         } catch (Exception e) {
             log.error("Error while updating location", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
@@ -108,18 +110,18 @@ public class PositionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Location> getById(@PathVariable Integer id) {
+    public ResponseEntity<LocationResponse> getById(@PathVariable Integer id) {
         Optional<Location> location = locationRepository.findById(id);
-        return location.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return location.map(value -> ResponseEntity.ok(new LocationResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Iterable<Location>> getAll(@PageableDefault(size = 20, sort = "locationID") Pageable pageable) {
+    public ResponseEntity<Iterable<LocationResponse>> getAll(@PageableDefault(size = 20, sort = "locationID") Pageable pageable) {
         var locations = locationRepository.findAll(pageable);
 
-        List<Location> locationsResponses = new ArrayList<>();
+        List<LocationResponse> locationsResponses = new ArrayList<>();
         for(Location location : locations) {
-           locationsResponses.add(location);
+           locationsResponses.add(new LocationResponse(location));
         }
 
         return ResponseEntity.ok(locationsResponses);

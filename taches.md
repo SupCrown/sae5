@@ -140,6 +140,13 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `size` : valeur par défaut `20`.
 - `/order/import` **[POST]** / **SUPERVISEUR** : import CSV.
 
+#### CRUD types de support
+
+- `/supportType/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un type de support.
+- `/supportType/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les types de support ordonnés par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
 #### CRUD emplacements / allées / niveaux
 
 ##### Emplacements
