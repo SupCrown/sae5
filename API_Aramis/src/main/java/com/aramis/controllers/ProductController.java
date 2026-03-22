@@ -43,7 +43,7 @@ public class ProductController {
 
     @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
-    public ResponseEntity<List<ProductResponse>> getProducts(@PageableDefault(size = 20) Pageable pageable) {
+    public ResponseEntity<List<ProductResponse>> getProducts(@PageableDefault(size = 20, sort = "productID") Pageable pageable) {
         var products = productRepository.findAll(pageable);
 
         List<ProductResponse> productResponseList = new ArrayList<>();

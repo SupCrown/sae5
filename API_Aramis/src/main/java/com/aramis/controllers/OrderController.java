@@ -104,7 +104,7 @@ public class OrderController {
 
     @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
-    public ResponseEntity<List<OrderResponse>> getOrders(@PageableDefault(size = 20) Pageable pageable) {
+    public ResponseEntity<List<OrderResponse>> getOrders(@PageableDefault(size = 20, sort = "oderID") Pageable pageable) {
         var orders = orderRepository.findAll(pageable);
 
         List<OrderResponse> orderResponseList = new ArrayList<>();
@@ -112,14 +112,6 @@ public class OrderController {
             orderResponseList.add(new OrderResponse(order, getSupportResponses(order)));
         }
         return ResponseEntity.ok(orderResponseList);
-    }
-
-    @Authorize(roles = Role.ADMIN)
-    @GetMapping("/create")
-    public ResponseEntity<Order> createForm() {
-        Order order = new Order();
-        order.setPriority(false);
-        return ResponseEntity.ok(order);
     }
 
     @Authorize(roles = Role.ADMIN)
@@ -142,13 +134,6 @@ public class OrderController {
 
         Order saved = orderRepository.save(order);
         return ResponseEntity.status(HttpStatus.CREATED).body(new OrderResponse(saved, null));
-    }
-
-    @Authorize(roles = Role.ADMIN)
-    @GetMapping("/update/{id}")
-    public ResponseEntity<Order> getForUpdate(@PathVariable Integer id) {
-        Optional<Order> order = orderRepository.findById(id);
-        return order.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Authorize(roles = Role.ADMIN)

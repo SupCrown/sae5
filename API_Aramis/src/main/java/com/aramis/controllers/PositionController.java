@@ -9,11 +9,15 @@ import com.aramis.models.level.LevelRepository;
 import com.aramis.models.location.Location;
 import com.aramis.models.location.LocationRepository;
 import com.aramis.utils.Role;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -28,12 +32,6 @@ public class PositionController {
         this.locationRepository = locationRepository;
         this.drivewayRepository = drivewayRepository;
         this.levelRepository = levelRepository;
-    }
-
-    @Authorize(roles = Role.ADMIN)
-    @GetMapping("/create")
-    public ResponseEntity<LocationRequest> createForm() {
-        return ResponseEntity.ok(new LocationRequest());
     }
 
     @Authorize(roles = Role.ADMIN)
@@ -57,13 +55,6 @@ public class PositionController {
 
         Location saved = locationRepository.save(location);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-    }
-
-    @Authorize(roles = Role.ADMIN)
-    @GetMapping("/update/{id}")
-    public ResponseEntity<Location> getForUpdate(@PathVariable Integer id) {
-        Optional<Location> location = locationRepository.findById(id);
-        return location.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Authorize(roles = Role.ADMIN)
@@ -92,7 +83,7 @@ public class PositionController {
     }
 
     @Authorize(roles = Role.ADMIN)
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         if (!locationRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -106,6 +97,19 @@ public class PositionController {
     public ResponseEntity<Location> getById(@PathVariable Integer id) {
         Optional<Location> location = locationRepository.findById(id);
         return location.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Authorize(roles = Role.ADMIN)
+    @GetMapping("/all")
+    public ResponseEntity<Iterable<Location>> getAll(@PageableDefault(size = 20, sort = "locationID") Pageable pageable) {
+        var locations = locationRepository.findAll(pageable);
+
+        List<Location> locationsResponses = new ArrayList<>();
+        for(Location location : locations) {
+           locationsResponses.add(location);
+        }
+
+        return ResponseEntity.ok(locationsResponses);
     }
 }
 

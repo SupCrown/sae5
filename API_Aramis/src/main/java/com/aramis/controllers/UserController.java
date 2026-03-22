@@ -62,12 +62,6 @@ public class UserController {
     }
 
     @Authorize(roles = Role.ADMIN)
-    @GetMapping("/create")
-    public ResponseEntity<CreateUserRequest> createForm() {
-        return ResponseEntity.ok(new CreateUserRequest());
-    }
-
-    @Authorize(roles = Role.ADMIN)
     @PostMapping("/create")
     public ResponseEntity<Object> createUser(@Valid @RequestBody CreateUserRequest request) {
         User user = new User();
@@ -97,14 +91,6 @@ public class UserController {
     }
 
     @Authorize(roles = Role.ADMIN)
-    @GetMapping("/update/{id}")
-    public ResponseEntity<UserResponse> getForUpdate(@PathVariable Integer id) {
-        Optional<User> user = userRepository.findById(id);
-        return user.map(value -> ResponseEntity.ok(new UserResponse(value)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @Authorize(roles = Role.ADMIN)
     @PostMapping("/update/{id}")
     public ResponseEntity<UserResponse> update(@PathVariable Integer id, @Valid @RequestBody CreateUserRequest request) {
         Optional<User> existingOpt = userRepository.findById(id);
@@ -120,8 +106,9 @@ public class UserController {
         User saved = userRepository.save(existing);
         return ResponseEntity.ok(new UserResponse(saved));
     }
+
     @Authorize(roles = Role.ADMIN)
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         if (!userRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
