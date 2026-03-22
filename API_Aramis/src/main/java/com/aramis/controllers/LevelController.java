@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/position")
+@RequestMapping("/level")
 @Slf4j
 public class LevelController {
 
@@ -31,6 +31,13 @@ public class LevelController {
 
     public LevelController(LevelRepository levelRepository) {
         this.levelRepository = levelRepository;
+    }
+
+    @Authorize(roles = Role.ADMIN)
+    @GetMapping("/{id}")
+    public ResponseEntity<Level> getById(@PathVariable Integer id) {
+        Optional<Level> level = levelRepository.findById(id);
+        return level.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Authorize(roles = Role.ADMIN)

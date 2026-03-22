@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/position")
+@RequestMapping("/driveway")
 @Slf4j
 public class DrivewayController {
 
@@ -30,6 +30,13 @@ public class DrivewayController {
 
     public DrivewayController(DrivewayRepository drivewayRepository) {
         this.drivewayRepository = drivewayRepository;
+    }
+
+    @Authorize(roles = Role.ADMIN)
+    @GetMapping("/{id}")
+    public ResponseEntity<Driveway> getById(@PathVariable Integer id) {
+        Optional<Driveway> driveway = drivewayRepository.findById(id);
+        return driveway.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Authorize(roles = Role.ADMIN)
