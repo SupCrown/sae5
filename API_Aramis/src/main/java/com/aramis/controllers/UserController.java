@@ -85,7 +85,7 @@ public class UserController {
                     .status(HttpStatus.CREATED)
                     .body(response);
         } catch (Exception e) {
-            log.error("Error authenticating user", e);
+            log.error("Error while creating user", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
         }
 
@@ -93,7 +93,7 @@ public class UserController {
 
     @Authorize(roles = Role.ADMIN)
     @PostMapping("/update/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable Integer id, @Valid @RequestBody CreateUserRequest request) {
+    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody CreateUserRequest request) {
         Optional<User> existingOpt = userRepository.findById(id);
         if (existingOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -105,18 +105,29 @@ public class UserController {
         existing.setLogin(request.getLogin());
         existing.setAdmin(request.isAdmin());
 
-        User saved = userRepository.save(existing);
-        return ResponseEntity.ok(new UserResponse(saved));
+        try {
+            User saved = userRepository.save(existing);
+            return ResponseEntity.ok(new UserResponse(saved));
+        } catch (Exception e) {
+            log.error("Error while updating user", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
+        }
     }
 
     @Authorize(roles = Role.ADMIN)
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Object> delete(@PathVariable Integer id) {
         if (!userRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        userRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+
+        try {
+            userRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error while deleting user", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
+        }
     }
 
     @Authorize(roles = {Role.ADMIN, Role.USER})

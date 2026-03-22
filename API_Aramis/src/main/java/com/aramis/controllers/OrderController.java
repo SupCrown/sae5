@@ -116,7 +116,7 @@ public class OrderController {
 
     @Authorize(roles = Role.ADMIN)
     @PostMapping("/create")
-    public ResponseEntity<OrderResponse> create(@RequestBody OrderRequest request) {
+    public ResponseEntity<Object> create(@RequestBody OrderRequest request) {
         Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
         if (customerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -132,13 +132,19 @@ public class OrderController {
         order.setDateCreation(now);
         order.setDateModification(now);
 
-        Order saved = orderRepository.save(order);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new OrderResponse(saved, null));
+        try {
+            Order saved = orderRepository.save(order);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new OrderResponse(saved, null));
+        } catch (Exception e) {
+            log.error("Error while creating order", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
+        }
+
     }
 
     @Authorize(roles = Role.ADMIN)
     @PostMapping("/update/{id}")
-    public ResponseEntity<Order> update(@PathVariable Integer id, @RequestBody OrderRequest request) {
+    public ResponseEntity<Object> update(@PathVariable Integer id, @RequestBody OrderRequest request) {
         Optional<Order> existingOpt = orderRepository.findById(id);
         if (existingOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -156,18 +162,30 @@ public class OrderController {
         existing.setPriority(request.isPriority());
         existing.setDateModification(new Timestamp(System.currentTimeMillis()));
 
-        Order saved = orderRepository.save(existing);
-        return ResponseEntity.ok(saved);
+        try {
+            Order saved = orderRepository.save(existing);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            log.error("Error while updating order", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
+        }
+
     }
 
     @Authorize(roles = Role.ADMIN)
     @PostMapping("/delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Object> delete(@PathVariable Integer id) {
         if (!orderRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        orderRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+
+        try {
+            orderRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("Error while deleting order", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
+        }
     }
 
     @Authorize(roles = Role.ADMIN)

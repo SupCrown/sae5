@@ -137,6 +137,10 @@ public class ProductController {
     @Authorize(roles = Role.ADMIN)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteProduct(@PathVariable Integer id) {
+        if (!productRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
         try {
             productRepository.deleteById(id);
             return ResponseEntity.ok().build();
