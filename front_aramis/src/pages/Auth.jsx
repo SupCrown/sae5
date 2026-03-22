@@ -1,63 +1,98 @@
-import { useRef } from "react";
-import cerclePng from "../assets/images/cercle.png"; // adapte si besoin
+import { useRef, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { authService } from "../services/authService";
+import cerclePng from "../assets/images/cercle.png";
+
 
 export default function AuthScreen() {
-  const inputs = [useRef(null), useRef(null), useRef(null)];
+ const [codes, setCodes] = useState(["", "", ""]);
+ const [status, setStatus] = useState("idle"); // idle | loading | error401 | error403
+ const inputRefs = useRef([]);
+ const navigate = useNavigate();
 
-  const handleChange = (e, index) => {
-    const value = e.target.value;
-    if (!/^[0-9]?$/.test(value)) return;
-    if (value && index < 2) inputs[index + 1].current.focus();
-  };
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !e.target.value && index > 0) {
-      inputs[index - 1].current.focus();
-    }
-  };
+ useEffect(() => {
+   if (inputRefs.current[0]) inputRefs.current[0].focus();
+ }, []);
 
-  return (
-    <div className="relative h-screen w-screen overflow-hidden bg-white flex flex-col items-center">
 
-      {/*TRAIT ROUGE EN HAUT */}
-      <div className="absolute top-0 left-0 w-full h-[6px] bg-[#870000]" />
+ const handleChange = async (e, index) => {
+   const value = e.target.value;
+   if (!/^[0-9]?$/.test(value)) return;
 
-      {/*Cercles décoratifs */}
-      <img
-        src={cerclePng}
-        alt=""
-        className="absolute top-[100px] left-1/2 -translate-x-1/2 w-[500px] opacity-10 pointer-events-none select-none"
-      />
-      <img
-        src={cerclePng}
-        alt=""
-        className="absolute bottom-[80px] left-[250px] w-[420px] opacity-10 pointer-events-none select-none"
-      />
-      <img
-        src={cerclePng}
-        alt=""
-        className="absolute bottom-[360px] right-[80px] w-[420px] opacity-10 pointer-events-none select-none"
-      />
 
-      {/*Contenu principal */}
-      <div className="flex flex-col items-center mt-[160px] gap-16 z-10">
-        <h1 className="text-[80px] font-bold">Identification</h1>
+   setStatus("idle");
+   const newCodes = [...codes];
+   newCodes[index] = value;
+   setCodes(newCodes);
 
-        <div className="flex gap-10">
-          {[0, 1, 2].map((i) => (
-            <input
-              key={i}
-              ref={inputs[i]}
-              type="password"
-              inputMode="numeric"
-              maxLength={1}
-              onChange={(e) => handleChange(e, i)}
-              onKeyDown={(e) => handleKeyDown(e, i)}
-              className="w-[95px] h-[115px] bg-gray-200 text-center text-[60px] font-bold rounded-md shadow-inner focus:outline-none focus:ring-4 focus:ring-[#870000]"
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+
+   if (value && index < 2) {
+     inputRefs.current[index + 1].focus();
+   }
+
+
+   if (value && index === 2) {
+     const pin = newCodes.join("");
+     setStatus("loading");
+    
+     try {
+       await authService.login(pin);
+       navigate("/home");
+     } catch (err) {
+       if (err.message === "Identifiants incorrects") setStatus("error401");
+       else if (err.message === "Accès refusé") setStatus("error403");
+       else setStatus("errorServer");
+
+
+       setCodes(["", "", ""]);
+       inputRefs.current[0].focus();
+     }
+   }
+ };
+
+
+ // ... (Garder la fonction handleKeyDown identique)
+
+
+ return (
+   <div className="relative h-screen w-screen overflow-hidden bg-white flex flex-col items-center select-none">
+     <div className="absolute top-0 left-0 w-full h-[6px] bg-[#870000] z-20" />
+
+
+     {/* Cercles */}
+     <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
+       <img src={cerclePng} alt="" className="absolute top-[100px] left-1/2 -translate-x-1/2 w-[500px]" />
+       <img src={cerclePng} alt="" className="absolute bottom-[80px] left-[250px] w-[420px]" />
+       <img src={cerclePng} alt="" className="absolute bottom-[360px] right-[80px] w-[420px]" />
+     </div>
+
+
+     <div className="flex flex-col items-center mt-[160px] gap-16 z-10">
+       <h1 className={`text-[80px] font-bold tracking-tight transition-all duration-300 ${status.includes('error') ? 'text-red-600 scale-105' : 'text-gray-900'}`}>
+         {status === "error401" && "Code Incorrect"}
+         {status === "error403" && "Accès Interdit"}
+         {status === "idle" && "Identification"}
+         {status === "loading" && "Vérification..."}
+       </h1>
+
+
+       <div className={`flex gap-10 ${status.includes('error') ? 'animate-shake' : ''}`}>
+         {[0, 1, 2].map((i) => (
+           <input
+             key={i}
+             ref={(el) => (inputRefs.current[i] = el)}
+             type="password"
+             value={codes[i]}
+             disabled={status === "loading"}
+             className={`w-[95px] h-[115px] bg-gray-200 border-2 text-center text-[60px] font-bold rounded-xl shadow-inner transition-all
+               ${status.includes('error') ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:border-[#870000] focus:ring-4 focus:ring-[#870000]/20'}`}
+             onChange={(e) => handleChange(e, i)}
+             onKeyDown={(e) => handleKeyDown(e, i)}
+           />
+         ))}
+       </div>
+     </div>
+   </div>
+ );
 }
