@@ -19,6 +19,9 @@ public class ProductResponse {
     private Integer length;
     private Integer width;
     private String location;
+    private String driveway;
+    private String zone;
+    private Integer level;
 
     public ProductResponse(Product product) {
         productID = product.getProductID();
@@ -28,6 +31,9 @@ public class ProductResponse {
         height = product.getHeight();
         length = product.getLength();
         width = product.getWidth();
-        location = product.getLocation().toString();
+        location = product.getLocation().getLocationCode();
+        driveway = product.getLocation().getDriveway().getName();
+        zone = product.getLocation().getDriveway().getZone().getZoneName();
+        level = product.getLocation().getLevel().getLevelValue();
     }
 }
