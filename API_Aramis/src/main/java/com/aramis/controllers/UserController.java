@@ -142,7 +142,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/all/stats")
+    @GetMapping("/stats")
     public ResponseEntity<Object> GetAllUsersStats() {
         try {
             Iterable<User> users = userRepository.findAllNotAdmin();
