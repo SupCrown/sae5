@@ -68,6 +68,7 @@ public class UserController {
         user.setFirstname(request.getFirstname());
         user.setLastname(request.getLastname());
         user.setLogin(request.getLogin());
+        user.setAdmin(request.isAdmin());
 
         try {
             User savedUser = userRepository.save(user);
@@ -102,6 +103,7 @@ public class UserController {
         existing.setFirstname(request.getFirstname());
         existing.setLastname(request.getLastname());
         existing.setLogin(request.getLogin());
+        existing.setAdmin(request.isAdmin());
 
         User saved = userRepository.save(existing);
         return ResponseEntity.ok(new UserResponse(saved));
