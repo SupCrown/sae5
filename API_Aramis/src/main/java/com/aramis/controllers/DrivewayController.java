@@ -33,13 +33,6 @@ public class DrivewayController {
     }
 
     @Authorize(roles = Role.ADMIN)
-    @GetMapping("/{id}")
-    public ResponseEntity<Driveway> getById(@PathVariable Integer id) {
-        Optional<Driveway> driveway = drivewayRepository.findById(id);
-        return driveway.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
     public ResponseEntity<Iterable<Driveway>> getAll(@PageableDefault(size = 20, sort = "locationID") Pageable pageable) {
         var driveways = drivewayRepository.findAll(pageable);
