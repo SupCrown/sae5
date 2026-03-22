@@ -13,6 +13,7 @@ import com.aramis.models.product.Product;
 import com.aramis.models.product.ProductRepository;
 import com.aramis.models.support.Support;
 import com.aramis.models.support.SupportRepository;
+import com.aramis.models.supportType.SupportType;
 import com.aramis.models.supportType.SupportTypeRepository;
 import com.aramis.services.AuthService;
 import com.aramis.services.SupportService;
@@ -141,23 +142,27 @@ public class OrderController {
             Order saved = orderRepository.save(order);
 
             for (SupportRequest supportRequest : request.getSupports()) {
-                Support support = supportRepository.save(supportRequest.toSupport(saved));
+                Optional<SupportType> type = supportTypeRepository.findById(supportRequest.getTypeId());
 
-                List<Product> products = new ArrayList<>();
-                for (ProductSupportRequest productRequest : supportRequest.getProducts()) {
-                    Optional<Product> product = productRepository.findById(productRequest.getProductID());
+                if (type.isPresent()) {
+                    Support support = supportRepository.save(supportRequest.toSupport(saved, type.get()));
 
-                    if (product.isPresent()) {
-                        containRepository.save(productRequest.toContain(product.get(), support));
-                        products.add(product.get());
+                    List<Product> products = new ArrayList<>();
+                    for (ProductSupportRequest productRequest : supportRequest.getProducts()) {
+                        Optional<Product> product = productRepository.findById(productRequest.getProductID());
+
+                        if (product.isPresent()) {
+                            containRepository.save(productRequest.toContain(product.get(), support));
+                            products.add(product.get());
+                        }
                     }
+
+                    List<ProductPlacement> productPlacements = SupportService.calculateOptimisedSupport(products, support.getType());
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    support.setNestedProductsPlacements(objectMapper.writeValueAsString(productPlacements));
+                    supportRepository.save(support);
                 }
-
-                List<ProductPlacement> productPlacements = SupportService.calculateOptimisedSupport(products, support.getType());
-
-                ObjectMapper objectMapper = new ObjectMapper();
-                support.setNestedProductsPlacements(objectMapper.writeValueAsString(productPlacements));
-                supportRepository.save(support);
             }
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new OrderResponse(saved, null));

@@ -18,11 +18,11 @@ import java.util.List;
 @AllArgsConstructor
 public class SupportRequest {
     @NotNull
-    private SupportType type;
+    private Integer typeId;
     @NotNull
     public List<ProductSupportRequest> products;
 
-    public Support toSupport(Order order) {
+    public Support toSupport(Order order, SupportType type) {
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
         Support support = new Support();

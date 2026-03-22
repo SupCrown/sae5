@@ -91,11 +91,51 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 
 #### CRUD commandes
 
-- `/order/create` **[POST]** / **SUPERVISEUR** : **créer** un commande.
-- `/order/update/{id}` **[POST]** / **SUPERVISEUR** : **modifier** un commande.
-- `/order/delete/{id}` **[POST]** / **SUPERVISEUR** : **supprimer** un commande.
+- `/order/create` **[POST]** / **SUPERVISEUR** : **créer** une commande :
+```json
+{
+    "orderDate" : "Date de la commande ex : '2026-03-23'",
+    "customerId" : "ID du clien", 
+    "priority" : "(booléen) est-ce que la commande dois-être réalisée en prioritée",
+    "supports" : [
+        {
+            "typeId" : "Identifiant du type de support",
+            "products" : [
+                {
+                    "productID" : "Identifiant du produit à ajouter dans le support",
+                    "quantity" : "Quantité du produit sur la support de la commande"
+                },
+                {
+                    "..."
+                }
+            ]
+        },
+        {
+            "..."
+        }
+    ],
+}
+```
+- `/order/update/{id}` **[POST]** / **SUPERVISEUR** : **modifier** une commande.
+- `/order/delete/{id}` **[POST]** / **SUPERVISEUR** : **supprimer** une commande.
 - `/order/{id}` **[GET]** / **SUPERVISEUR** : **consulter** une commande.
 - `/order/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** toutes les commandes ordonnées par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+- `/order/import` **[POST]** / **SUPERVISEUR** : import CSV.
+
+#### CRUD clients
+
+- `/order/create` **[POST]** / **SUPERVISEUR** : **créer** un client :
+```json
+{
+    "name" : "Nom du client",
+    "code" : "Code à 5 chiffre unique du client"
+}
+```
+- `/order/delete/{id}` **[POST]** / **SUPERVISEUR** : **supprimer** un client.
+- `/order/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un client.
+- `/order/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les clients ordonnés par des pages :
     - `page` : valeur par défaut `0`.
     - `size` : valeur par défaut `20`.
 - `/order/import` **[POST]** / **SUPERVISEUR** : import CSV.
@@ -135,22 +175,33 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `page` : valeur par défaut `0`.
     - `size` : valeur par défaut `20`.
 - `/product/add` **[POST]** / **SUPERVISEUR**: ajouter une quantité de stockage à un produit.
-    - `productID`: id de l'objet au quel ajouter une quantité X à la quantité actuelle.
-    - `quantityToAdd`: quantité X à ajouter.
+```json
+{
+    "productID" : "id de l'objet au quel retier une quantité X à la quantité actuelle",
+    "quantityToAdd" : "quantité X à ajouter"
+}
+```
 - `/product/take` **[POST]** / **SUPERVISEUR** : retier une quantité X à la quantité actuelle. Si la quantité à retirer est supréieure à la quantité en stock, le nouveau stock sera de 0.
-    - `productID`: id de l'objet au quel retier une quantité X à la quantité actuelle. 
-    - `quantityToTake`: quantité X à retirer.
+```json
+{
+    "productID" : "id de l'objet au quel retier une quantité X à la quantité actuelle",
+    "quantityToTake" : "quantité X à retirer"
+}
+```
 - `/product/create` **[POST]** / **SUPERVISEUR** : ajout un nouveau produit à la liste. Si l'emplacement au quel ajouter ce produit est déjà lié à un autre porduit une `BadRequest` est retrounée.
-    - `productCode`: code du produit.
-    - `quantity`: quantité initiale.
-    - `libel` : nom du produit.
-    - `height` : hauteur du produit.
-    - `length` : longueur du produit.
-    - `width` : largeur du produit.
-    - `zone` : nom de la zone de stockage du produit.
-    - `driveway` : nom de l'allée de stockage du produit.
-    - `location` : numéro d'emplacment de stockage du produit.
-    - `level` : numéro du niveau de stockage sur l'empalcement du produit.
+```json
+{
+    "productCode" : "code du produit",
+    "quantity" : "quantité initiale",
+    "libel" : "nom du produit",
+    "height" : "hauteur du produit",
+    "length" : "longueur du produit",
+    "width" : "largeur du produit",
+    "zone" : "nom de la zone de stockage du produit",
+    "driveway" : "nom de l'allée de stockage du produit",
+    "location" : "numéro d'emplacment de stockage du produit"
+}
+```
 - `/product/delete/{id}` **[DELETE]** / **SUPERVISEUR**.
 
 ## Front
