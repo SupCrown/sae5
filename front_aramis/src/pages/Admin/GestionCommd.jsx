@@ -1,57 +1,172 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import plusIcon from "../../assets/saisie-stocks-plus.png";
 import SuppBut from "../../assets/SuppBut.png";
 import ModifBut from "../../assets/ModifBut.png";
 import { useNavigate } from "react-router-dom";
 
-function GestionStocks() {
+function GestionCommd() {
   const navigate = useNavigate();
 
-  // ✅ rows en state pour pouvoir supprimer visuellement
-  const [rows, setRows] = useState([
-    { CdeCmd: "H-004-0101-00", nbcolis: "38" },
-    { CdeCmd: "H-004-0101-00", nbcolis: "42" },
-    { CdeCmd: "H-004-0101-00", nbcolis: "29" },
-    { CdeCmd: "H-004-0101-00", nbcolis: "31" },
-  ]);
+  const fallbackRows = [
+  {
+    id: 1,
+    support: "SUP-001",
+    codemb: "EMB01",
+    cliliv: "CL001",
+    nomcli: "Client A",
+    itm8: "ITM0001",
+    designation: "Produit A",
+    nbColis: 38,
+    zone: "H",
+    allee: "08",
+    dpl: "023",
+    niveau: "1",
+  },
+  {
+    id: 2,
+    support: "SUP-002",
+    codemb: "EMB02",
+    cliliv: "CL002",
+    nomcli: "Client B",
+    itm8: "ITM0002",
+    designation: "Produit B",
+    nbColis: 42,
+    zone: "A",
+    allee: "02",
+    dpl: "110",
+    niveau: "2",
+  },
+  {
+    id: 3,
+    support: "SUP-003",
+    codemb: "EMB03",
+    cliliv: "CL003",
+    nomcli: "Client C",
+    itm8: "ITM0003",
+    designation: "Produit C",
+    nbColis: 29,
+    zone: "C",
+    allee: "15",
+    dpl: "045",
+    niveau: "3",
+  },
+  {
+    id: 4,
+    support: "SUP-004",
+    codemb: "EMB04",
+    cliliv: "CL004",
+    nomcli: "Client D",
+    itm8: "ITM0004",
+    designation: "Produit D",
+    nbColis: 31,
+    zone: "F",
+    allee: "01",
+    dpl: "301",
+    niveau: "1",
+  },
+];
 
-  // ✅ popup confirmation
+  const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(0);
+  const [size] = useState(20);
+  const [loading, setLoading] = useState(true);
+
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
-
-  // ✅ popup succès
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToModif = () => navigate("/modif-commd");
+  const goToModif = (id) => navigate(`/modif-commd/${id}`);
   const goToCreer = () => navigate("/creer-commd");
 
-  // Ouvre le popup confirmation
-  const handleDelete = (idx) => {
-    setRowToDelete(idx);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+
+        const response = await fetch(`/order/all?page=${page}&size=${size}`, {
+          method: "GET",
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur API");
+        }
+
+        const data = await response.json();
+        const orders = Array.isArray(data) ? data : data.content || [];
+
+        if (!orders.length) {
+          setRows(fallbackRows);
+          return;
+        }
+
+        const mappedRows = orders.map((order, index) => ({
+          id: order.id ?? index + 1,
+
+          support: order.support ?? "SUP-001",
+          codemb: order.codemb ?? "EMB01",
+          cliliv: order.cliliv ?? "CL001",
+          nomcli: order.nomcli ?? "Client Test",
+
+          itm8: order.itm8 ?? "ITM0001",
+          designation: order.designation ?? "Produit X",
+
+          nbColis: order.nbColis ?? order.nbcolis ?? 0,
+
+          zone: order.zone ?? "A",
+          allee: order.allee ?? order.driveway ?? "01",
+          dpl: order.dpl ?? order.location ?? "000",
+          niveau: order.niveau ?? order.level ?? "0",
+        }));
+
+        setRows(mappedRows);
+      } catch (error) {
+        console.error("Erreur récupération commandes :", error);
+        setRows(fallbackRows);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [page, size]);
+
+  const handleDelete = (row, idx) => {
+    setRowToDelete({ id: row.id, idx });
     setConfirmOpen(true);
   };
 
-  // Clique NON
   const cancelDelete = () => {
     setConfirmOpen(false);
     setRowToDelete(null);
   };
 
-  // Clique OUI -> supprime + popup succès
-  const confirmDelete = () => {
-    if (rowToDelete === null) return;
+  const confirmDelete = async () => {
+    if (!rowToDelete) return;
 
-    setRows((prev) => prev.filter((_, i) => i !== rowToDelete));
-    setConfirmOpen(false);
-    setRowToDelete(null);
+    try {
+      const response = await fetch(`/order/delete/${rowToDelete.id}`, {
+        method: "POST",
+      });
 
-    setSuccessOpen(true);
-    setTimeout(() => setSuccessOpen(false), 2000);
+      if (!response.ok) {
+        throw new Error("Suppression impossible");
+      }
+
+      setRows((prev) => prev.filter((row) => row.id !== rowToDelete.id));
+    } catch (error) {
+      console.warn("API delete indisponible -> suppression locale");
+      setRows((prev) => prev.filter((_, i) => i !== rowToDelete.idx));
+    } finally {
+      setConfirmOpen(false);
+      setRowToDelete(null);
+
+      setSuccessOpen(true);
+      setTimeout(() => setSuccessOpen(false), 2000);
+    }
   };
 
   return (
     <div className="p-4 flex flex-col items-center relative">
-      {/* bouton + */}
       <button
         className="flex flex-col items-center gap-2 px-[500px] py-[5px] mt-[40px] text-[20px] font-bold bg-blue-600 text-white rounded-[50px]"
         onClick={goToCreer}
@@ -60,49 +175,92 @@ function GestionStocks() {
         <img src={plusIcon} alt="Plus Icon" className="w-[40px] h-[40px] m-[20px]" />
       </button>
 
-      {/* tableau */}
-      <div className="w-full mt-[50px]">
-        <table className="w-full border-collapse text-center">
-          <thead>
-            <tr className="border-b-2 border-black">
-              <th className="py-2 font-bold text-[30px]">Code Commande</th>
-              <th className="py-2 font-bold text-[30px]">Nombre de colis</th>
-              <th className="py-2 font-bold text-[30px]">Actions</th>
-            </tr>
-          </thead>
+      {loading && (
+        <div className="mt-[30px] text-[22px] font-bold">
+          Chargement des commandes...
+        </div>
+      )}
 
-          <tbody>
-            {rows.map((r, idx) => {
-              const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
+      {!loading && (
+        <div className="w-full mt-[50px]">
+          <table className="w-full border-collapse text-center">
+            <thead>
+              <tr className="border-b-2 border-black">
+                <th className="py-2 font-bold text-[18px]">N° Support</th>
+                <th className="py-2 font-bold text-[18px]">Codemb</th>
+                <th className="py-2 font-bold text-[18px]">Cliliv</th>
+                <th className="py-2 font-bold text-[18px]">Nomcli</th>
+                <th className="py-2 font-bold text-[18px]">ITM 8</th>
+                <th className="py-2 font-bold text-[18px]">Désignation</th>
+                <th className="py-2 font-bold text-[18px]">Nb Colis</th>
+                <th className="py-2 font-bold text-[18px]">Z</th>
+                <th className="py-2 font-bold text-[18px]">All</th>
+                <th className="py-2 font-bold text-[18px]">Dpl</th>
+                <th className="py-2 font-bold text-[18px]">Niv</th>
+                <th className="py-2 font-bold text-[18px]">Actions</th>
+              </tr>
+            </thead>
 
-              return (
-                <tr key={idx} className={`border-b border-black ${rowClass}`}>
-                  <td className="py-[10px] font-bold text-[20px]">{r.CdeCmd}</td>
-                  <td className="py-[10px] font-bold text-[20px]">{r.nbcolis}</td>
+           <tbody>
+              {rows.map((r, idx) => {
+                const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
 
-                  <td className="py-[10px] font-bold">
-                    <button
-                      className="px-[20px] py-[10px] rounded-[50px] mr-[10px]"
-                      onClick={goToModif}
-                      type="button"
-                    >
-                      <img src={ModifBut} alt="Modifier" className="w-[20px] h-[20px]" />
-                    </button>
+                return (
+                  <tr key={r.id ?? idx} className={`border-b border-black ${rowClass}`}>
+                    <td className="py-[8px]">{r.support}</td>
+                    <td className="py-[8px]">{r.codemb}</td>
+                    <td className="py-[8px]">{r.cliliv}</td>
+                    <td className="py-[8px]">{r.nomcli}</td>
+                    <td className="py-[8px]">{r.itm8}</td>
+                    <td className="py-[8px]">{r.designation}</td>
+                    <td className="py-[8px] font-bold">{r.nbColis}</td>
+                    <td className="py-[8px]">{r.zone}</td>
+                    <td className="py-[8px]">{r.allee}</td>
+                    <td className="py-[8px]">{r.dpl}</td>
+                    <td className="py-[8px]">{r.niveau}</td>
 
-                    <button
-                      className="px-[20px] py-[10px] rounded-[50px]"
-                      onClick={() => handleDelete(idx)}
-                      type="button"
-                    >
-                      <img src={SuppBut} alt="Supprimer" className="w-[20px] h-[20px]" />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    <td className="py-[8px]">
+                      <button
+                        className="px-[15px] py-[8px] mr-[10px]"
+                        onClick={() => goToModif(r.id)}
+                      >
+                        <img src={ModifBut} alt="Modifier" className="w-[18px]" />
+                      </button>
+
+                      <button
+                        className="px-[15px] py-[8px]"
+                        onClick={() => handleDelete(r, idx)}
+                      >
+                        <img src={SuppBut} alt="Supprimer" className="w-[18px]" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="flex justify-center items-center gap-6 mt-[30px]">
+            <button
+              type="button"
+              onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
+            >
+              Précédent
+            </button>
+
+            <span className="text-[22px] font-bold">Page {page + 1}</span>
+
+            <button
+              type="button"
+              onClick={() => setPage((prev) => prev + 1)}
+              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
+            >
+              Suivant
+            </button>
+          </div>
+        </div>
+      )}
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 bg-[#FFFFFF]">
@@ -138,7 +296,7 @@ function GestionStocks() {
       {successOpen && (
         <div className="fixed w-full flex justify-center">
           <div className="w-[650px] border-2 bg-white px-[30px] py-[20px] flex items-center justify-between rounded-[40px] bg-[#FFFFFF]">
-            <span className="font-bold">Commande supprimer avec succès !</span>
+            <span className="font-bold">Commande supprimée avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓
             </div>
@@ -149,4 +307,4 @@ function GestionStocks() {
   );
 }
 
-export default GestionStocks;
+export default GestionCommd;

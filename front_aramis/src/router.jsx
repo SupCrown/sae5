@@ -9,10 +9,9 @@ import CreerPrep from "./pages/Admin/CreerPrep.jsx";
 import GestionCommd from "./pages/Admin/GestionCommd.jsx";
 import ModifCommd from "./pages/Admin/ModifCommd.jsx";
 import CreerCommd from "./pages/Admin/CreerCommd.jsx";
-import SaisieStocks from "./pages/Admin/SaisieStocks.jsx";
-import ModifStocks from "./pages/Admin/ModifStocks.jsx";
 import GestionStocks from "./pages/Admin/GestionStocks.jsx";
 import CreerStocks from "./pages/Admin/CreerStocks.jsx";
+import InfosStocks from "./pages/Admin/InfosStocks.jsx";
 import Stat from "./pages/Admin/Stat.jsx";
 
 
@@ -23,18 +22,17 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <GestionPrep /> },
       { path: "gestion-prep", element: <GestionPrep /> },
-      { path: "modif-prep", element: <ModifPrep /> },
+      { path: "modif-prep/:id", element: <ModifPrep /> },
       { path: "creer-prep", element: <CreerPrep /> },
       { path: "gestion-empl", element: <GestionEmpl /> },
-      { path: "modif-empl", element: <ModifEmpl /> },
+      { path: "modif-empl/:id", element: <ModifEmpl /> },
       { path: "creer-empl", element: <CreerEmpl /> },
       { path: "gestion-commd", element: <GestionCommd /> },
-      { path: "modif-commd", element: <ModifCommd /> },
+      { path: "modif-commd/:id", element: <ModifCommd /> },
       { path: "creer-commd", element: <CreerCommd /> },
-      { path: "saisie-stocks", element: <SaisieStocks /> },
-      { path: "modif-stocks", element: <ModifStocks /> },
       { path: "gestion-stocks", element: <GestionStocks /> },
       { path: "creer-stocks", element: <CreerStocks /> },
+      { path: "infos-stocks/:id", element: <InfosStocks />},
       { path: "stat", element: <Stat /> },
     ],
   },

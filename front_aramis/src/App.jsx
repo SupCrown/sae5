@@ -41,7 +41,7 @@ export default function App() {
           <option value="/gestion-prep">Gestion Préparateurs</option>
           <option value="/gestion-empl">Gestion Emplacements</option>
           <option value="/gestion-commd">Gestion Commandes</option>
-          <option value="/saisie-stocks">Saisie Stocks</option>
+          <option value="/gestion-stocks">Gestion Stocks</option>
           <option value="/stat">Statistiques</option>
         </select>
 

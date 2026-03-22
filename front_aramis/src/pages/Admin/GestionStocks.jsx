@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import plusIcon from "../../assets/saisie-stocks-plus.png";
 import SuppBut from "../../assets/SuppBut.png";
 import ModifBut from "../../assets/ModifBut.png";
@@ -7,46 +7,141 @@ import { useNavigate } from "react-router-dom";
 function GestionStocks() {
   const navigate = useNavigate();
 
-  // ✅ rows en state pour pouvoir supprimer visuellement
-  const [rows, setRows] = useState([
-    { zone: "H", allee: "08", emplacement: "023" },
-    { zone: "H", allee: "08", emplacement: "023" },
-    { zone: "H", allee: "08", emplacement: "023" },
-    { zone: "H", allee: "08", emplacement: "023" },
-  ]);
+  const fallbackRows = [
+  {
+    id: 1,
+    productCode: "P-001",
+    libel: "Produit A",
+    quantity: 120,
+    zone: "H",
+    driveway: "08",
+    location: "023",
+    level: "1",
+  },
+  {
+    id: 2,
+    productCode: "P-002",
+    libel: "Produit B",
+    quantity: 80,
+    zone: "A",
+    driveway: "02",
+    location: "110",
+    level: "2",
+  },
+  {
+    id: 3,
+    productCode: "P-003",
+    libel: "Produit C",
+    quantity: 45,
+    zone: "C",
+    driveway: "15",
+    location: "045",
+    level: "3",
+  },
+  {
+    id: 4,
+    productCode: "P-004",
+    libel: "Produit D",
+    quantity: 200,
+    zone: "F",
+    driveway: "01",
+    location: "301",
+    level: "1",
+  },
+];
 
-  // ✅ popup confirmation
+  const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(0);
+  const [size] = useState(20);
+  const [loading, setLoading] = useState(true);
+
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
-
-  // ✅ popup succès
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToModif = () => navigate("/modif-stocks");
+  const goToInfos = (id) => navigate(`/infos-stocks/${id}`);
   const goToCreer = () => navigate("/creer-stocks");
 
-  // Ouvre le popup confirmation
-  const handleDelete = (idx) => {
-    setRowToDelete(idx);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+
+        const response = await fetch(`/product/all?page=${page}&size=${size}`, {
+          method: "GET",
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur API");
+        }
+
+        const data = await response.json();
+        
+        const products = Array.isArray(data) ? data : data.content || [];
+
+        if (!products.length) {
+          setRows(fallbackRows);
+          return;
+        }
+
+        const mappedRows = products.map((product, index) => ({
+          id: product.id ?? index + 1,
+
+          productCode: product.productCode ?? "P-000",
+          quantity: product.quantity ?? 0,
+          libel: product.libel ?? "Produit inconnu",
+
+          zone: product.zone ?? "A",
+          driveway: product.driveway ?? "01",
+          location: product.location ?? "000",
+          level: product.level ?? "0",
+        }));
+
+        setRows(mappedRows);
+      } catch (error) {
+        console.error("Erreur récupération produits :", error);
+        setRows(fallbackRows);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [page, size]);
+
+    const handleDelete = (row, idx) => {
+    setRowToDelete({ id: row.id, idx });
     setConfirmOpen(true);
   };
 
-  // Clique NON
   const cancelDelete = () => {
     setConfirmOpen(false);
     setRowToDelete(null);
   };
 
-  // Clique OUI -> supprime + popup succès
-  const confirmDelete = () => {
-    if (rowToDelete === null) return;
+  const confirmDelete = async () => {
+    if (!rowToDelete) return;
 
-    setRows((prev) => prev.filter((_, i) => i !== rowToDelete));
-    setConfirmOpen(false);
-    setRowToDelete(null);
+    try {
+      const response = await fetch(`/product/delete/${rowToDelete.id}`, {
+        method: "DELETE",
+      });
 
-    setSuccessOpen(true);
-    setTimeout(() => setSuccessOpen(false), 2000);
+      if (!response.ok) {
+        throw new Error("API indisponible");
+      }
+
+      setRows((prev) => prev.filter((row) => row.id !== rowToDelete.id));
+    } catch (error) {
+      console.warn("API delete indisponible -> suppression locale");
+      setRows((prev) => prev.filter((_, i) => i !== rowToDelete.idx));
+    } finally {
+      setConfirmOpen(false);
+      setRowToDelete(null);
+
+      setSuccessOpen(true);
+      setTimeout(() => setSuccessOpen(false), 2000);
+    }
   };
 
   return (
@@ -57,54 +152,95 @@ function GestionStocks() {
         onClick={goToCreer}
         type="button"
       >
-        <img src={plusIcon} alt="Plus Icon" className="w-[40px] h-[40px] m-[20px]" />
+        <img
+          src={plusIcon}
+          alt="Plus Icon"
+          className="w-[40px] h-[40px] m-[20px]"
+        />
       </button>
 
+      {/* état chargement */}
+      {loading && (
+        <div className="mt-[30px] text-[22px] font-bold">
+          Chargement des produits...
+        </div>
+      )}
+
       {/* tableau */}
-      <div className="w-full mt-[50px]">
-        <table className="w-full border-collapse text-center">
-          <thead>
-            <tr className="border-b-2 border-black">
-              <th className="py-2 font-bold text-[30px]">Zone</th>
-              <th className="py-2 font-bold text-[30px]">Allée</th>
-              <th className="py-2 font-bold text-[30px]">Emplacement</th>
-              <th className="py-2 font-bold text-[30px]">Actions</th>
-            </tr>
-          </thead>
+      {!loading && (
+        <div className="w-full mt-[50px]">
+          <table className="w-full border-collapse text-center">
+            <thead>
+              <tr className="border-b-2 border-black">
+                <th className="py-2 font-bold text-[20px]">Code</th>
+                <th className="py-2 font-bold text-[20px]">Libellé</th>
+                <th className="py-2 font-bold text-[20px]">Quantité</th>
+                <th className="py-2 font-bold text-[20px]">Zone</th>
+                <th className="py-2 font-bold text-[20px]">Allée</th>
+                <th className="py-2 font-bold text-[20px]">Emplacement</th>
+                <th className="py-2 font-bold text-[20px]">Niveau</th>
+                <th className="py-2 font-bold text-[20px]">Actions</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            {rows.map((r, idx) => {
-              const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
+            <tbody>
+              {rows.map((r, idx) => {
+                const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
 
-              return (
-                <tr key={idx} className={`border-b border-black ${rowClass}`}>
-                  <td className="py-[10px] font-bold text-[20px]">{r.zone}</td>
-                  <td className="py-[10px] font-bold text-[20px]">{r.allee}</td>
-                  <td className="py-[10px] font-bold text-[20px]">{r.emplacement}</td>
+                return (
+                  <tr key={r.id ?? idx} className={`border-b border-black ${rowClass}`}>
+                    <td className="py-[10px] font-bold">{r.productCode}</td>
+                    <td className="py-[10px]">{r.libel}</td>
+                    <td className="py-[10px] font-bold">{r.quantity}</td>
 
-                  <td className="py-[10px] font-bold">
-                    <button
-                      className="px-[20px] py-[10px] rounded-[50px] mr-[10px]"
-                      onClick={goToModif}
-                      type="button"
-                    >
-                      <img src={ModifBut} alt="Modifier" className="w-[20px] h-[20px]" />
-                    </button>
+                    <td className="py-[10px]">{r.zone}</td>
+                    <td className="py-[10px]">{r.driveway}</td>
+                    <td className="py-[10px]">{r.location}</td>
+                    <td className="py-[10px]">{r.level}</td>
 
-                    <button
-                      className="px-[20px] py-[10px] rounded-[50px]"
-                      onClick={() => handleDelete(idx)}
-                      type="button"
-                    >
-                      <img src={SuppBut} alt="Supprimer" className="w-[20px] h-[20px]" />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    <td className="py-[10px]">
+                      <button
+                        className="px-[20px] py-[10px] mr-[10px]"
+                        onClick={() => goToInfos(r.id)}
+                      >
+                        <img src={ModifBut} alt="Modifier" className="w-[20px]" />
+                      </button>
+
+                      <button
+                        className="px-[20px] py-[10px]"
+                        onClick={() => handleDelete(r, idx)}
+                      >
+                        <img src={SuppBut} alt="Supprimer" className="w-[20px]" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {/* pagination simple */}
+          <div className="flex justify-center items-center gap-6 mt-[30px]">
+            <button
+              type="button"
+              onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
+            >
+              Précédent
+            </button>
+
+            <span className="text-[22px] font-bold">Page {page + 1}</span>
+
+            <button
+              type="button"
+              onClick={() => setPage((prev) => prev + 1)}
+              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
+            >
+              Suivant
+            </button>
+          </div>
+        </div>
+      )}
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 bg-[#FFFFFF]">
@@ -139,8 +275,8 @@ function GestionStocks() {
 
       {successOpen && (
         <div className="fixed w-full flex justify-center">
-          <div className="w-[650px] border-2 bg-white px-[30px] py-[20px] flex items-center justify-between rounded-[40px] bg-[#FFFFFF]">
-            <span className="font-bold">Stock supprimer avec succès !</span>
+          <div className="w-[650px] border-2 bg-[#ffffff] px-[30px] py-[20px] flex items-center justify-between rounded-[40px]">
+            <span className="font-bold">Stock supprimé avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓
             </div>

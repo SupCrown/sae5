@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import plusIcon from "../../assets/saisie-stocks-plus.png";
 import SuppBut from "../../assets/SuppBut.png";
 import ModifBut from "../../assets/ModifBut.png";
@@ -7,51 +7,103 @@ import { useNavigate } from "react-router-dom";
 function GestionEmpl() {
   const navigate = useNavigate();
 
-  // ✅ rows en state pour pouvoir supprimer visuellement
-  const [rows, setRows] = useState([
-    { zone: "H", allee: "08", emplacement: "023" },
-    { zone: "H", allee: "08", emplacement: "023" },
-    { zone: "H", allee: "08", emplacement: "023" },
-    { zone: "H", allee: "08", emplacement: "023" },
-  ]);
+  const fallbackRows = [
+    { id: 1, zone: "H", driveway: "08", location: "023", level: "1" },
+    { id: 2, zone: "A", driveway: "02", location: "110", level: "2" },
+    { id: 3, zone: "C", driveway: "15", location: "045", level: "3" },
+    { id: 4, zone: "F", driveway: "01", location: "301", level: "1" },
+  ];
 
-  // ✅ popup confirmation
+  const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(0);
+  const [size] = useState(20);
+  const [loading, setLoading] = useState(true);
+
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
-
-  // ✅ popup succès
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToModif = () => navigate("/modif-empl");
+  const goToModif = (id) => navigate(`/modif-empl/${id}`);
   const goToCreer = () => navigate("/creer-empl");
 
-  // Ouvre le popup confirmation
-  const handleDelete = (idx) => {
-    setRowToDelete(idx);
+  useEffect(() => {
+    const fetchPositions = async () => {
+      try {
+        setLoading(true);
+
+        const response = await fetch(`/position/all?page=${page}&size=${size}`, {
+          method: "GET",
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur API");
+        }
+
+        const data = await response.json();
+        const positions = Array.isArray(data) ? data : data.content || [];
+
+        if (!positions.length) {
+          setRows(fallbackRows);
+          return;
+        }
+
+        const mappedRows = positions.map((position, index) => ({
+          id: position.id ?? index + 1,
+          zone: position.zone ?? "A",
+          driveway: position.driveway ?? position.allee ?? "01",
+          location: position.location ?? position.emplacement ?? "000",
+          level: position.level ?? "0",
+        }));
+
+        setRows(mappedRows);
+      } catch (error) {
+        console.error("Erreur récupération emplacements :", error);
+        setRows(fallbackRows);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPositions();
+  }, [page, size]);
+
+  const handleDelete = (row, idx) => {
+    setRowToDelete({ id: row.id, idx });
     setConfirmOpen(true);
   };
 
-  // Clique NON
   const cancelDelete = () => {
     setConfirmOpen(false);
     setRowToDelete(null);
   };
 
-  // Clique OUI -> supprime + popup succès
-  const confirmDelete = () => {
-    if (rowToDelete === null) return;
+  const confirmDelete = async () => {
+    if (!rowToDelete) return;
 
-    setRows((prev) => prev.filter((_, i) => i !== rowToDelete));
-    setConfirmOpen(false);
-    setRowToDelete(null);
+    try {
+      const response = await fetch(`/position/delete/${rowToDelete.id}`, {
+        method: "POST",
+      });
 
-    setSuccessOpen(true);
-    setTimeout(() => setSuccessOpen(false), 2000);
+      if (!response.ok) {
+        throw new Error("Suppression impossible");
+      }
+
+      setRows((prev) => prev.filter((row) => row.id !== rowToDelete.id));
+    } catch (error) {
+      console.warn("API delete indisponible -> suppression locale");
+      setRows((prev) => prev.filter((_, i) => i !== rowToDelete.idx));
+    } finally {
+      setConfirmOpen(false);
+      setRowToDelete(null);
+
+      setSuccessOpen(true);
+      setTimeout(() => setSuccessOpen(false), 2000);
+    }
   };
 
   return (
     <div className="p-4 flex flex-col items-center relative">
-      {/* bouton + */}
       <button
         className="flex flex-col items-center gap-2 px-[500px] py-[5px] mt-[40px] text-[20px] font-bold bg-blue-600 text-white rounded-[50px]"
         onClick={goToCreer}
@@ -60,58 +112,87 @@ function GestionEmpl() {
         <img src={plusIcon} alt="Plus Icon" className="w-[40px] h-[40px] m-[20px]" />
       </button>
 
-      {/* tableau */}
-      <div className="w-full mt-[50px]">
-        <table className="w-full border-collapse text-center">
-          <thead>
-            <tr className="border-b-2 border-black">
-              <th className="py-2 font-bold text-[30px]">Zone</th>
-              <th className="py-2 font-bold text-[30px]">Allée</th>
-              <th className="py-2 font-bold text-[30px]">Emplacement</th>
-              <th className="py-2 font-bold text-[30px]">Actions</th>
-            </tr>
-          </thead>
+      {loading && (
+        <div className="mt-[30px] text-[22px] font-bold">
+          Chargement des emplacements...
+        </div>
+      )}
 
-          <tbody>
-            {rows.map((r, idx) => {
-              const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
+      {!loading && (
+        <div className="w-full mt-[50px]">
+          <table className="w-full border-collapse text-center">
+            <thead>
+              <tr className="border-b-2 border-black">
+                <th className="py-2 font-bold text-[30px]">Zone</th>
+                <th className="py-2 font-bold text-[30px]">Allée</th>
+                <th className="py-2 font-bold text-[30px]">Emplacement</th>
+                <th className="py-2 font-bold text-[30px]">Niveau</th>
+                <th className="py-2 font-bold text-[30px]">Actions</th>
+              </tr>
+            </thead>
 
-              return (
-                <tr key={idx} className={`border-b border-black ${rowClass}`}>
-                  <td className="py-[10px] font-bold text-[20px]">{r.zone}</td>
-                  <td className="py-[10px] font-bold text-[20px]">{r.allee}</td>
-                  <td className="py-[10px] font-bold text-[20px]">{r.emplacement}</td>
+            <tbody>
+              {rows.map((r, idx) => {
+                const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
 
-                  <td className="py-[10px] font-bold">
-                    <button
-                      className="px-[20px] py-[10px] rounded-[50px] mr-[10px]"
-                      onClick={goToModif}
-                      type="button"
-                    >
-                      <img src={ModifBut} alt="Modifier" className="w-[20px] h-[20px]" />
-                    </button>
+                return (
+                  <tr key={r.id ?? idx} className={`border-b border-black ${rowClass}`}>
+                    <td className="py-[10px] font-bold text-[20px]">{r.zone}</td>
+                    <td className="py-[10px] font-bold text-[20px]">{r.driveway}</td>
+                    <td className="py-[10px] font-bold text-[20px]">{r.location}</td>
+                    <td className="py-[10px] font-bold text-[20px]">{r.level}</td>
 
-                    <button
-                      className="px-[20px] py-[10px] rounded-[50px]"
-                      onClick={() => handleDelete(idx)}
-                      type="button"
-                    >
-                      <img src={SuppBut} alt="Supprimer" className="w-[20px] h-[20px]" />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    <td className="py-[10px] font-bold">
+                      <button
+                        className="px-[20px] py-[10px] rounded-[50px] mr-[10px]"
+                        onClick={() => goToModif(r.id)}
+                        type="button"
+                      >
+                        <img src={ModifBut} alt="Modifier" className="w-[20px] h-[20px]" />
+                      </button>
+
+                      <button
+                        className="px-[20px] py-[10px] rounded-[50px]"
+                        onClick={() => handleDelete(r, idx)}
+                        type="button"
+                      >
+                        <img src={SuppBut} alt="Supprimer" className="w-[20px] h-[20px]" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="flex justify-center items-center gap-6 mt-[30px]">
+            <button
+              type="button"
+              onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+              className="px-6 py-3 bg-gray-300 rounded-[20px] font-bold"
+            >
+              Précédent
+            </button>
+
+            <span className="text-[22px] font-bold">Page {page + 1}</span>
+
+            <button
+              type="button"
+              onClick={() => setPage((prev) => prev + 1)}
+              className="px-6 py-3 bg-gray-300 rounded-[20px] font-bold"
+            >
+              Suivant
+            </button>
+          </div>
+        </div>
+      )}
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 bg-[#FFFFFF]">
           <div className="bg-white w-[650px] border-2 border-black">
             <div className="p-6">
               <p className="text-center text-[22px] font-bold">
-                Voulez-vous vraiment supprimer ce stock ?
+                Voulez-vous vraiment supprimer cet emplacement ?
               </p>
               <div className="border-b border-black mt-4" />
             </div>
@@ -140,7 +221,7 @@ function GestionEmpl() {
       {successOpen && (
         <div className="fixed w-full flex justify-center">
           <div className="w-[650px] border-2 bg-white px-[30px] py-[20px] flex items-center justify-between rounded-[40px] bg-[#FFFFFF]">
-            <span className="font-bold">Stock supprimer avec succès !</span>
+            <span className="font-bold">Emplacement supprimé avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓
             </div>

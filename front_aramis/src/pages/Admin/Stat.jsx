@@ -8,7 +8,7 @@ function Stat() {
   const scrollRef = useRef(null);
   const trackRef = useRef(null);
 
-  const data = {
+  const fallbackData = {
     heure: [
       { nom: "Blaise Damien", nbCommandes: "945", nbPalettes: "582", nbColis: "5634" },
       { nom: "Roméo Délégué", nbCommandes: "945", nbPalettes: "582", nbColis: "5634" },
@@ -19,27 +19,7 @@ function Stat() {
       { nom: "Test 3", nbCommandes: "152", nbPalettes: "72", nbColis: "1220" },
       { nom: "Test 4", nbCommandes: "153", nbPalettes: "73", nbColis: "1230" },
     ],
-    jour: [
-      { nom: "Blaise Damien", nbCommandes: "4200", nbPalettes: "1800", nbColis: "15400" },
-      { nom: "Roméo Délégué", nbCommandes: "3980", nbPalettes: "1720", nbColis: "14950" },
-      { nom: "Kebaili Josua", nbCommandes: "4510", nbPalettes: "1910", nbColis: "16020" },
-      { nom: "LSD Josua", nbCommandes: "5200", nbPalettes: "2200", nbColis: "18200" },
-      { nom: "Test 1", nbCommandes: "150", nbPalettes: "70", nbColis: "1200" },
-      { nom: "Test 2", nbCommandes: "151", nbPalettes: "71", nbColis: "1210" },
-      { nom: "Test 3", nbCommandes: "152", nbPalettes: "72", nbColis: "1220" },
-      { nom: "Test 4", nbCommandes: "153", nbPalettes: "73", nbColis: "1230" },
-    ],
-    semaine: [
-      { nom: "Blaise Damien", nbCommandes: "22500", nbPalettes: "9500", nbColis: "87400" },
-      { nom: "Roméo Délégué", nbCommandes: "21700", nbPalettes: "9100", nbColis: "85200" },
-      { nom: "Kebaili Josua", nbCommandes: "23100", nbPalettes: "9800", nbColis: "89600" },
-      { nom: "LSD Josua", nbCommandes: "24800", nbPalettes: "10300", nbColis: "92100" },
-      { nom: "Test 1", nbCommandes: "150", nbPalettes: "70", nbColis: "1200" },
-      { nom: "Test 2", nbCommandes: "151", nbPalettes: "71", nbColis: "1210" },
-      { nom: "Test 3", nbCommandes: "152", nbPalettes: "72", nbColis: "1220" },
-      { nom: "Test 4", nbCommandes: "153", nbPalettes: "73", nbColis: "1230" },
-    ],
-    mois: [
+    total: [
       { nom: "Blaise Damien", nbCommandes: "92400", nbPalettes: "38200", nbColis: "352000" },
       { nom: "Roméo Délégué", nbCommandes: "88700", nbPalettes: "36500", nbColis: "341000" },
       { nom: "Kebaili Josua", nbCommandes: "95100", nbPalettes: "39400", nbColis: "361500" },
@@ -51,10 +31,83 @@ function Stat() {
     ],
   };
 
-  const rows = data[periode];
+  const [statsData, setStatsData] = useState(fallbackData);
+
+  const rows = statsData[periode] || [];
 
   const trackHeight = 420;
   const thumbHeight = 80;
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/user/stats", {
+          method: "GET",
+        });
+
+        if (!response.ok) {
+          throw new Error("API indisponible");
+        }
+
+        const data = await response.json();
+
+        let heureStats = [];
+        let totalStats = [];
+
+        if (Array.isArray(data)) {
+
+          heureStats = data.map((user, index) => ({
+            id: user.id ?? index + 1,
+            nom:
+              user.fullName ??
+              user.nomComplet ??
+              `${user.lastName ?? "Nom"} ${user.firstName ?? "Prénom"}`,
+            nbCommandes: user.nbCommandes ?? user.commandCount ?? "0",
+            nbPalettes: user.nbPalettes ?? user.paletteCount ?? "0",
+            nbColis: user.nbColis ?? user.packageCount ?? "0",
+          }));
+
+          totalStats = heureStats;
+        } else {
+          
+          const heureSource = data.heure || data.hour || data.byHour || [];
+          const totalSource = data.total || data.global || data.all || [];
+
+          heureStats = heureSource.map((user, index) => ({
+            id: user.id ?? index + 1,
+            nom:
+              user.fullName ??
+              user.nomComplet ??
+              `${user.lastName ?? "Nom"} ${user.firstName ?? "Prénom"}`,
+            nbCommandes: user.nbCommandes ?? user.commandCount ?? "0",
+            nbPalettes: user.nbPalettes ?? user.paletteCount ?? "0",
+            nbColis: user.nbColis ?? user.packageCount ?? "0",
+          }));
+
+          totalStats = totalSource.map((user, index) => ({
+            id: user.id ?? index + 1,
+            nom:
+              user.fullName ??
+              user.nomComplet ??
+              `${user.lastName ?? "Nom"} ${user.firstName ?? "Prénom"}`,
+            nbCommandes: user.nbCommandes ?? user.commandCount ?? "0",
+            nbPalettes: user.nbPalettes ?? user.paletteCount ?? "0",
+            nbColis: user.nbColis ?? user.packageCount ?? "0",
+          }));
+        }
+
+        setStatsData({
+          heure: heureStats.length ? heureStats : fallbackData.heure,
+          total: totalStats.length ? totalStats : fallbackData.total,
+        });
+      } catch (error) {
+        console.warn("API stats indisponible -> fallback fake data");
+        setStatsData(fallbackData);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const updateThumbFromScroll = () => {
     const container = scrollRef.current;
@@ -106,13 +159,12 @@ function Stat() {
     };
   }, [isDragging]);
 
-  // remet le tableau en haut quand on change de période
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
     setThumbTop(0);
-  }, [periode]);
+  }, [periode, statsData]);
 
   return (
     <div className="flex flex-col items-center pt-[30px]">
@@ -123,9 +175,7 @@ function Stat() {
           className="border-[3px] border-black bg-white text-[22px] font-bold px-[18px] py-[6px]"
         >
           <option value="heure">Par Heure</option>
-          <option value="jour">Par Jour</option>
-          <option value="semaine">Par Semaine</option>
-          <option value="mois">Par Mois</option>
+          <option value="total">Total</option>
         </select>
       </div>
 
@@ -161,7 +211,7 @@ function Stat() {
                   const rowClass = idx % 2 === 0 ? "bg-[#f7f7f7]" : "bg-[#dcdcdc]";
 
                   return (
-                    <tr key={idx} className={rowClass}>
+                    <tr key={r.id ?? idx} className={rowClass}>
                       <td className="text-left pl-[18px] py-[35px] text-[18px]">
                         {r.nom}
                       </td>
