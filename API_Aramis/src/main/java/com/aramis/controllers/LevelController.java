@@ -1,6 +1,7 @@
 package com.aramis.controllers;
 
 import com.aramis.annotations.Authorize;
+import com.aramis.dto.LevelResponse;
 import com.aramis.dto.LocationRequest;
 import com.aramis.models.driveway.Driveway;
 import com.aramis.models.driveway.DrivewayRepository;
@@ -35,19 +36,19 @@ public class LevelController {
 
     @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
-    public ResponseEntity<Level> getById(@PathVariable Integer id) {
+    public ResponseEntity<LevelResponse> getById(@PathVariable Integer id) {
         Optional<Level> level = levelRepository.findById(id);
-        return level.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return level.map(value -> ResponseEntity.ok(new LevelResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
-    public ResponseEntity<Iterable<Level>> getAll(@PageableDefault(size = 20, sort = "locationID") Pageable pageable) {
+    public ResponseEntity<Iterable<LevelResponse>> getAll(@PageableDefault(size = 20, sort = "levelID") Pageable pageable) {
         var levels = levelRepository.findAll(pageable);
 
-        List<Level> levelsResponses = new ArrayList<>();
+        List<LevelResponse> levelsResponses = new ArrayList<>();
         for(Level level : levels) {
-            levelsResponses.add(level);
+            levelsResponses.add(new LevelResponse(level));
         }
 
         return ResponseEntity.ok(levelsResponses);

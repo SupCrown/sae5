@@ -1,6 +1,7 @@
 package com.aramis.controllers;
 
 import com.aramis.annotations.Authorize;
+import com.aramis.dto.DrivewayResponse;
 import com.aramis.dto.LocationRequest;
 import com.aramis.models.driveway.Driveway;
 import com.aramis.models.driveway.DrivewayRepository;
@@ -34,19 +35,19 @@ public class DrivewayController {
 
     @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
-    public ResponseEntity<Driveway> getById(@PathVariable Integer id) {
+    public ResponseEntity<DrivewayResponse> getById(@PathVariable Integer id) {
         Optional<Driveway> driveway = drivewayRepository.findById(id);
-        return driveway.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return driveway.map(value -> ResponseEntity.ok(new DrivewayResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
-    public ResponseEntity<Iterable<Driveway>> getAll(@PageableDefault(size = 20, sort = "locationID") Pageable pageable) {
+    public ResponseEntity<Iterable<DrivewayResponse>> getAll(@PageableDefault(size = 20, sort = "drivewayID") Pageable pageable) {
         var driveways = drivewayRepository.findAll(pageable);
 
-        List<Driveway> drivewaysResponses = new ArrayList<>();
+        List<DrivewayResponse> drivewaysResponses = new ArrayList<>();
         for(Driveway driveway : driveways) {
-            drivewaysResponses.add(driveway);
+            drivewaysResponses.add(new DrivewayResponse(driveway));
         }
 
         return ResponseEntity.ok(drivewaysResponses);
