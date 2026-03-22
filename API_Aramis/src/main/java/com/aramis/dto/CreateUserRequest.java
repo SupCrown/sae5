@@ -16,5 +16,5 @@ public class CreateUserRequest {
     private String lastname;
     @NotNull
     private Integer login;
-    private boolean isAdmin;
+    private boolean admin;
 }
