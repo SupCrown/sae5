@@ -76,7 +76,6 @@ public class OrderController {
     }
 
     // Endpoint 1 : Attribution Automatique
-    @Authorize(roles = Role.USER)
     @GetMapping("/autoAssign")
     public ResponseEntity<PickingTaskResponse> autoAssign(
     ) {
@@ -86,7 +85,6 @@ public class OrderController {
     }
 
     // Endpoint 2 : Attribution Manuelle
-    @Authorize(roles = Role.ADMIN)
     @GetMapping("/manualAssign")
     public ResponseEntity<PickingTaskResponse> manualAssign(
             @RequestParam(name = "PreparateurID") int preparateurId,
@@ -97,7 +95,6 @@ public class OrderController {
     }
 
     // Endpoint 3 : Étape suivante de la commande
-    @Authorize(roles = Role.USER)
     @GetMapping("/nextStep")
     public ResponseEntity<PickingTaskResponse> nextStep(
             @RequestParam int orderId,
@@ -108,7 +105,6 @@ public class OrderController {
         return ResponseEntity.ok(nextStep);
     }
 
-    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<Object> getOrderById(@PathVariable Integer id) {
         Optional<Order> order = orderRepository.findById(id);
@@ -121,7 +117,6 @@ public class OrderController {
         }
     }
 
-    @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
     public ResponseEntity<List<OrderResponse>> getOrders(@PageableDefault(size = 20, sort = "oderID") Pageable pageable) {
         var orders = orderRepository.findAll(pageable);
@@ -133,7 +128,6 @@ public class OrderController {
         return ResponseEntity.ok(orderResponseList);
     }
 
-    @Authorize(roles = Role.ADMIN)
     @PostMapping("/create")
     public ResponseEntity<Object> create(@RequestBody OrderRequest request) {
         Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
@@ -174,7 +168,6 @@ public class OrderController {
 
     }
 
-    @Authorize(roles = Role.ADMIN)
     @PostMapping("/update/{id}")
     public ResponseEntity<Object> update(@PathVariable Integer id, @RequestBody OrderRequest request) {
         Optional<Order> existingOpt = orderRepository.findById(id);
@@ -203,7 +196,6 @@ public class OrderController {
 
     }
 
-    @Authorize(roles = Role.ADMIN)
     @PostMapping("/delete/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
         if (!orderRepository.existsById(id)) {
@@ -219,7 +211,6 @@ public class OrderController {
         }
     }
 
-    @Authorize(roles = Role.ADMIN)
     @PostMapping("/import")
     public ResponseEntity<List<Order>> importCsv(@RequestParam("file") MultipartFile file) {
         List<Order> imported = new ArrayList<>();
@@ -277,7 +268,6 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(imported);
     }
 
-    @Authorize(roles = Role.USER)
     @GetMapping("testPlacement/{id}")
     public ResponseEntity<List<List<ProductPlacement>>> testPlacement(@PathVariable Integer id) throws JsonProcessingException {
         List<Support> supports = supportRepository.findSupportsByOrderId(id);

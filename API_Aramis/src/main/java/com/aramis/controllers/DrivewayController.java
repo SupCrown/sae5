@@ -33,14 +33,12 @@ public class DrivewayController {
         this.drivewayRepository = drivewayRepository;
     }
 
-    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<DrivewayResponse> getById(@PathVariable Integer id) {
         Optional<Driveway> driveway = drivewayRepository.findById(id);
         return driveway.map(value -> ResponseEntity.ok(new DrivewayResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
     public ResponseEntity<Iterable<DrivewayResponse>> getAll(@PageableDefault(size = 20, sort = "drivewayID") Pageable pageable) {
         var driveways = drivewayRepository.findAll(pageable);

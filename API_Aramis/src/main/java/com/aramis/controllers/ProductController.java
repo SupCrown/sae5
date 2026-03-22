@@ -33,7 +33,6 @@ public class ProductController {
         this.locationRepository = locationRepository;
     }
 
-    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductByID(@PathVariable Integer id) {
         Optional<Product> product = productRepository.findById(id);
@@ -41,7 +40,6 @@ public class ProductController {
         return product.map(value -> ResponseEntity.ok(new ProductResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
     public ResponseEntity<List<ProductResponse>> getProducts(@PageableDefault(size = 20, sort = "productID") Pageable pageable) {
         var products = productRepository.findAll(pageable);
@@ -56,7 +54,6 @@ public class ProductController {
         return ResponseEntity.ok(productResponseList);
     }
 
-    @Authorize(roles = Role.ADMIN)
     @PostMapping("/create")
     public ResponseEntity<Object> createProduct(@Valid @RequestBody CreateProductRequest request) {
         Optional<Location> location = locationRepository.findByCodeLevelDrivewayAndZone(request.getLocation(), request.getLevel(), request.getDriveway(), request.getZone());
@@ -85,7 +82,6 @@ public class ProductController {
         }
     }
 
-    @Authorize(roles = Role.ADMIN)
     @PostMapping("/add")
     public ResponseEntity<Object> addProduct(@Valid @RequestBody AddProductRequest request) {
         Optional<Product> product = productRepository.findById(request.getProductID());
@@ -109,7 +105,6 @@ public class ProductController {
         }
     }
 
-    @Authorize(roles = Role.ADMIN)
     @PostMapping("/take")
     public ResponseEntity<Object> takeProduct(@Valid @RequestBody TakeProductRequest request) {
         Optional<Product> product = productRepository.findById(request.getProductID());
@@ -134,7 +129,6 @@ public class ProductController {
         }
     }
 
-    @Authorize(roles = Role.ADMIN)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteProduct(@PathVariable Integer id) {
         if (!productRepository.existsById(id)) {
