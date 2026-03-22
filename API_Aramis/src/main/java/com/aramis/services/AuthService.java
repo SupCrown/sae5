@@ -105,6 +105,6 @@ public class AuthService {
             throw new MissingResourceException("UserID is missing.", "AuthResponse", "UserID");
         }
 
-        return Integer.getInteger(id);
+        return Integer.valueOf(id);
     }
 }

@@ -1,5 +1,6 @@
 package com.aramis.dto;
 
+import com.aramis.utils.PickingTaskResponseType;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,12 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PickingTaskResponse {
-    private String type; // "NEW_SUPPORT", "PICK_PRODUCT", "FINISHED", "NO_ORDERS"
+    private PickingTaskResponseType type;
 
-    private Integer supportId;
-    private Integer productId;
-
-    private int targetX;
-    private int targetY;
-    private int targetZ;
+    private ProductPlacement step;
+    private Integer placedQuantity;
 }

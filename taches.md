@@ -68,7 +68,7 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - **Sinon** : récupération d'une commande en cours en cas de crash. 
         - `307` : la prépration de la commande n'avait pas été finalisée à la dernière fermeture de l'application.
 - `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : manuelle.
-- `/order/nextStep?CommandeID=xxx` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante sous la forme d'un tableau (étape) de tableau (objet) de deux tupples (position, dimension) de taille 3 pour `[[(x,y,z),(w,l,h)],[...], ...]`.
+- `/order/nextStep?orderID=xxx` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante sous la forme d'un tableau (étape) de tableau (objet) de deux tupples (position, dimension) de taille 3 pour `[[(x,y,z),(w,l,h)],[...], ...]`.
     - Si la **quantité validée == quantité servie** OU s'il y a ** au moins un colis manquant** sur la quantité validée.
 
 #### Calcul et envoi des statistiques pour superviseurs et préparateurs
@@ -82,7 +82,7 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `firstname` : prénom de l'utilisateur,
     - `lastname` : nom de l'utilisateur,
     - `login` : login de l'utilisateur,
-    - `isAdmin` : est-ce que l'utilisateur est un superviseur.
+    - `admin` : est-ce que l'utilisateur est un superviseur.
 - `/user/update/{id}` **[POST]** / **SUPERVISEUR**  : **modifier** un préparateur.
 - `/user/delete/{id}` **[DELETE]** / **SUPERVISEUR**  : **supprimer** un préparateur.
 - `/user/{id}` **[GET]** / **SUPERVISEUR**: **consulter** un préparateur.

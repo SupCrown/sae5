@@ -30,8 +30,7 @@ public class Support {
     private EPrepareStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "userid")
-    @Null
+    @JoinColumn(name = "userid", nullable = true)
     private User user;
 
     @ManyToOne

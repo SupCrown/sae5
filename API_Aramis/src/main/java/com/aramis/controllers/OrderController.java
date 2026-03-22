@@ -14,11 +14,14 @@ import com.aramis.models.product.ProductRepository;
 import com.aramis.models.support.Support;
 import com.aramis.models.support.SupportRepository;
 import com.aramis.models.supportType.SupportTypeRepository;
+import com.aramis.services.AuthService;
 import com.aramis.services.SupportService;
+import com.aramis.utils.EPrepareStatus;
 import com.aramis.utils.Role;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -46,9 +49,21 @@ public class OrderController {
     private final SupportTypeRepository supportTypeRepository;
     private final PickingService pickingService;
     private final CustomerRepository customerRepository;
+    private final HttpServletRequest request;
+    private final AppConfigurationProperties properties;
 
 
-    public OrderController(OrderRepository orderRepository, SupportRepository supportRepository, ProductRepository productRepository, ContainRepository containRepository, SupportTypeRepository supportTypeRepository, PickingService pickingService, CustomerRepository customerRepository) {
+    public OrderController(
+            OrderRepository orderRepository,
+            SupportRepository supportRepository,
+            ProductRepository productRepository,
+            ContainRepository containRepository,
+            SupportTypeRepository supportTypeRepository,
+            PickingService pickingService,
+            CustomerRepository customerRepository,
+            HttpServletRequest request,
+            AppConfigurationProperties properties
+    ) {
         this.orderRepository = orderRepository;
         this.supportRepository = supportRepository;
         this.productRepository = productRepository;
@@ -56,21 +71,23 @@ public class OrderController {
         this.supportTypeRepository = supportTypeRepository;
         this.pickingService = pickingService;
         this.customerRepository = customerRepository;
+        this.request = request;
+        this.properties = properties;
     }
 
     // Endpoint 1 : Attribution Automatique
     @Authorize(roles = Role.USER)
-    @PostMapping("/autoAssign")
+    @GetMapping("/autoAssign")
     public ResponseEntity<PickingTaskResponse> autoAssign(
-            @RequestParam(name = "PreparateurID") int preparateurId
     ) {
-        PickingTaskResponse task = pickingService.getNextTask(preparateurId);
+        var userID = AuthService.getUserID(request, properties);
+        PickingTaskResponse task = pickingService.getNextTask(userID);
         return ResponseEntity.ok(task);
     }
 
     // Endpoint 2 : Attribution Manuelle
     @Authorize(roles = Role.ADMIN)
-    @PostMapping("/manualAssign")
+    @GetMapping("/manualAssign")
     public ResponseEntity<PickingTaskResponse> manualAssign(
             @RequestParam(name = "PreparateurID") int preparateurId,
             @RequestParam(name = "CommandeID") int orderId) {
@@ -81,11 +98,13 @@ public class OrderController {
 
     // Endpoint 3 : Étape suivante de la commande
     @Authorize(roles = Role.USER)
-    @PostMapping("/nextStep")
-    public ResponseEntity<java.util.List<java.util.List<java.util.List<Integer>>>> nextStep(
-            @RequestParam(name = "CommandeID") int orderId
+    @GetMapping("/nextStep")
+    public ResponseEntity<PickingTaskResponse> nextStep(
+            @RequestParam int orderId,
+            @RequestParam boolean missingItem
     ) {
-        var nextStep = pickingService.getNextStep(orderId);
+        var userID = AuthService.getUserID(request, properties);
+        var nextStep = pickingService.getNextStep(userID, orderId, missingItem);
         return ResponseEntity.ok(nextStep);
     }
 
@@ -122,18 +141,31 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-
-        Order order = new Order();
-        order.setOrderDate(request.getOrderDate());
-        order.setStatus(request.getStatus());
-        order.setCustomer(customerOpt.get());
-        order.setPriority(request.isPriority());
-        order.setDateCreation(now);
-        order.setDateModification(now);
+        Order order = request.toOrder(customerOpt.get());
 
         try {
             Order saved = orderRepository.save(order);
+
+            for (SupportRequest supportRequest : request.getSupports()) {
+                Support support = supportRepository.save(supportRequest.toSupport(saved));
+
+                List<Product> products = new ArrayList<>();
+                for (ProductSupportRequest productRequest : supportRequest.getProducts()) {
+                    Optional<Product> product = productRepository.findById(productRequest.getProductID());
+
+                    if (product.isPresent()) {
+                        containRepository.save(productRequest.toContain(product.get(), support));
+                        products.add(product.get());
+                    }
+                }
+
+                List<ProductPlacement> productPlacements = SupportService.calculateOptimisedSupport(products, support.getType());
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                support.setNestedProductsPlacements(objectMapper.writeValueAsString(productPlacements));
+                supportRepository.save(support);
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED).body(new OrderResponse(saved, null));
         } catch (Exception e) {
             log.error("Error while creating order", e);
@@ -157,7 +189,6 @@ public class OrderController {
 
         Order existing = existingOpt.get();
         existing.setOrderDate(request.getOrderDate());
-        existing.setStatus(request.getStatus());
         existing.setCustomer(customerOpt.get());
         existing.setPriority(request.isPriority());
         existing.setDateModification(new Timestamp(System.currentTimeMillis()));

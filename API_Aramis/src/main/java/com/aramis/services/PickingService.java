@@ -1,11 +1,10 @@
 package com.aramis.services;
 
 import com.aramis.dto.PickingTaskResponse;
-import com.aramis.dto.PlacementData;
+import com.aramis.dto.ProductPlacement;
+import com.aramis.dto.ProductSupportFormBD;
 import com.aramis.models.contain.Contain;
 import com.aramis.models.contain.ContainRepository;
-import com.aramis.models.supportType.SupportType;
-import com.aramis.models.supportType.SupportTypeRepository;
 import com.aramis.utils.EPrepareStatus;
 import com.aramis.models.order.Order;
 import com.aramis.models.order.OrderRepository;
@@ -15,16 +14,14 @@ import com.aramis.models.support.Support;
 import com.aramis.models.support.SupportRepository;
 import com.aramis.models.user.User;
 import com.aramis.models.user.UserRepository;
+import com.aramis.utils.PickingTaskResponseType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.skjolber.packing.api.*;
-import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,50 +30,46 @@ public class PickingService {
 
     private final SupportRepository supportRepo;
     private final ContainRepository containRepo;
-    private final ProductRepository productRepo;
     private final OrderRepository orderRepo;
     private final UserRepository userRepo;
+    private final ProductRepository productRepo;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final SupportTypeRepository supportTypeRepository;
 
     public PickingService(SupportRepository supportRepo, ContainRepository containRepo,
-                          ProductRepository productRepo, OrderRepository orderRepo, UserRepository userRepo, SupportTypeRepository supportTypeRepository) {
+                          OrderRepository orderRepo, UserRepository userRepo, ProductRepository productRepo) {
         this.supportRepo = supportRepo;
         this.containRepo = containRepo;
-        this.productRepo = productRepo;
         this.orderRepo = orderRepo;
         this.userRepo = userRepo;
-        this.supportTypeRepository = supportTypeRepository;
+        this.productRepo = productRepo;
     }
 
     // ========================================================================
     // LOGIQUE : AUTO-ASSIGNATION
     // ========================================================================
     @Transactional
-    public PickingTaskResponse getNextTask(int login) {
-        User user = userRepo.findByLogin(login);
-        if (user == null) throw new RuntimeException("User introuvable Login: " + login);
+    public PickingTaskResponse getNextTask(int id) {
+        Optional<User> user = userRepo.findById(id);
+        if (user.isEmpty()) throw new RuntimeException("User introuvable id: " + id);
 
-        Optional<Support> currentSupport = supportRepo.findByUserAndStatus(user, EPrepareStatus.Preparing);
+        Optional<Support> currentSupport = supportRepo.findByUserAndStatus(user.get(), EPrepareStatus.Preparing);
 
-        if (currentSupport.isPresent()) {
-            return calculateNextProduct(currentSupport.get());
-        } else {
-            return startNewSupport(user);
-        }
+        return currentSupport.map(support -> calculateNextProduct(support, true, false)).orElseGet(() -> startNewOrder(user.get()));
     }
 
-    private PickingTaskResponse startNewSupport(User user) {
+    private PickingTaskResponse startNewOrder(User user) {
         List<Order> orders = orderRepo.findByStatusOrderByPriorityDesc(EPrepareStatus.Pending);
         if (orders.isEmpty()) {
             PickingTaskResponse r = new PickingTaskResponse();
-            r.setType("NO_ORDERS");
+            r.setType(PickingTaskResponseType.NO_ORDERS);
             return r;
         }
         Order order = orders.get(0);
+        order.setStatus(EPrepareStatus.Preparing);
+        order = orderRepo.save(order);
 
-        // On délègue la création du carton à la méthode commune
-        return createSupportForOrder(user, order);
+        // On retourne la prochaine étape à préparer
+        return getNextStepToStartPreparingOrder(user, order);
     }
 
     // ========================================================================
@@ -90,167 +83,156 @@ public class PickingService {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Commande introuvable ID: " + orderId));
 
-        if (order.getStatus() != EPrepareStatus.Preparing) {
+        if (order.getStatus() != EPrepareStatus.Pending) {
             throw new RuntimeException("Cette commande ne peut pas être préparée (Statut: " + order.getStatus() + ")");
         }
 
         // Si l'utilisateur a déjà une commande en cours, on met simplement cette commande
-        // en "file d'attente" pour être la prochaine (priorité) et on ne crée PAS
-        // de nouveau support tout de suite.
+        // en "file d'attente" pour être la prochaine (priorité).
         Optional<Support> currentSupport = supportRepo.findByUserAndStatus(user, EPrepareStatus.Preparing);
         if (currentSupport.isPresent()) {
             order.setPriority(true);
             orderRepo.save(order);
 
             PickingTaskResponse queued = new PickingTaskResponse();
-            queued.setType("QUEUED");
-            queued.setSupportId(null);
+            queued.setType(PickingTaskResponseType.QUEUED);
             return queued;
         }
 
-        // On délègue la création du carton à la méthode commune
-        return createSupportForOrder(user, order);
+        order.setStatus(EPrepareStatus.Preparing);
+        order = orderRepo.save(order);
+
+        // On retourne la prochaine étape à préparer
+        return getNextStepToStartPreparingOrder(user, order);
     }
 
 
     // ========================================================================
     // LOGIQUE COMMUNE : PACKING ET SAUVEGARDE
     // ========================================================================
-    private PickingTaskResponse createSupportForOrder(User user, Order order) {
-        List<Product> productsFromOrder = new ArrayList<>();
-        // TODO: productsFromOrder = order.getProducts();
+    private PickingTaskResponse getNextStepToStartPreparingOrder(User user, Order order) {
+        Iterable<Support> supports = supportRepo.findAllByOrder(order);
 
-        if (productsFromOrder.isEmpty()) {
-            productsFromOrder = (List<Product>) productRepo.findAll();
-            if (productsFromOrder.isEmpty()) throw new RuntimeException("Aucun produit en base !");
-            if (productsFromOrder.size() > 5) productsFromOrder = productsFromOrder.subList(0, 3);
+        List<Support> orderSupports = new ArrayList<>();
+        for (Support orderSupport : supports) {
+            orderSupports.add(orderSupport);
         }
+        orderSupports.sort(Comparator.comparingInt(Support::getSupportID));
 
-        List<BoxItem> productsToPack = new ArrayList<>();
-        for (Product p : productsFromOrder) {
-            Box box = Box.newBuilder()
-                    .withId(String.valueOf(p.getProductID()))
-                    .withSize(p.getWidth(), p.getHeight(), p.getLength())
-                    .withWeight(p.getWidth())
-                    .withRotate3D()
-                    .build();
-            productsToPack.add(new BoxItem(box, 1));
-        }
+        if (!orderSupports.isEmpty()) {
+            Support nextSupport = null;
+            for (Support support : orderSupports) {
+                support.setUser(user);
+                support = supportRepo.save(support);
 
-        Container container = Container.newBuilder()
-                .withDescription("Carton Standard")
-                .withSize(200, 200, 200)
-                .withEmptyWeight(1)
-                .withMaxLoadWeight(100000)
-                .build();
-
-        List<ContainerItem> containerItems = ContainerItem.newListBuilder()
-                .withContainer(container)
-                .build();
-
-        LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
-        PackagerResult result = packager.newResultBuilder()
-                .withContainerItems(containerItems)
-                .withBoxItems(productsToPack)
-                .build();
-
-        if (!result.isSuccess()) throw new RuntimeException("Packing échoué (Produits trop gros ?)");
-
-        Container match = result.get(0);
-        List<PlacementData> placementsToSave = new ArrayList<>();
-
-        for (Placement p : match.getStack().getPlacements()) {
-            PlacementData pd = new PlacementData();
-            BoxStackValue stackValue = p.getStackValue();
-            if (stackValue instanceof BoxStackValue) {
-                pd.setProductId(((BoxStackValue) stackValue).getBox().getId());
-            } else {
-                pd.setProductId("-1");
+                if (nextSupport == null && support.getStatus() == EPrepareStatus.Pending) {
+                    support.setStatus(EPrepareStatus.Preparing);
+                    nextSupport = supportRepo.save(support);
+                }
             }
-            pd.setX(p.getAbsoluteX());
-            pd.setY(p.getAbsoluteY());
-            pd.setZ(p.getAbsoluteZ());
-            placementsToSave.add(pd);
+            if (nextSupport != null) {
+                return calculateNextProduct(nextSupport, true, false);
+            }
         }
-
-        Optional<SupportType> type = supportTypeRepository.findById(1);
-
-        Support support = new Support();
-        support.setUser(user);
-        support.setOrder(order);
-        support.setStatus(EPrepareStatus.Preparing);
-        support.setType(type.orElse(null));
-
-        try {
-            support.setNestedProductsPlacements(objectMapper.writeValueAsString(placementsToSave));
-        } catch(Exception e) { throw new RuntimeException(e); }
-
-        supportRepo.save(support);
-
-        for (Product p : productsFromOrder) {
-            Contain c = new Contain();
-            c.setSupport(support);
-            c.setProduct(p);
-            c.setApprovedQuantity(1);
-            c.setServedQuantity(0);
-            c.setMissingItems(false);
-            containRepo.save(c);
-        }
-
         PickingTaskResponse resp = new PickingTaskResponse();
-        resp.setType("NEW_SUPPORT");
-        resp.setSupportId(support.getSupportID());
+        resp.setType(PickingTaskResponseType.NO_ORDERS);
         return resp;
     }
 
     // ========================================================================
     // LOGIQUE : CONTINUER LE SUPPORT EN COURS
     // ========================================================================
-    private PickingTaskResponse calculateNextProduct(Support support) {
+    private PickingTaskResponse calculateNextProduct(Support support, boolean initOrder, boolean missingItem) {
         try {
-            List<PlacementData> plan = objectMapper.readValue(
-                    support.getNestedProductsPlacements(),
-                    new TypeReference<List<PlacementData>>(){}
-            );
+            String nestedPlacements = support.getNestedProductsPlacements();
+            List<ProductPlacement> plan;
+            if(nestedPlacements == null || nestedPlacements.isEmpty()) {
+                Iterable<ProductSupportFormBD> products = productRepo.findAllProductBySupportID(support.getSupportID());
+
+                List<Product> productsToNest = new ArrayList<>();
+                for (Product product : products) {
+                    productsToNest.add(product);
+                }
+
+                plan = SupportService.calculateOptimisedSupport(productsToNest, support.getType());
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                nestedPlacements = objectMapper.writeValueAsString(plan);
+
+                support.setNestedProductsPlacements(nestedPlacements);
+                supportRepo.save(support);
+            } else {
+                plan = objectMapper.readValue(
+                        nestedPlacements,
+                        new TypeReference<>(){}
+                );
+            }
 
             List<Contain> contents = containRepo.findBySupport(support);
 
-            List<Contain> tempState = new ArrayList<>();
-            for(Contain c : contents) {
-                Contain copy = new Contain();
-                copy.setProduct(c.getProduct());
-                copy.setServedQuantity(c.getServedQuantity());
-                tempState.add(copy);
+            PickingTaskResponse resp = getCurrentStep(plan, contents);
+            if (!initOrder) {
+                updateSupport(support, resp.getStep().getProductId(), missingItem);
+                resp = getCurrentStep(plan, contents);
             }
 
-            for (PlacementData step : plan) {
-                Integer pId = Integer.valueOf(step.getProductId());
-
-                Optional<Contain> match = tempState.stream()
-                        .filter(c -> c.getProduct() != null && c.getProduct().getProductID().equals(pId))
-                        .findFirst();
-
-                if (match.isPresent() && match.get().getServedQuantity() > 0) {
-                    match.get().setServedQuantity(match.get().getServedQuantity() - 1);
-                } else {
-                    PickingTaskResponse resp = new PickingTaskResponse();
-                    resp.setType("PICK_PRODUCT");
-                    resp.setProductId(pId);
-                    resp.setTargetX(step.getX());
-                    resp.setTargetY(step.getY());
-                    resp.setTargetZ(step.getZ());
-                    return resp;
-                }
+            if (resp != null) {
+                return resp;
             }
 
             support.setStatus(EPrepareStatus.Done);
             supportRepo.save(support);
             PickingTaskResponse r = new PickingTaskResponse();
-            r.setType("FINISHED");
+            r.setType(PickingTaskResponseType.FINISHED);
             return r;
 
         } catch (Exception e) {
             throw new RuntimeException("Erreur calcul picking", e);
+        }
+    }
+
+    private static PickingTaskResponse getCurrentStep(List<ProductPlacement> plan, List<Contain> contents) {
+        PickingTaskResponse resp = null;
+        for (ProductPlacement step : plan) {
+            int pId = step.getProductId();
+
+            Optional<Contain> match = contents.stream()
+                    .filter(c -> c.getProduct() != null && c.getProduct().getProductID().equals(pId))
+                    .findFirst();
+
+            if (
+                match.isPresent()
+                && match.get().getServedQuantity() < match.get().getApprovedQuantity()
+                && !match.get().isMissingItems()
+            ) {
+                Contain contain = match.get();
+
+                List<ProductPlacement> sameProduct = plan.stream().filter(s -> s.getProductId() == pId).toList();
+                ProductPlacement nextStep = sameProduct.get(contain.getServedQuantity());
+
+                resp = new PickingTaskResponse();
+                resp.setType(PickingTaskResponseType.PICK_PRODUCT);
+                resp.setStep(nextStep);
+                resp.setPlacedQuantity(contain.getServedQuantity());
+                break;
+            }
+        }
+        return resp;
+    }
+
+    private void updateSupport(Support support, int productID, boolean missingItem) {
+        Optional<Contain> contain = containRepo.findBySupportAndProductProductID(support, productID);
+
+        if (contain.isPresent()) {
+            Contain currentContain = contain.get();
+
+            if (missingItem) {
+                currentContain.setMissingItems(true);
+            } else {
+                currentContain.setServedQuantity(currentContain.getServedQuantity() + 1);
+            }
+
+            containRepo.save(currentContain);
         }
     }
 
@@ -261,73 +243,29 @@ public class PickingService {
     // ou marquées comme manquantes.
     // ========================================================================
     @Transactional
-    public List<List<List<Integer>>> getNextStep(int orderId) {
+    public PickingTaskResponse getNextStep(int userId, int orderId, boolean missingItem) {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Commande introuvable ID: " + orderId));
 
-        Support support = supportRepo.findFirstByOrderOrderBySupportIDDesc(order)
-                .orElseThrow(() -> new RuntimeException("Aucun support associé à cette commande"));
+        Iterable<Support> supports = supportRepo.findAllByOrderOrderBySupportIDDesc(order);
 
         try {
-            List<PlacementData> plan = objectMapper.readValue(
-                    support.getNestedProductsPlacements(),
-                    new TypeReference<List<PlacementData>>() {}
-            );
-
-            List<Contain> contents = containRepo.findBySupport(support);
-
-            // État temporaire pour raisonner sur les quantités restantes
-            List<Contain> tempState = new ArrayList<>();
-            for (Contain c : contents) {
-                Contain copy = new Contain();
-                copy.setProduct(c.getProduct());
-                copy.setServedQuantity(c.getServedQuantity());
-                copy.setApprovedQuantity(c.getApprovedQuantity());
-                copy.setMissingItems(c.isMissingItems());
-                tempState.add(copy);
-            }
-
-            // Cherche la prochaine position à servir (étape suivante)
-            for (PlacementData step : plan) {
-                Long pId = Long.valueOf(step.getProductId());
-
-                Optional<Contain> match = tempState.stream()
-                        .filter(c -> c.getProduct() != null && c.getProduct().getProductID().equals(pId))
-                        .findFirst();
-
-                if (match.isEmpty()) {
-                    continue;
+            PickingTaskResponse nextStep = null;
+            for (Support support : supports) {
+                if (support.getUser() == null ) {
+                    throw new RuntimeException("Commande non débutée.");
                 }
 
-                Contain line = match.get();
-
-                // Si toute la quantité validée est déjà servie
-                // ou qu'il y a au moins un colis manquant, on passe au placement suivant
-                if (line.getServedQuantity() >= line.getApprovedQuantity() || line.isMissingItems()) {
-                    continue;
+                if (support.getUser().getUserID() != userId) {
+                    throw new RuntimeException("Commande déjà commencée par un utilisateur.");
                 }
 
-                // Sinon, on renvoie l'étape suivante pour ce produit
-                Product product = line.getProduct();
-
-                List<Integer> position = List.of(step.getX(), step.getY(), step.getZ());
-                List<Integer> dimension = List.of(product.getWidth(), product.getLength(), product.getHeight());
-
-                List<List<Integer>> singleStep = List.of(position, dimension);
-                List<List<List<Integer>>> response = new ArrayList<>();
-                response.add(singleStep);
-                return response;
+                if (nextStep == null || nextStep.getType() == PickingTaskResponseType.FINISHED) {
+                    nextStep = calculateNextProduct(support, false, missingItem);
+                }
             }
 
-            // Si on arrive ici, toutes les lignes sont soit servies,
-            // soit marquées avec des colis manquants : on clôt le support.
-            support.setStatus(EPrepareStatus.Preparing);
-            support.setDatePreparation(Date.valueOf(LocalDate.now()));
-            supportRepo.save(support);
-
-            // On retourne un tableau vide pour signifier qu'il n'y a plus d'étape.
-            return new ArrayList<>();
-
+            return nextStep;
         } catch (Exception e) {
             throw new RuntimeException("Erreur lors du calcul de l'étape suivante", e);
         }

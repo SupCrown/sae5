@@ -21,4 +21,6 @@ public interface SupportRepository extends CrudRepository<Support, Integer> {
     List<Support> findAllByUser(User user);
 
     Iterable<Support> findAllByOrder(Order order);
+
+    Iterable<Support> findAllByOrderOrderBySupportIDDesc(Order order);
 }
