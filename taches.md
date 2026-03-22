@@ -60,16 +60,15 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 
 #### Attribution des commandes et gestion du parcours de collecte
 
-- `/order/id?[etape=xxx]` **[GET]**  : Chargement d'une commande en f° d'un id (et en f° ou non d'une étape précise).
-- `/order/autoAssign` **[POST]** : automatique (au chargement de l'application) en f° d'un PreparateurID.
+- `/order/autoAssign` **[POST]** : Assignation d'une commande automatiquemenet (au chargement de l'application) en f° d'un PreparateurID et renvoi de la première étape.
     - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente.
         - `200` : la commande est assignée,
         - `204` : aucune commande à assigner a été trouvée.
     - **Sinon** : récupération d'une commande en cours en cas de crash. 
         - `307` : la prépration de la commande n'avait pas été finalisée à la dernière fermeture de l'application.
-- `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : manuelle.
-- `/order/nextStep?orderID=xxx` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante sous la forme d'un tableau (étape) de tableau (objet) de deux tupples (position, dimension) de taille 3 pour `[[(x,y,z),(w,l,h)],[...], ...]`.
-    - Si la **quantité validée == quantité servie** OU s'il y a ** au moins un colis manquant** sur la quantité validée.
+- `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : Assignation d'une commande manuellement en fonction d'un id d'utilisateur et renvoi de la première étape.
+- `/order/nextStep?orderId=xxx?missingItem=yyy` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante.
+    - Si la **quantité validée == quantité servie** OU s'il y a **au moins un colis manquant** sur la quantité validée.
 
 #### Calcul et envoi des statistiques pour superviseurs et préparateurs
 
@@ -101,8 +100,9 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `size` : valeur par défaut `20`.
 - `/order/import` **[POST]** / **SUPERVISEUR** : import CSV.
 
-#### CRUD emplacements
+#### CRUD emplacements / allées / niveaux
 
+##### Emplacements
 - `/position/create` **[POST]** / **SUPERVISEUR** : **créer** un emplacement :
     - `locationCode` : code du nouvel emplacement.
     - `drivewayId` : identifiant de l'allée.
@@ -111,6 +111,20 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 - `/position/delete/{id}` **[POST]** / **SUPERVISEUR** : **supprimer** un emplacement.
 - `/position/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un emplacement.
 - `/position/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les emplacements ordonnés par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
+##### Allées
+
+- `/driveway/{id}` **[GET]** / **SUPERVISEUR** : **consulter** une allée.
+- `/driveway/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** toutes les allées ordonnées par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
+##### Niveaux
+
+- `/level/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un niveau.
+- `/level/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les niveaux ordonnés par des pages :
     - `page` : valeur par défaut `0`.
     - `size` : valeur par défaut `20`.
 
