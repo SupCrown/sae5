@@ -178,25 +178,27 @@ public class UserController {
         List<Order> dailyPreparedOrders = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
         for(Support support : preparedSupports) {
-            LocalDate supportPreparationDate = support.datePreparation.toLocalDate();
-            if(supportPreparationDate.equals(currentDate) && !dailyPreparedSupport.contains(support)) {
-                dailyPreparedSupport.add(support);
-                dailySupportIDs.add(support.supportID);
+            if(support.getDatePreparation() != null ) {
+                LocalDate supportPreparationDate = support.getDatePreparation().toLocalDate();
+                if(supportPreparationDate.equals(currentDate) && !dailyPreparedSupport.contains(support)) {
+                    dailyPreparedSupport.add(support);
+                    dailySupportIDs.add(support.supportID);
 
-                Order order = support.getOrder();
-                if (!dailyPreparedOrders.contains(order)) {
-                    dailyPreparedOrders.add(order);
+                    Order order = support.getOrder();
+                    if (!dailyPreparedOrders.contains(order)) {
+                        dailyPreparedOrders.add(order);
+                    }
                 }
             }
         }
 
         int ordersNumberOfAllTime = preparedOrders.size();
         int supportsNumberOfAllTime = preparedSupports.size();
-        int productsNumberOfAllTime = containRepository.findPlacedProductNumberSumBySupportsIDs(supportIDs);
+        int productsNumberOfAllTime = supportIDs.isEmpty() ? 0 : containRepository.findPlacedProductNumberSumBySupportsIDs(supportIDs);
 
         int ordersNumberOfTheDay = dailyPreparedOrders.size();
         int supportsNumberOfTheDay = dailyPreparedSupport.size();
-        int productsNumberOfTheDay = containRepository.findPlacedProductNumberSumBySupportsIDs(dailySupportIDs);
+        int productsNumberOfTheDay = dailySupportIDs.isEmpty() ? 0 :  containRepository.findPlacedProductNumberSumBySupportsIDs(dailySupportIDs);
 
         return new UserStatsResponse(
                 new UserResponse(user),
