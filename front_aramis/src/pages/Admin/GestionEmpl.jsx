@@ -8,10 +8,10 @@ function GestionEmpl() {
   const navigate = useNavigate();
 
   const fallbackRows = [
-    { id: 1, zone: "H", driveway: "08", location: "023", level: "1" },
-    { id: 2, zone: "A", driveway: "02", location: "110", level: "2" },
-    { id: 3, zone: "C", driveway: "15", location: "045", level: "3" },
-    { id: 4, zone: "F", driveway: "01", location: "301", level: "1" },
+    { id: 1, zone: "H", driveway: "1", location: "1", level: "0" },
+    { id: 2, zone: "H", driveway: "1", location: "2", level: "0" },
+    { id: 3, zone: "H", driveway: "1", location: "3", level: "0" },
+    { id: 4, zone: "H", driveway: "1", location: "4", level: "0" },
   ];
 
   const [rows, setRows] = useState([]);
@@ -31,9 +31,12 @@ function GestionEmpl() {
       try {
         setLoading(true);
 
-        const response = await fetch(`/position/all?page=${page}&size=${size}`, {
-          method: "GET",
-        });
+        const response = await fetch(
+          `http://147.93.55.68/position/all?page=${page}&size=${size}`,
+          {
+            method: "GET",
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Erreur API");
@@ -48,11 +51,11 @@ function GestionEmpl() {
         }
 
         const mappedRows = positions.map((position, index) => ({
-          id: position.id ?? index + 1,
-          zone: position.zone ?? "A",
-          driveway: position.driveway ?? position.allee ?? "01",
-          location: position.location ?? position.emplacement ?? "000",
-          level: position.level ?? "0",
+          id: position.locationID ?? index,
+          zone: position.driveway?.zone?.zoneName ?? "A",
+          driveway: position.driveway?.name ?? "1",
+          location: position.locationCode ?? "000",
+          level: String(position.level?.levelValue ?? 0),
         }));
 
         setRows(mappedRows);
@@ -81,9 +84,12 @@ function GestionEmpl() {
     if (!rowToDelete) return;
 
     try {
-      const response = await fetch(`/position/delete/${rowToDelete.id}`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `http://147.93.55.68/position/delete/${rowToDelete.id}`,
+        {
+          method: "POST",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Suppression impossible");
@@ -169,7 +175,7 @@ function GestionEmpl() {
             <button
               type="button"
               onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-              className="px-6 py-3 bg-gray-300 rounded-[20px] font-bold"
+              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
             >
               Précédent
             </button>
@@ -179,7 +185,7 @@ function GestionEmpl() {
             <button
               type="button"
               onClick={() => setPage((prev) => prev + 1)}
-              className="px-6 py-3 bg-gray-300 rounded-[20px] font-bold"
+              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
             >
               Suivant
             </button>

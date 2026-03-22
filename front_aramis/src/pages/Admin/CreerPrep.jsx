@@ -42,7 +42,7 @@ function CreerPrep() {
     try {
       setLoading(true);
 
-      const response = await fetch("/user/create", {
+      const response = await fetch("http://147.93.55.68/user/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

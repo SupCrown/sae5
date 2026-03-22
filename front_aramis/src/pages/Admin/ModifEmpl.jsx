@@ -22,7 +22,7 @@ function ModifEmpl() {
       try {
         setLoading(true);
 
-        const response = await fetch(`/position/${id}`, {
+        const response = await fetch(`http://147.93.55.68/position/${id}`, {
           method: "GET",
         });
 
@@ -75,7 +75,7 @@ function ModifEmpl() {
     try {
       setSaving(true);
 
-      const response = await fetch(`/position/update/${id}`, {
+      const response = await fetch(`http://147.93.55.68/position/update/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

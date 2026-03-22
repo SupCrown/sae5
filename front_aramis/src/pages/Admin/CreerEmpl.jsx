@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function CreerEmpl() {
@@ -10,9 +10,69 @@ function CreerEmpl() {
     levelId: "",
   });
 
+  const [driveways, setDriveways] = useState([]);
+  const [levels, setLevels] = useState([]);
+
   const [loading, setLoading] = useState(false);
+  const [loadingOptions, setLoadingOptions] = useState(true);
   const [successOpen, setSuccessOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const fallbackDriveways = [
+    { drivewayID: 1, name: "1", zone: { zoneName: "H" } },
+    { drivewayID: 2, name: "2", zone: { zoneName: "H" } },
+    { drivewayID: 3, name: "3", zone: { zoneName: "A" } },
+  ];
+
+  const fallbackLevels = [
+    { levelID: 1, levelValue: 0 },
+    { levelID: 2, levelValue: 1 },
+    { levelID: 3, levelValue: 2 },
+    { levelID: 4, levelValue: 3 },
+  ];
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        setLoadingOptions(true);
+
+        const [drivewayResponse, levelResponse] = await Promise.all([
+          fetch("http://147.93.55.68/driveway/all?page=0&size=100", {
+            method: "GET",
+          }),
+          fetch("http://147.93.55.68/level/all?page=0&size=100", {
+            method: "GET",
+          }),
+        ]);
+
+        if (!drivewayResponse.ok || !levelResponse.ok) {
+          throw new Error("Erreur récupération options");
+        }
+
+        const drivewayData = await drivewayResponse.json();
+        const levelData = await levelResponse.json();
+
+        const drivewayList = Array.isArray(drivewayData)
+          ? drivewayData
+          : drivewayData.content || [];
+
+        const levelList = Array.isArray(levelData)
+          ? levelData
+          : levelData.content || [];
+
+        setDriveways(drivewayList.length ? drivewayList : fallbackDriveways);
+        setLevels(levelList.length ? levelList : fallbackLevels);
+      } catch (error) {
+        console.warn("API indisponible -> fallback options");
+        setDriveways(fallbackDriveways);
+        setLevels(fallbackLevels);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,7 +82,7 @@ function CreerEmpl() {
     }));
   };
 
-  const handleCreate = async () => {
+    const handleCreate = async () => {
     setErrorMessage("");
 
     if (!form.locationCode || !form.drivewayId || !form.levelId) {
@@ -39,7 +99,7 @@ function CreerEmpl() {
     try {
       setLoading(true);
 
-      const response = await fetch("/position/create", {
+      const response = await fetch("http://147.93.55.68/position/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,11 +128,17 @@ function CreerEmpl() {
     }
   };
 
-  const goBack = () => navigate("/gestion-stocks");
+  const goBack = () => navigate("/gestion-empl");
 
   return (
     <div className="p-4 mt-[200px] flex flex-col items-center relative">
-      <div className="w-[900px] flex flex-col items-center">
+      <div className="w-[1000px] flex flex-col items-center">
+        {loadingOptions && (
+          <div className="mb-[30px] text-[22px] font-bold">
+            Chargement des allées et niveaux...
+          </div>
+        )}
+
         <table className="text-center border-collapse">
           <thead>
             <tr>
@@ -80,10 +146,10 @@ function CreerEmpl() {
                 Code emplacement
               </th>
               <th className="text-[30px] font-bold px-[40px] pb-[20px]">
-                ID Allée
+                Allée
               </th>
               <th className="text-[30px] font-bold px-[40px] pb-[20px]">
-                ID Niveau
+                Niveau
               </th>
             </tr>
           </thead>
@@ -102,25 +168,40 @@ function CreerEmpl() {
               </td>
 
               <td className="px-[20px]">
-                <input
-                  type="number"
+                <select
                   name="drivewayId"
                   value={form.drivewayId}
                   onChange={handleChange}
-                  placeholder="..."
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
-                />
+                  className="w-[260px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                >
+                  <option value="">Choisir une allée</option>
+                  {driveways.map((driveway) => (
+                    <option
+                      key={driveway.drivewayID}
+                      value={driveway.drivewayID}
+                    >
+                      {driveway.zone?.zoneName
+                        ? `${driveway.zone.zoneName} - Allée ${driveway.name}`
+                        : `Allée ${driveway.name}`}
+                    </option>
+                  ))}
+                </select>
               </td>
 
               <td className="px-[20px]">
-                <input
-                  type="number"
+                <select
                   name="levelId"
                   value={form.levelId}
                   onChange={handleChange}
-                  placeholder="..."
                   className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
-                />
+                >
+                  <option value="">Choisir un niveau</option>
+                  {levels.map((level) => (
+                    <option key={level.levelID} value={level.levelID}>
+                      Niveau {level.levelValue}
+                    </option>
+                  ))}
+                </select>
               </td>
             </tr>
           </tbody>
@@ -134,7 +215,7 @@ function CreerEmpl() {
 
         <button
           onClick={handleCreate}
-          disabled={loading}
+          disabled={loading || loadingOptions}
           className="px-[100px] py-[20px] mt-[40px] text-[20px] font-[800] bg-[#CCB5A5] rounded-[50px] disabled:opacity-50"
         >
           {loading ? "Création..." : "Créer"}
@@ -153,11 +234,11 @@ function CreerEmpl() {
       )}
 
       <button
-          onClick={goBack}
-          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
-        >
-          Retour à la gestion des emplacements
-        </button>
+        onClick={goBack}
+        className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
+      >
+        Retour à la gestion des emplacements
+      </button>
     </div>
   );
 }

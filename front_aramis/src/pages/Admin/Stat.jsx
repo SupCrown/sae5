@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 
 function Stat() {
-  const [periode, setPeriode] = useState("heure");
+  const [periode, setPeriode] = useState("day");
   const [thumbTop, setThumbTop] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -9,25 +9,17 @@ function Stat() {
   const trackRef = useRef(null);
 
   const fallbackData = {
-    heure: [
+    day: [
       { nom: "Blaise Damien", nbCommandes: "945", nbPalettes: "582", nbColis: "5634" },
       { nom: "Roméo Délégué", nbCommandes: "945", nbPalettes: "582", nbColis: "5634" },
       { nom: "Kebaili Josua", nbCommandes: "984", nbPalettes: "562", nbColis: "5633" },
-      { nom: "LSD Josua", nbCommandes: "9999", nbPalettes: "99999", nbColis: "9999999" },
       { nom: "Test 1", nbCommandes: "150", nbPalettes: "70", nbColis: "1200" },
-      { nom: "Test 2", nbCommandes: "151", nbPalettes: "71", nbColis: "1210" },
-      { nom: "Test 3", nbCommandes: "152", nbPalettes: "72", nbColis: "1220" },
-      { nom: "Test 4", nbCommandes: "153", nbPalettes: "73", nbColis: "1230" },
     ],
     total: [
       { nom: "Blaise Damien", nbCommandes: "92400", nbPalettes: "38200", nbColis: "352000" },
       { nom: "Roméo Délégué", nbCommandes: "88700", nbPalettes: "36500", nbColis: "341000" },
       { nom: "Kebaili Josua", nbCommandes: "95100", nbPalettes: "39400", nbColis: "361500" },
-      { nom: "LSD Josua", nbCommandes: "102000", nbPalettes: "42100", nbColis: "389000" },
       { nom: "Test 1", nbCommandes: "150", nbPalettes: "70", nbColis: "1200" },
-      { nom: "Test 2", nbCommandes: "151", nbPalettes: "71", nbColis: "1210" },
-      { nom: "Test 3", nbCommandes: "152", nbPalettes: "72", nbColis: "1220" },
-      { nom: "Test 4", nbCommandes: "153", nbPalettes: "73", nbColis: "1230" },
     ],
   };
 
@@ -41,7 +33,7 @@ function Stat() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("/user/stats", {
+        const response = await fetch("http://147.93.55.68/user/stats", {
           method: "GET",
         });
 
@@ -51,53 +43,33 @@ function Stat() {
 
         const data = await response.json();
 
-        let heureStats = [];
-        let totalStats = [];
-
-        if (Array.isArray(data)) {
-
-          heureStats = data.map((user, index) => ({
-            id: user.id ?? index + 1,
-            nom:
-              user.fullName ??
-              user.nomComplet ??
-              `${user.lastName ?? "Nom"} ${user.firstName ?? "Prénom"}`,
-            nbCommandes: user.nbCommandes ?? user.commandCount ?? "0",
-            nbPalettes: user.nbPalettes ?? user.paletteCount ?? "0",
-            nbColis: user.nbColis ?? user.packageCount ?? "0",
-          }));
-
-          totalStats = heureStats;
-        } else {
-          
-          const heureSource = data.heure || data.hour || data.byHour || [];
-          const totalSource = data.total || data.global || data.all || [];
-
-          heureStats = heureSource.map((user, index) => ({
-            id: user.id ?? index + 1,
-            nom:
-              user.fullName ??
-              user.nomComplet ??
-              `${user.lastName ?? "Nom"} ${user.firstName ?? "Prénom"}`,
-            nbCommandes: user.nbCommandes ?? user.commandCount ?? "0",
-            nbPalettes: user.nbPalettes ?? user.paletteCount ?? "0",
-            nbColis: user.nbColis ?? user.packageCount ?? "0",
-          }));
-
-          totalStats = totalSource.map((user, index) => ({
-            id: user.id ?? index + 1,
-            nom:
-              user.fullName ??
-              user.nomComplet ??
-              `${user.lastName ?? "Nom"} ${user.firstName ?? "Prénom"}`,
-            nbCommandes: user.nbCommandes ?? user.commandCount ?? "0",
-            nbPalettes: user.nbPalettes ?? user.paletteCount ?? "0",
-            nbColis: user.nbColis ?? user.packageCount ?? "0",
-          }));
+        if (!Array.isArray(data) || data.length === 0) {
+          setStatsData(fallbackData);
+          return;
         }
 
+        const dayStats = data.map((item, index) => ({
+          id: item.user?.id ?? index + 1,
+          nom:
+            `${item.user?.firstname ?? ""} ${item.user?.lastname ?? ""}`.trim() ||
+            "Utilisateur",
+          nbCommandes: item.ordersNumberOfTheDay ?? 0,
+          nbPalettes: item.supportsNumberOfTheDay ?? 0,
+          nbColis: item.productsNumberOfTheDay ?? 0,
+        }));
+
+        const totalStats = data.map((item, index) => ({
+          id: item.user?.id ?? index + 1,
+          nom:
+            `${item.user?.firstname ?? ""} ${item.user?.lastname ?? ""}`.trim() ||
+            "Utilisateur",
+          nbCommandes: item.ordersNumberOfAllTime ?? 0,
+          nbPalettes: item.supportsNumberOfAllTime ?? 0,
+          nbColis: item.productsNumberOfAllTime ?? 0,
+        }));
+
         setStatsData({
-          heure: heureStats.length ? heureStats : fallbackData.heure,
+          day: dayStats.length ? dayStats : fallbackData.day,
           total: totalStats.length ? totalStats : fallbackData.total,
         });
       } catch (error) {
@@ -174,7 +146,7 @@ function Stat() {
           onChange={(e) => setPeriode(e.target.value)}
           className="border-[3px] border-black bg-white text-[22px] font-bold px-[18px] py-[6px]"
         >
-          <option value="heure">Par Heure</option>
+          <option value="day">Du jour</option>
           <option value="total">Total</option>
         </select>
       </div>
@@ -208,7 +180,8 @@ function Stat() {
             <table className="w-full table-fixed text-center border-collapse">
               <tbody>
                 {rows.map((r, idx) => {
-                  const rowClass = idx % 2 === 0 ? "bg-[#f7f7f7]" : "bg-[#dcdcdc]";
+                  const rowClass =
+                    idx % 2 === 0 ? "bg-[#f7f7f7]" : "bg-[#dcdcdc]";
 
                   return (
                     <tr key={r.id ?? idx} className={rowClass}>

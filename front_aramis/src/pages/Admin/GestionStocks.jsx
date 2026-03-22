@@ -67,7 +67,7 @@ function GestionStocks() {
       try {
         setLoading(true);
 
-        const response = await fetch(`/product/all?page=${page}&size=${size}`, {
+        const response = await fetch(`http://147.93.55.68/product/all?page=${page}&size=${size}`, {
           method: "GET",
         });
 
@@ -85,7 +85,7 @@ function GestionStocks() {
         }
 
         const mappedRows = products.map((product, index) => ({
-          id: product.id ?? index + 1,
+          id: product.productID ?? index + 1,
 
           productCode: product.productCode ?? "P-000",
           quantity: product.quantity ?? 0,
@@ -123,7 +123,7 @@ function GestionStocks() {
     if (!rowToDelete) return;
 
     try {
-      const response = await fetch(`/product/delete/${rowToDelete.id}`, {
+      const response = await fetch(`http://147.93.55.68/product/delete/${rowToDelete.id}`, {
         method: "DELETE",
       });
 

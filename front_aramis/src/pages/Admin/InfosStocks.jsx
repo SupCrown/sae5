@@ -34,7 +34,7 @@ function InfosStocks() {
       try {
         setLoading(true);
 
-        const response = await fetch(`/product/${id}`);
+        const response = await fetch(`http://147.93.55.68/product/${id}`);
 
         if (!response.ok) {
           throw new Error("API indisponible");
@@ -78,7 +78,7 @@ function InfosStocks() {
     }
 
     try {
-      const response = await fetch("/product/add", {
+      const response = await fetch("http://147.93.55.68/product/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,7 +118,7 @@ function InfosStocks() {
     }
 
     try {
-      const response = await fetch("/product/take", {
+      const response = await fetch("http://147.93.55.68/product/take", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

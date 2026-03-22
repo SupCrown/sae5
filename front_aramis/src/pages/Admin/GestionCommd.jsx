@@ -83,7 +83,7 @@ function GestionCommd() {
       try {
         setLoading(true);
 
-        const response = await fetch(`/order/all?page=${page}&size=${size}`, {
+        const response = await fetch(`http://147.93.55.68/order/all?page=${page}&size=${size}`, {
           method: "GET",
         });
 
@@ -144,7 +144,7 @@ function GestionCommd() {
     if (!rowToDelete) return;
 
     try {
-      const response = await fetch(`/order/delete/${rowToDelete.id}`, {
+      const response = await fetch(`http://147.93.55.68/order/delete/${rowToDelete.id}`, {
         method: "POST",
       });
 

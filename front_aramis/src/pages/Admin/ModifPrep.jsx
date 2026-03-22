@@ -23,7 +23,7 @@ function ModifPrep() {
       try {
         setLoading(true);
 
-        const response = await fetch(`/user/${id}`, {
+        const response = await fetch(`http://147.93.55.68/user/${id}`, {
           method: "GET",
         });
 
@@ -71,13 +71,13 @@ function ModifPrep() {
       firstname: form.firstname,
       lastname: form.lastname,
       login: form.login,
-      isAdmin: form.isAdmin,
+      admin: form.isAdmin,
     };
 
     try {
       setSaving(true);
 
-      const response = await fetch(`/user/update/${id}`, {
+      const response = await fetch(`http://147.93.55.68/user/update/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

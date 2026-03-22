@@ -31,7 +31,7 @@ function GestionPrep() {
       try {
         setLoading(true);
 
-        const response = await fetch(`/user/all?page=${page}&size=${size}`, {
+        const response = await fetch(`http://147.93.55.68/user/all?page=${page}&size=${size}`, {
           method: "GET",
         });
 
@@ -52,7 +52,7 @@ function GestionPrep() {
           firstname: user.firstname ?? "Prénom",
           lastname: user.lastname ?? "Nom",
           login: user.login ?? "N/A",
-          isAdmin: user.isAdmin ?? false,
+          isAdmin: user.admin ?? false,
         }));
 
         setRows(mappedRows);
@@ -81,7 +81,7 @@ function GestionPrep() {
     if (!rowToDelete) return;
 
     try {
-      const response = await fetch(`/user/delete/${rowToDelete.id}`, {
+      const response = await fetch(`http://147.93.55.68/user/delete/${rowToDelete.id}`, {
         method: "DELETE",
       });
 
