@@ -118,7 +118,7 @@ public class OrderController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<OrderResponse>> getOrders(@PageableDefault(size = 20, sort = "oderID") Pageable pageable) {
+    public ResponseEntity<List<OrderResponse>> getOrders(@PageableDefault(size = 20, sort = "orderID") Pageable pageable) {
         var orders = orderRepository.findAll(pageable);
 
         List<OrderResponse> orderResponseList = new ArrayList<>();
