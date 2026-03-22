@@ -33,6 +33,12 @@ public class LevelController {
         this.levelRepository = levelRepository;
     }
 
+    @Authorize(roles = Role.ADMIN)
+    @GetMapping("/{id}")
+    public ResponseEntity<Level> getById(@PathVariable Integer id) {
+        Optional<Level> level = levelRepository.findById(id);
+        return level.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
     @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
