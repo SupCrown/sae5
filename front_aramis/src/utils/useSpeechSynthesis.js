@@ -6,18 +6,18 @@ export function useSpeechSynthesis(options = {}) {
     rate = 1,
     pitch = 1,
     volume = 1,
-    voiceNameIncludes, // ex: ["Thomas", "Paul", "male"]
+    voiceNameIncludes,
   } = options;
 
   const pickVoice = () => {
     const voices = window.speechSynthesis?.getVoices?.() ?? [];
     if (!voices.length) return null;
 
-    // Filtre langue
+  
     const byLang = voices.filter((v) => v.lang === lang);
     const pool = byLang.length ? byLang : voices;
 
-    // Si on veut favoriser une voix spécifique
+
     if (voiceNameIncludes?.length) {
       const found = pool.find((v) =>
         voiceNameIncludes.some((k) => v.name.toLowerCase().includes(k.toLowerCase()))

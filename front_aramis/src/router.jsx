@@ -13,6 +13,7 @@ import GestionStocks from "./pages/Admin/GestionStocks.jsx";
 import CreerStocks from "./pages/Admin/CreerStocks.jsx";
 import InfosStocks from "./pages/Admin/InfosStocks.jsx";
 import Stat from "./pages/Admin/Stat.jsx";
+import Listen from "./pages/ListenPage.jsx";
 
 
 const router = createBrowserRouter([
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
       { path: "creer-stocks", element: <CreerStocks /> },
       { path: "infos-stocks/:id", element: <InfosStocks />},
       { path: "stat", element: <Stat /> },
+      { path: "listen", element: <Listen /> },
     ],
   },
 ]);
