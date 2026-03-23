@@ -8,47 +8,47 @@ function GestionStocks() {
   const navigate = useNavigate();
 
   const fallbackRows = [
-  {
-    id: 1,
-    productCode: "P-001",
-    libel: "Produit A",
-    quantity: 120,
-    zone: "H",
-    driveway: "08",
-    location: "023",
-    level: "1",
-  },
-  {
-    id: 2,
-    productCode: "P-002",
-    libel: "Produit B",
-    quantity: 80,
-    zone: "A",
-    driveway: "02",
-    location: "110",
-    level: "2",
-  },
-  {
-    id: 3,
-    productCode: "P-003",
-    libel: "Produit C",
-    quantity: 45,
-    zone: "C",
-    driveway: "15",
-    location: "045",
-    level: "3",
-  },
-  {
-    id: 4,
-    productCode: "P-004",
-    libel: "Produit D",
-    quantity: 200,
-    zone: "F",
-    driveway: "01",
-    location: "301",
-    level: "1",
-  },
-];
+    {
+      id: 1,
+      productCode: "P-001",
+      libel: "Produit A",
+      quantity: 120,
+      zone: "H",
+      driveway: "08",
+      location: "023",
+      level: "1",
+    },
+    {
+      id: 2,
+      productCode: "P-002",
+      libel: "Produit B",
+      quantity: 80,
+      zone: "A",
+      driveway: "02",
+      location: "110",
+      level: "2",
+    },
+    {
+      id: 3,
+      productCode: "P-003",
+      libel: "Produit C",
+      quantity: 45,
+      zone: "C",
+      driveway: "15",
+      location: "045",
+      level: "3",
+    },
+    {
+      id: 4,
+      productCode: "P-004",
+      libel: "Produit D",
+      quantity: 200,
+      zone: "F",
+      driveway: "01",
+      location: "301",
+      level: "1",
+    },
+  ];
 
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(0);
@@ -67,16 +67,18 @@ function GestionStocks() {
       try {
         setLoading(true);
 
-        const response = await fetch(`http://147.93.55.68/product/all?page=${page}&size=${size}`, {
-          method: "GET",
-        });
+        const response = await fetch(
+          `http://147.93.55.68/product/all?page=${page}&size=${size}`,
+          {
+            method: "GET",
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Erreur API");
         }
 
         const data = await response.json();
-        
         const products = Array.isArray(data) ? data : data.content || [];
 
         if (!products.length) {
@@ -85,12 +87,10 @@ function GestionStocks() {
         }
 
         const mappedRows = products.map((product, index) => ({
-          id: product.productID ?? index + 1,
-
+          id: product.id ?? product.productID ?? index + 1,
           productCode: product.productCode ?? "P-000",
           quantity: product.quantity ?? 0,
           libel: product.libel ?? "Produit inconnu",
-
           zone: product.zone ?? "A",
           driveway: product.driveway ?? "01",
           location: product.location ?? "000",
@@ -109,7 +109,7 @@ function GestionStocks() {
     fetchProducts();
   }, [page, size]);
 
-    const handleDelete = (row, idx) => {
+  const handleDelete = (row, idx) => {
     setRowToDelete({ id: row.id, idx });
     setConfirmOpen(true);
   };
@@ -123,9 +123,12 @@ function GestionStocks() {
     if (!rowToDelete) return;
 
     try {
-      const response = await fetch(`http://147.93.55.68/product/delete/${rowToDelete.id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `http://147.93.55.68/product/delete/${rowToDelete.id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("API indisponible");
@@ -144,9 +147,10 @@ function GestionStocks() {
     }
   };
 
+  const showPagination = rows.length >= size;
+
   return (
     <div className="p-4 flex flex-col items-center relative">
-      {/* bouton + */}
       <button
         className="flex flex-col items-center gap-2 px-[500px] py-[5px] mt-[40px] text-[20px] font-bold bg-blue-600 text-white rounded-[50px]"
         onClick={goToCreer}
@@ -159,14 +163,12 @@ function GestionStocks() {
         />
       </button>
 
-      {/* état chargement */}
       {loading && (
         <div className="mt-[30px] text-[22px] font-bold">
           Chargement des produits...
         </div>
       )}
 
-      {/* tableau */}
       {!loading && (
         <div className="w-full mt-[50px]">
           <table className="w-full border-collapse text-center">
@@ -188,7 +190,10 @@ function GestionStocks() {
                 const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
 
                 return (
-                  <tr key={r.id ?? idx} className={`border-b border-black ${rowClass}`}>
+                  <tr
+                    key={r.id ?? idx}
+                    className={`border-b border-black ${rowClass}`}
+                  >
                     <td className="py-[10px] font-bold">{r.productCode}</td>
                     <td className="py-[10px]">{r.libel}</td>
                     <td className="py-[10px] font-bold">{r.quantity}</td>
@@ -203,14 +208,22 @@ function GestionStocks() {
                         className="px-[20px] py-[10px] mr-[10px]"
                         onClick={() => goToInfos(r.id)}
                       >
-                        <img src={ModifBut} alt="Modifier" className="w-[20px]" />
+                        <img
+                          src={ModifBut}
+                          alt="Modifier"
+                          className="w-[20px]"
+                        />
                       </button>
 
                       <button
                         className="px-[20px] py-[10px]"
                         onClick={() => handleDelete(r, idx)}
                       >
-                        <img src={SuppBut} alt="Supprimer" className="w-[20px]" />
+                        <img
+                          src={SuppBut}
+                          alt="Supprimer"
+                          className="w-[20px]"
+                        />
                       </button>
                     </td>
                   </tr>
@@ -219,26 +232,27 @@ function GestionStocks() {
             </tbody>
           </table>
 
-          {/* pagination simple */}
-          <div className="flex justify-center items-center gap-6 mt-[30px]">
-            <button
-              type="button"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
-            >
-              Précédent
-            </button>
+          {showPagination && (
+            <div className="flex justify-center items-center gap-6 mt-[30px]">
+              <button
+                type="button"
+                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
+              >
+                Précédent
+              </button>
 
-            <span className="text-[22px] font-bold">Page {page + 1}</span>
+              <span className="text-[22px] font-bold">Page {page + 1}</span>
 
-            <button
-              type="button"
-              onClick={() => setPage((prev) => prev + 1)}
-              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
-            >
-              Suivant
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setPage((prev) => prev + 1)}
+                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
+              >
+                Suivant
+              </button>
+            </div>
+          )}
         </div>
       )}
 

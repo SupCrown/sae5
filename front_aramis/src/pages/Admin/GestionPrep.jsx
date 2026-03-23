@@ -31,9 +31,12 @@ function GestionPrep() {
       try {
         setLoading(true);
 
-        const response = await fetch(`http://147.93.55.68/user/all?page=${page}&size=${size}`, {
-          method: "GET",
-        });
+        const response = await fetch(
+          `http://147.93.55.68/user/all?page=${page}&size=${size}`,
+          {
+            method: "GET",
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Erreur API");
@@ -81,9 +84,12 @@ function GestionPrep() {
     if (!rowToDelete) return;
 
     try {
-      const response = await fetch(`http://147.93.55.68/user/delete/${rowToDelete.id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `http://147.93.55.68/user/delete/${rowToDelete.id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Suppression impossible");
@@ -101,6 +107,8 @@ function GestionPrep() {
       setTimeout(() => setSuccessOpen(false), 2000);
     }
   };
+
+  const showPagination = rows.length >= size;
 
   return (
     <div className="p-4 flex flex-col items-center relative">
@@ -182,25 +190,27 @@ function GestionPrep() {
             </tbody>
           </table>
 
-          <div className="flex justify-center items-center gap-6 mt-[30px]">
-            <button
-              type="button"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
-            >
-              Précédent
-            </button>
+          {showPagination && (
+            <div className="flex justify-center items-center gap-6 mt-[30px]">
+              <button
+                type="button"
+                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
+              >
+                Précédent
+              </button>
 
-            <span className="text-[22px] font-bold">Page {page + 1}</span>
+              <span className="text-[22px] font-bold">Page {page + 1}</span>
 
-            <button
-              type="button"
-              onClick={() => setPage((prev) => prev + 1)}
-              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
-            >
-              Suivant
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setPage((prev) => prev + 1)}
+                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
+              >
+                Suivant
+              </button>
+            </div>
+          )}
         </div>
       )}
 
