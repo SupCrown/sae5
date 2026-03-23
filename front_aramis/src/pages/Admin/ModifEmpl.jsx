@@ -11,7 +11,12 @@ function ModifEmpl() {
     levelId: 1,
   };
 
-  const [form, setForm] = useState(testData);
+  const [form, setForm] = useState({
+    locationCode: "",
+    drivewayId: "",
+    levelId: "",
+  });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
@@ -33,9 +38,9 @@ function ModifEmpl() {
         const position = await response.json();
 
         setForm({
-          locationCode: position.locationCode ?? testData.locationCode,
-          drivewayId: position.drivewayId ?? testData.drivewayId,
-          levelId: position.levelId ?? testData.levelId,
+          locationCode: position.locationCode || "",
+          drivewayId: position.driveway?.drivewayID ?? "",
+          levelId: position.level?.levelID ?? "",
         });
       } catch (error) {
         console.warn("API non dispo -> fallback test data");
@@ -104,6 +109,8 @@ function ModifEmpl() {
     }
   };
 
+  const goBack = () => navigate("/gestion-empl");
+
   if (loading) {
     return (
       <div className="p-4 mt-[200px] flex justify-center text-[24px] font-bold">
@@ -111,8 +118,6 @@ function ModifEmpl() {
       </div>
     );
   }
-
-  const goBack = () => navigate("/gestion-empl");
 
   return (
     <div className="p-4 mt-[200px] flex flex-col items-center relative">
@@ -194,12 +199,12 @@ function ModifEmpl() {
       )}
 
       <button
-          onClick={goBack}
-          disabled={saving}
-          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
-        >
-          Retour à la gestion des emplacements
-        </button>
+        onClick={goBack}
+        disabled={saving}
+        className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
+      >
+        Retour à la gestion des emplacements
+      </button>
     </div>
   );
 }
