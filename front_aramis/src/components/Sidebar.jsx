@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { authService } from "../services/authService";
 
 export default function Sidebar({ closeSidebar }) {
   const navigate = useNavigate();
@@ -12,17 +13,30 @@ export default function Sidebar({ closeSidebar }) {
 
   const handleNavigation = (path) => {
     navigate(path);
-    closeSidebar(); // Ferme la barre après le clic
+    closeSidebar();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Erreur déconnexion:", error);
+    } finally {
+      closeSidebar();
+      navigate("/auth");
+    }
   };
 
   return (
     <nav className="fixed right-0 top-0 h-full w-80 bg-white shadow-2xl z-[100] flex flex-col animate-in slide-in-from-right duration-300">
+      {/* Header */}
       <div className="p-8 border-b border-gray-100 flex justify-between items-center">
         <h2 className="text-[#870000] font-black text-2xl italic">ARAMIS</h2>
         <button onClick={closeSidebar} className="text-gray-400 hover:text-black text-2xl">✕</button>
       </div>
       
-      <div className="flex-1 py-6">
+      {/* Menu et Bouton Logout juste en dessous */}
+      <div className="py-6">
         {menuItems.map((item) => (
           <button
             key={item.path}
@@ -36,6 +50,16 @@ export default function Sidebar({ closeSidebar }) {
             {item.label}
           </button>
         ))}
+
+        {/* Le bouton de déconnexion à la suite des autres */}
+        <div className="px-8 mt-4">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-white rounded-xl font-bold uppercase text-xs tracking-[0.2em] hover:bg-[#870000] transition-colors duration-300"
+          >
+            → DECONNEXION
+          </button>
+        </div>
       </div>
     </nav>
   );

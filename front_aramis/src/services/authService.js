@@ -1,3 +1,5 @@
+import { log } from "three";
+
 export const authService = {
   login: async (pin) => {
     const response = await fetch(`/api/login`, {
@@ -9,7 +11,6 @@ export const authService = {
 
     if (response.ok) {
       const data = await response.json();
-      localStorage.setItem("token", data.token);
       return data;
     }
     
@@ -19,19 +20,28 @@ export const authService = {
   },
 
   logout: async () => {
-    const token = localStorage.getItem("token");
     try {
       await fetch(`/api/logout`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
+        credentials: "include"
       });
-    } finally {
-      localStorage.removeItem("token");
+    } catch (err) {
+      console.error("Erreur lors de la déconnexion:", err);
     }
   },
 
-  getToken: () => localStorage.getItem("token")
+  isLoggedIn: async() => {
+      try {
+      const response = await fetch('/api/authStatus', {
+        method: 'GET',
+        credentials: 'include', 
+      });
+
+      // Renvoie true si 200, false pour 401, 403, 404, 500, etc.
+      return response.ok; 
+    } catch (error) {
+      console.error("Erreur lors de la vérification de l'auth:", error);
+      return false;
+    }
+  }
 };

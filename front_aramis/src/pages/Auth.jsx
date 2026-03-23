@@ -38,7 +38,7 @@ export default function AuthScreen() {
     
      try {
        await authService.login(pin);
-       navigate("/home");
+       navigate("/palette");
      } catch (err) {
        if (err.message === "Identifiants incorrects") setStatus("error401");
        else if (err.message === "Accès refusé") setStatus("error403");
