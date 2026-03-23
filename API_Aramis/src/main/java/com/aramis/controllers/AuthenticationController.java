@@ -39,10 +39,10 @@ public class AuthenticationController {
             // Create secure cookie
             ResponseCookie cookie = ResponseCookie.from(properties.getCookie().getName(), auth.getToken())
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .path("/")
                     .maxAge(properties.getCookie().getExpiresIn())
-                    .sameSite(SameSiteCookies.STRICT.toString())
+                    .sameSite(SameSiteCookies.NONE.toString())
                     .build();
 
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
