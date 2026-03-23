@@ -51,7 +51,7 @@ function GestionEmpl() {
         }
 
         const mappedRows = positions.map((position, index) => ({
-          id: position.locationID ?? index,
+          id: position.locationID ?? index + 1,
           zone: position.driveway?.zone?.zoneName ?? "A",
           driveway: position.driveway?.name ?? "1",
           location: position.locationCode ?? "000",
@@ -108,6 +108,8 @@ function GestionEmpl() {
     }
   };
 
+  const showPagination = rows.length >= size;
+
   return (
     <div className="p-4 flex flex-col items-center relative">
       <button
@@ -115,7 +117,11 @@ function GestionEmpl() {
         onClick={goToCreer}
         type="button"
       >
-        <img src={plusIcon} alt="Plus Icon" className="w-[40px] h-[40px] m-[20px]" />
+        <img
+          src={plusIcon}
+          alt="Plus Icon"
+          className="w-[40px] h-[40px] m-[20px]"
+        />
       </button>
 
       {loading && (
@@ -142,7 +148,10 @@ function GestionEmpl() {
                 const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
 
                 return (
-                  <tr key={r.id ?? idx} className={`border-b border-black ${rowClass}`}>
+                  <tr
+                    key={r.id ?? idx}
+                    className={`border-b border-black ${rowClass}`}
+                  >
                     <td className="py-[10px] font-bold text-[20px]">{r.zone}</td>
                     <td className="py-[10px] font-bold text-[20px]">{r.driveway}</td>
                     <td className="py-[10px] font-bold text-[20px]">{r.location}</td>
@@ -154,7 +163,11 @@ function GestionEmpl() {
                         onClick={() => goToModif(r.id)}
                         type="button"
                       >
-                        <img src={ModifBut} alt="Modifier" className="w-[20px] h-[20px]" />
+                        <img
+                          src={ModifBut}
+                          alt="Modifier"
+                          className="w-[20px] h-[20px]"
+                        />
                       </button>
 
                       <button
@@ -162,7 +175,11 @@ function GestionEmpl() {
                         onClick={() => handleDelete(r, idx)}
                         type="button"
                       >
-                        <img src={SuppBut} alt="Supprimer" className="w-[20px] h-[20px]" />
+                        <img
+                          src={SuppBut}
+                          alt="Supprimer"
+                          className="w-[20px] h-[20px]"
+                        />
                       </button>
                     </td>
                   </tr>
@@ -171,25 +188,27 @@ function GestionEmpl() {
             </tbody>
           </table>
 
-          <div className="flex justify-center items-center gap-6 mt-[30px]">
-            <button
-              type="button"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
-            >
-              Précédent
-            </button>
+          {showPagination && (
+            <div className="flex justify-center items-center gap-6 mt-[30px]">
+              <button
+                type="button"
+                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
+              >
+                Précédent
+              </button>
 
-            <span className="text-[22px] font-bold">Page {page + 1}</span>
+              <span className="text-[22px] font-bold">Page {page + 1}</span>
 
-            <button
-              type="button"
-              onClick={() => setPage((prev) => prev + 1)}
-              className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
-            >
-              Suivant
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setPage((prev) => prev + 1)}
+                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
+              >
+                Suivant
+              </button>
+            </div>
+          )}
         </div>
       )}
 
