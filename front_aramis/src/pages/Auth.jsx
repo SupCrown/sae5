@@ -52,7 +52,16 @@ export default function AuthScreen() {
  };
 
 
- // ... (Garder la fonction handleKeyDown identique)
+ const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace") {
+      if (codes[index] === "" && index > 0) {
+        const newCodes = [...codes];
+        newCodes[index - 1] = ""; 
+        setCodes(newCodes);
+        inputRefs.current[index - 1].focus(); 
+      }
+    }
+  };
 
 
  return (
