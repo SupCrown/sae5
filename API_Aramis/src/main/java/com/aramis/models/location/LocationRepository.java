@@ -1,5 +1,7 @@
 package com.aramis.models.location;
 
+import com.aramis.models.driveway.Driveway;
+import com.aramis.models.level.Level;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -15,4 +17,6 @@ public interface LocationRepository extends CrudRepository<Location, Integer> {
     Optional<Location> findByCodeLevelDrivewayAndZone(String locationCode, String levelValue, String drivewayName, String zoneName);
 
     Iterable<Location> findAll(Pageable pageable);
+
+    Optional<Location> findByDrivewayAndLevel(Driveway driveway, Level level);
 }

@@ -47,6 +47,11 @@ public class PositionController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
+        Optional<Location> existingLocation = locationRepository.findByDrivewayAndLevel(drivewayOpt.get(), levelOpt.get());
+        if (existingLocation.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request : emplacement déjà ajouté.");
+        }
+
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
         Location location = new Location();
@@ -74,6 +79,11 @@ public class PositionController {
 
         Optional<Driveway> drivewayOpt = drivewayRepository.findById(request.getDrivewayId());
         Optional<Level> levelOpt = levelRepository.findById(request.getLevelId());
+
+        Optional<Location> existingLocation = locationRepository.findByDrivewayAndLevel(drivewayOpt.get(), levelOpt.get());
+        if (existingLocation.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request : emplacement déjà ajouté.");
+        }
 
         if (drivewayOpt.isEmpty() || levelOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
