@@ -5,40 +5,34 @@ import plusIcon from "../../assets/saisie-stocks-plus.png";
 function CreerCommd() {
   const navigate = useNavigate();
 
-  // --------- création manuelle ----------
   const [form, setForm] = useState({
-    support: "",
-    codemb: "",
-    cliliv: "",
-    nomcli: "",
-    itm8: "",
-    designation: "",
-    nbColis: "",
-    zone: "",
-    allee: "",
-    dpl: "",
-    niveau: "",
+    orderDate: "",
+    customerID: "",
+    priority: false,
+    supports: [
+      {
+        typeId: "",
+        products: [
+          {
+            productID: "",
+            quantity: "",
+          },
+        ],
+      },
+    ],
   });
 
   const [manualLoading, setManualLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
 
-  // --------- import csv ----------
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errorOpen, setErrorOpen] = useState(false);
+
+  const [successMessage, setSuccessMessage] = useState("");
+
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
-
-  // --------- succès ----------
-  const [successMessage, setSuccessMessage] = useState("");
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
   const showSuccess = (message) => {
     setSuccessMessage(message);
@@ -48,44 +42,189 @@ function CreerCommd() {
     }, 1500);
   };
 
+  const showError = (message) => {
+    setErrorMessage(message);
+    setErrorOpen(true);
+  };
+
+  const closeErrorPopup = () => {
+    setErrorOpen(false);
+  };
+
+  const handleMainChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSupportChange = (supportIndex, field, value) => {
+    setForm((prev) => {
+      const updatedSupports = [...prev.supports];
+      updatedSupports[supportIndex] = {
+        ...updatedSupports[supportIndex],
+        [field]: value,
+      };
+
+      return {
+        ...prev,
+        supports: updatedSupports,
+      };
+    });
+  };
+
+  const handleProductChange = (supportIndex, productIndex, field, value) => {
+    setForm((prev) => {
+      const updatedSupports = [...prev.supports];
+      const updatedProducts = [...updatedSupports[supportIndex].products];
+
+      updatedProducts[productIndex] = {
+        ...updatedProducts[productIndex],
+        [field]: value,
+      };
+
+      updatedSupports[supportIndex] = {
+        ...updatedSupports[supportIndex],
+        products: updatedProducts,
+      };
+
+      return {
+        ...prev,
+        supports: updatedSupports,
+      };
+    });
+  };
+
+  const addSupport = () => {
+    setForm((prev) => ({
+      ...prev,
+      supports: [
+        ...prev.supports,
+        {
+          typeId: "",
+          products: [
+            {
+              productID: "",
+              quantity: "",
+            },
+          ],
+        },
+      ],
+    }));
+  };
+
+  const removeSupport = (supportIndex) => {
+    setForm((prev) => ({
+      ...prev,
+      supports: prev.supports.filter((_, index) => index !== supportIndex),
+    }));
+  };
+
+  const addProduct = (supportIndex) => {
+    setForm((prev) => {
+      const updatedSupports = [...prev.supports];
+      updatedSupports[supportIndex] = {
+        ...updatedSupports[supportIndex],
+        products: [
+          ...updatedSupports[supportIndex].products,
+          {
+            productID: "",
+            quantity: "",
+          },
+        ],
+      };
+
+      return {
+        ...prev,
+        supports: updatedSupports,
+      };
+    });
+  };
+
+  const removeProduct = (supportIndex, productIndex) => {
+    setForm((prev) => {
+      const updatedSupports = [...prev.supports];
+      updatedSupports[supportIndex] = {
+        ...updatedSupports[supportIndex],
+        products: updatedSupports[supportIndex].products.filter(
+          (_, index) => index !== productIndex
+        ),
+      };
+
+      return {
+        ...prev,
+        supports: updatedSupports,
+      };
+    });
+  };
+
+  const validateManualForm = () => {
+    if (!form.orderDate || !form.customerID || form.supports.length === 0) {
+      return false;
+    }
+
+    for (const support of form.supports) {
+      if (!support.typeId || support.products.length === 0) {
+        return false;
+      }
+
+      for (const product of support.products) {
+        if (!product.productID || !product.quantity) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  const extractBackendMessage = async (response, defaultMessage) => {
+    try {
+      const data = await response.json();
+      return (
+        data?.message ||
+        data?.error ||
+        data?.details ||
+        defaultMessage
+      );
+    } catch {
+      try {
+        const text = await response.text();
+        return text || defaultMessage;
+      } catch {
+        return defaultMessage;
+      }
+    }
+  };
+
   const handleCreateManual = async () => {
     setErrorMessage("");
+    setErrorOpen(false);
 
-    if (
-      !form.support ||
-      !form.codemb ||
-      !form.cliliv ||
-      !form.nomcli ||
-      !form.itm8 ||
-      !form.designation ||
-      !form.nbColis ||
-      !form.zone ||
-      !form.allee ||
-      !form.dpl ||
-      !form.niveau
-    ) {
-      setErrorMessage("Veuillez remplir tous les champs.");
+    if (!validateManualForm()) {
+      showError("Veuillez remplir tous les champs obligatoires.");
       return;
     }
 
     const payload = {
-      support: form.support,
-      codemb: form.codemb,
-      cliliv: form.cliliv,
-      nomcli: form.nomcli,
-      itm8: form.itm8,
-      designation: form.designation,
-      nbColis: Number(form.nbColis),
-      zone: form.zone,
-      allee: form.allee,
-      dpl: form.dpl,
-      niveau: form.niveau,
+      orderDate: form.orderDate,
+      customerID: Number(form.customerID),
+      priority: form.priority,
+      supports: form.supports.map((support) => ({
+        typeId: Number(support.typeId),
+        products: support.products.map((product) => ({
+          productID: Number(product.productID),
+          quantity: Number(product.quantity),
+        })),
+      })),
     };
 
     try {
       setManualLoading(true);
 
-      const response = await fetch("/order/create", {
+      const response = await fetch("http://147.93.55.68/order/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -94,13 +233,28 @@ function CreerCommd() {
       });
 
       if (!response.ok) {
-        throw new Error("Création impossible");
+        const message = await extractBackendMessage(
+          response,
+          "Création de la commande impossible."
+        );
+        throw new Error(message);
       }
 
       showSuccess("Commande créée avec succès !");
     } catch (error) {
-      console.warn("API create indisponible -> simulation locale");
-      showSuccess("Commande créée avec succès !");
+      console.warn("Erreur création commande :", error);
+
+      let message = error.message || "Erreur lors de la création de la commande.";
+
+      if (
+        message.toLowerCase().includes("internal") ||
+        message.toLowerCase().includes("500")
+      ) {
+        message =
+          "Erreur serveur. Vérifiez les informations de la commande.";
+      }
+
+      showError(message);
     } finally {
       setManualLoading(false);
     }
@@ -118,7 +272,7 @@ function CreerCommd() {
       file.type === "text/csv" || file.name.toLowerCase().endsWith(".csv");
 
     if (!isCsv) {
-      alert("Veuillez sélectionner un fichier CSV");
+      showError("Veuillez sélectionner un fichier CSV.");
       return;
     }
 
@@ -128,7 +282,7 @@ function CreerCommd() {
 
   const handleImportCsv = async () => {
     if (!selectedFile) {
-      alert("Veuillez d'abord sélectionner un fichier CSV");
+      showError("Veuillez d'abord sélectionner un fichier CSV.");
       return;
     }
 
@@ -138,19 +292,33 @@ function CreerCommd() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch("/order/import", {
+      const response = await fetch("http://147.93.55.68/order/import", {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Import impossible");
+        const message = await extractBackendMessage(
+          response,
+          "Import CSV impossible."
+        );
+        throw new Error(message);
       }
 
       showSuccess("Import CSV réussi !");
     } catch (error) {
-      console.warn("API import indisponible -> simulation locale");
-      showSuccess("Import CSV réussi !");
+      console.warn("Erreur import commande :", error);
+
+      let message = error.message || "Erreur lors de l’import CSV.";
+
+      if (
+        message.toLowerCase().includes("internal") ||
+        message.toLowerCase().includes("500")
+      ) {
+        message = "Erreur serveur pendant l’import du fichier CSV.";
+      }
+
+      showError(message);
     } finally {
       setImportLoading(false);
     }
@@ -160,65 +328,148 @@ function CreerCommd() {
 
   return (
     <div className="p-4 flex flex-col items-center mt-[60px] relative">
-      <div className="w-[1500px] flex flex-col items-center">
-        {/* --------- PARTIE 1 : SAISIE MANUELLE --------- */}
+      <div className="w-[1400px] flex flex-col items-center">
         <h2 className="text-[28px] font-[800] mb-[25px]">
           Création manuelle d’une commande
         </h2>
 
-        {/* LIGNE 1 */}
-        <table className="text-center border-collapse mb-[10px]">
-          <thead>
-            <tr>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">N° Support</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Codemb</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Cliliv</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Nomcli</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">ITM 8</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Désignation</th>
-            </tr>
-          </thead>
+        <div className="w-full max-w-[1100px] border border-gray-300 rounded-[30px] p-[30px] bg-[#ffffff]">
+          <div className="flex justify-center gap-[30px] flex-wrap">
+            <Input
+              label="Date commande"
+              name="orderDate"
+              type="date"
+              value={form.orderDate}
+              onChange={handleMainChange}
+            />
 
-          <tbody>
-            <tr>
-              <td><Input name="support" value={form.support} onChange={handleChange} /></td>
-              <td><Input name="codemb" value={form.codemb} onChange={handleChange} /></td>
-              <td><Input name="cliliv" value={form.cliliv} onChange={handleChange} /></td>
-              <td><Input name="nomcli" value={form.nomcli} onChange={handleChange} /></td>
-              <td><Input name="itm8" value={form.itm8} onChange={handleChange} /></td>
-              <td><Input name="designation" value={form.designation} onChange={handleChange} /></td>
-            </tr>
-          </tbody>
-        </table>
+            <Input
+              label="ID client"
+              name="customerID"
+              type="number"
+              value={form.customerID}
+              onChange={handleMainChange}
+            />
 
-        {/* LIGNE 2 */}
-        <table className="text-center border-collapse">
-          <thead>
-            <tr>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Nb Colis</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Z</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">All</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Dpl</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Niv</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td><Input name="nbColis" type="number" value={form.nbColis} onChange={handleChange} /></td>
-              <td><Input name="zone" value={form.zone} onChange={handleChange} /></td>
-              <td><Input name="allee" value={form.allee} onChange={handleChange} /></td>
-              <td><Input name="dpl" value={form.dpl} onChange={handleChange} /></td>
-              <td><Input name="niveau" value={form.niveau} onChange={handleChange} /></td>
-            </tr>
-          </tbody>
-        </table>
-
-        {errorMessage && (
-          <div className="mt-[20px] text-red-600 text-[20px] font-bold">
-            {errorMessage}
+            <div className="flex flex-col items-center justify-center">
+              <label className="text-[18px] font-bold mb-[12px]">
+                Prioritaire
+              </label>
+              <input
+                type="checkbox"
+                name="priority"
+                checked={form.priority}
+                onChange={handleMainChange}
+                className="w-[28px] h-[28px]"
+              />
+            </div>
           </div>
-        )}
+
+          <div className="mt-[35px]">
+            {form.supports.map((support, supportIndex) => (
+              <div
+                key={supportIndex}
+                className="mb-[30px] border border-gray-300 rounded-[25px] p-[20px] bg-[#f8f8f8]"
+              >
+                <div className="flex items-center justify-between mb-[20px]">
+                  <h3 className="text-[22px] font-bold">
+                    Support {supportIndex + 1}
+                  </h3>
+
+                  {form.supports.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSupport(supportIndex)}
+                      className="px-[25px] py-[10px] rounded-[30px] bg-[#D9D9D9] font-bold"
+                    >
+                      Supprimer le support
+                    </button>
+                  )}
+                </div>
+
+                <div className="mb-[20px]">
+                  <Input
+                    label="Type ID"
+                    type="number"
+                    value={support.typeId}
+                    onChange={(e) =>
+                      handleSupportChange(supportIndex, "typeId", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div className="flex flex-col gap-[15px]">
+                  {support.products.map((product, productIndex) => (
+                    <div
+                      key={productIndex}
+                      className="flex justify-center items-end gap-[20px] flex-wrap"
+                    >
+                      <Input
+                        label="Product ID"
+                        type="number"
+                        value={product.productID}
+                        onChange={(e) =>
+                          handleProductChange(
+                            supportIndex,
+                            productIndex,
+                            "productID",
+                            e.target.value
+                          )
+                        }
+                      />
+
+                      <Input
+                        label="Quantité"
+                        type="number"
+                        value={product.quantity}
+                        onChange={(e) =>
+                          handleProductChange(
+                            supportIndex,
+                            productIndex,
+                            "quantity",
+                            e.target.value
+                          )
+                        }
+                      />
+
+                      {support.products.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeProduct(supportIndex, productIndex)
+                          }
+                          className="px-[25px] py-[18px] rounded-[30px] bg-[#D9D9D9] font-bold"
+                        >
+                          Supprimer
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-center mt-[20px]">
+                  <button
+                    type="button"
+                    onClick={() => addProduct(supportIndex)}
+                    className="px-[35px] py-[15px] rounded-[35px] bg-[#CCB5A5] font-bold"
+                  >
+                    + Ajouter un produit
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={addSupport}
+                className="px-[40px] py-[18px] rounded-[35px] bg-[#CCB5A5] font-bold text-[18px]"
+              >
+                + Ajouter un support
+              </button>
+            </div>
+          </div>
+        </div>
 
         <button
           onClick={handleCreateManual}
@@ -228,8 +479,7 @@ function CreerCommd() {
           {manualLoading ? "Création..." : "Créer à la main"}
         </button>
 
-        {/* --------- PARTIE 2 : IMPORT CSV --------- */}
-        <h2 className="text-[28px] font-[800] mb-[20px]">
+        <h2 className="text-[28px] font-[800] mt-[60px] mb-[20px]">
           Import d’une commande par CSV
         </h2>
 
@@ -281,26 +531,57 @@ function CreerCommd() {
         </div>
       )}
 
+      {errorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black rounded-[20px]">
+            <div className="p-6">
+              <p className="text-center text-[24px] font-bold text-red-600">
+                Erreur
+              </p>
+              <p className="text-center text-[20px] font-bold mt-[20px]">
+                {errorMessage}
+              </p>
+              <div className="border-b border-black mt-6" />
+            </div>
+
+            <div className="pb-8 flex justify-center">
+              <button
+                onClick={closeErrorPopup}
+                type="button"
+                className="bg-[#863545] text-white font-extrabold text-[28px] px-[40px] py-[12px] rounded-[40px]"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <button
-          onClick={goBack}
-          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
-        >
-          Retour à la gestion des commandes
-        </button>
+        onClick={goBack}
+        className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
+      >
+        Retour à la gestion des commandes
+      </button>
     </div>
   );
 }
 
-function Input({ name, value, onChange, type = "text" }) {
+function Input({ label, name, value, onChange, type = "text" }) {
   return (
-    <input
-      type={type}
-      name={name}
-      value={value}
-      onChange={onChange}
-      placeholder="..."
-      className="w-[140px] px-[18px] py-[18px] border border-gray-300 rounded-[40px] bg-[#CCB5A5] text-center"
-    />
+    <div className="flex flex-col items-center">
+      {label && (
+        <label className="text-[18px] font-bold mb-[10px]">{label}</label>
+      )}
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder="..."
+        className="w-[180px] px-[18px] py-[18px] border border-gray-300 rounded-[40px] bg-[#CCB5A5] text-center"
+      />
+    </div>
   );
 }
 

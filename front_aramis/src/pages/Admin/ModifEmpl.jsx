@@ -20,6 +20,7 @@ function ModifEmpl() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -63,11 +64,17 @@ function ModifEmpl() {
     }));
   };
 
+  const closeErrorPopup = () => {
+    setErrorOpen(false);
+  };
+
   const handleUpdate = async () => {
     setErrorMessage("");
+    setErrorOpen(false);
 
     if (!form.locationCode || !form.drivewayId || !form.levelId) {
       setErrorMessage("Veuillez remplir tous les champs.");
+      setErrorOpen(true);
       return;
     }
 
@@ -88,8 +95,23 @@ function ModifEmpl() {
         body: JSON.stringify(payload),
       });
 
+      let data = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
       if (!response.ok) {
-        throw new Error("Modification impossible");
+        const backendMessage =
+          data?.message ||
+          data?.error ||
+          data?.details ||
+          (typeof data === "string" ? data : null) ||
+          "Modification impossible.";
+
+        throw new Error(backendMessage);
       }
 
       setSuccessOpen(true);
@@ -98,12 +120,20 @@ function ModifEmpl() {
         navigate("/gestion-empl");
       }, 1500);
     } catch (error) {
-      console.warn("API update indisponible -> simulation locale");
-      setSuccessOpen(true);
-      setTimeout(() => {
-        setSuccessOpen(false);
-        navigate("/gestion-empl");
-      }, 1500);
+      console.warn("Erreur modification emplacement :", error);
+
+      let message = error.message || "Erreur lors de la modification.";
+
+      if (
+        message.toLowerCase().includes("internal") ||
+        message.toLowerCase().includes("500")
+      ) {
+        message =
+          "Impossible de modifier cet emplacement. Vérifiez les données saisies.";
+      }
+
+      setErrorMessage(message);
+      setErrorOpen(true);
     } finally {
       setSaving(false);
     }
@@ -172,12 +202,6 @@ function ModifEmpl() {
           </tbody>
         </table>
 
-        {errorMessage && (
-          <div className="mt-[25px] text-red-600 text-[20px] font-bold">
-            {errorMessage}
-          </div>
-        )}
-
         <button
           onClick={handleUpdate}
           disabled={saving}
@@ -193,6 +217,32 @@ function ModifEmpl() {
             <span className="font-bold">Emplacement modifié avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓
+            </div>
+          </div>
+        </div>
+      )}
+
+      {errorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black rounded-[20px]">
+            <div className="p-6">
+              <p className="text-center text-[24px] font-bold text-red-600">
+                Erreur
+              </p>
+              <p className="text-center text-[20px] font-bold mt-[20px]">
+                {errorMessage}
+              </p>
+              <div className="border-b border-black mt-6" />
+            </div>
+
+            <div className="pb-8 flex justify-center">
+              <button
+                onClick={closeErrorPopup}
+                type="button"
+                className="bg-[#863545] text-white font-extrabold text-[28px] px-[40px] py-[12px] rounded-[40px] m-[15px]"
+              >
+                Fermer
+              </button>
             </div>
           </div>
         </div>

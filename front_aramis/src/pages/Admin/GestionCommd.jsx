@@ -10,59 +10,35 @@ function GestionCommd() {
   const fallbackRows = [
     {
       id: 1,
-      support: "SUP-001",
-      codemb: "EMB01",
-      cliliv: "CL001",
-      nomcli: "Client A",
-      itm8: "ITM0001",
-      designation: "Produit A",
-      nbColis: 38,
-      zone: "H",
-      allee: "08",
-      dpl: "023",
-      niveau: "1",
+      orderDate: "2026-03-23",
+      customerId: 101,
+      priority: true,
+      supportsCount: 2,
+      totalProducts: 5,
     },
     {
       id: 2,
-      support: "SUP-002",
-      codemb: "EMB02",
-      cliliv: "CL002",
-      nomcli: "Client B",
-      itm8: "ITM0002",
-      designation: "Produit B",
-      nbColis: 42,
-      zone: "A",
-      allee: "02",
-      dpl: "110",
-      niveau: "2",
+      orderDate: "2026-03-23",
+      customerId: 102,
+      priority: false,
+      supportsCount: 1,
+      totalProducts: 3,
     },
     {
       id: 3,
-      support: "SUP-003",
-      codemb: "EMB03",
-      cliliv: "CL003",
-      nomcli: "Client C",
-      itm8: "ITM0003",
-      designation: "Produit C",
-      nbColis: 29,
-      zone: "C",
-      allee: "15",
-      dpl: "045",
-      niveau: "3",
+      orderDate: "2026-03-24",
+      customerId: 103,
+      priority: true,
+      supportsCount: 3,
+      totalProducts: 8,
     },
     {
       id: 4,
-      support: "SUP-004",
-      codemb: "EMB04",
-      cliliv: "CL004",
-      nomcli: "Client D",
-      itm8: "ITM0004",
-      designation: "Produit D",
-      nbColis: 31,
-      zone: "F",
-      allee: "01",
-      dpl: "301",
-      niveau: "1",
+      orderDate: "2026-03-24",
+      customerId: 104,
+      priority: false,
+      supportsCount: 1,
+      totalProducts: 2,
     },
   ];
 
@@ -102,20 +78,23 @@ function GestionCommd() {
           return;
         }
 
-        const mappedRows = orders.map((order, index) => ({
-          id: order.id ?? index + 1,
-          support: order.support ?? "SUP-001",
-          codemb: order.codemb ?? "EMB01",
-          cliliv: order.cliliv ?? "CL001",
-          nomcli: order.nomcli ?? "Client Test",
-          itm8: order.itm8 ?? "ITM0001",
-          designation: order.designation ?? "Produit X",
-          nbColis: order.nbColis ?? order.nbcolis ?? 0,
-          zone: order.zone ?? "A",
-          allee: order.allee ?? order.driveway ?? "01",
-          dpl: order.dpl ?? order.location ?? "000",
-          niveau: order.niveau ?? order.level ?? "0",
-        }));
+        const mappedRows = orders.map((order, index) => {
+          const supports = Array.isArray(order.supports) ? order.supports : [];
+
+          const totalProducts = supports.reduce((total, support) => {
+            const products = Array.isArray(support.products) ? support.products : [];
+            return total + products.length;
+          }, 0);
+
+          return {
+            id: order.id ?? order.orderId ?? index + 1,
+            orderDate: order.orderDate ?? "2026-03-23",
+            customerId: order.customerID ?? "N/A",
+            priority: order.priority ?? false,
+            supportsCount: supports.length,
+            totalProducts,
+          };
+        });
 
         setRows(mappedRows);
       } catch (error) {
@@ -194,18 +173,12 @@ function GestionCommd() {
           <table className="w-full border-collapse text-center">
             <thead>
               <tr className="border-b-2 border-black">
-                <th className="py-2 font-bold text-[18px]">N° Support</th>
-                <th className="py-2 font-bold text-[18px]">Codemb</th>
-                <th className="py-2 font-bold text-[18px]">Cliliv</th>
-                <th className="py-2 font-bold text-[18px]">Nomcli</th>
-                <th className="py-2 font-bold text-[18px]">ITM 8</th>
-                <th className="py-2 font-bold text-[18px]">Désignation</th>
-                <th className="py-2 font-bold text-[18px]">Nb Colis</th>
-                <th className="py-2 font-bold text-[18px]">Z</th>
-                <th className="py-2 font-bold text-[18px]">All</th>
-                <th className="py-2 font-bold text-[18px]">Dpl</th>
-                <th className="py-2 font-bold text-[18px]">Niv</th>
-                <th className="py-2 font-bold text-[18px]">Actions</th>
+                <th className="py-2 font-bold text-[20px]">Date commande</th>
+                <th className="py-2 font-bold text-[20px]">ID client</th>
+                <th className="py-2 font-bold text-[20px]">Prioritaire</th>
+                <th className="py-2 font-bold text-[20px]">Nb supports</th>
+                <th className="py-2 font-bold text-[20px]">Nb produits</th>
+                <th className="py-2 font-bold text-[20px]">Actions</th>
               </tr>
             </thead>
 
@@ -218,38 +191,34 @@ function GestionCommd() {
                     key={r.id ?? idx}
                     className={`border-b border-black ${rowClass}`}
                   >
-                    <td className="py-[8px]">{r.support}</td>
-                    <td className="py-[8px]">{r.codemb}</td>
-                    <td className="py-[8px]">{r.cliliv}</td>
-                    <td className="py-[8px]">{r.nomcli}</td>
-                    <td className="py-[8px]">{r.itm8}</td>
-                    <td className="py-[8px]">{r.designation}</td>
-                    <td className="py-[8px] font-bold">{r.nbColis}</td>
-                    <td className="py-[8px]">{r.zone}</td>
-                    <td className="py-[8px]">{r.allee}</td>
-                    <td className="py-[8px]">{r.dpl}</td>
-                    <td className="py-[8px]">{r.niveau}</td>
+                    <td className="py-[10px] font-bold">{r.orderDate}</td>
+                    <td className="py-[10px]">{r.customerId}</td>
+                    <td className="py-[10px] font-bold">
+                      {r.priority ? "Oui" : "Non"}
+                    </td>
+                    <td className="py-[10px]">{r.supportsCount}</td>
+                    <td className="py-[10px]">{r.totalProducts}</td>
 
-                    <td className="py-[8px]">
+                    <td className="py-[10px]">
                       <button
-                        className="px-[15px] py-[8px] mr-[10px]"
+                        className="px-[20px] py-[10px] mr-[10px]"
                         onClick={() => goToModif(r.id)}
                       >
                         <img
                           src={ModifBut}
                           alt="Modifier"
-                          className="w-[18px]"
+                          className="w-[20px]"
                         />
                       </button>
 
                       <button
-                        className="px-[15px] py-[8px]"
+                        className="px-[20px] py-[10px]"
                         onClick={() => handleDelete(r, idx)}
                       >
                         <img
                           src={SuppBut}
                           alt="Supprimer"
-                          className="w-[18px]"
+                          className="w-[20px]"
                         />
                       </button>
                     </td>

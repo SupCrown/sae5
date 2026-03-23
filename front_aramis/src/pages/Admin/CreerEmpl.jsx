@@ -16,6 +16,7 @@ function CreerEmpl() {
   const [loading, setLoading] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const fallbackDriveways = [
@@ -82,23 +83,29 @@ function CreerEmpl() {
     }));
   };
 
-    const handleCreate = async () => {
-    setErrorMessage("");
+  const closeErrorPopup = () => {
+    setErrorOpen(false);
+  };
 
+  const handleCreate = async () => {
+    setErrorMessage("");
+    setErrorOpen(false);
+  
     if (!form.locationCode || !form.drivewayId || !form.levelId) {
       setErrorMessage("Veuillez remplir tous les champs.");
+      setErrorOpen(true);
       return;
     }
-
+  
     const payload = {
       locationCode: form.locationCode,
       drivewayId: Number(form.drivewayId),
       levelId: Number(form.levelId),
     };
-
+  
     try {
       setLoading(true);
-
+  
       const response = await fetch("http://147.93.55.68/position/create", {
         method: "POST",
         headers: {
@@ -106,23 +113,47 @@ function CreerEmpl() {
         },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        throw new Error("Création impossible");
+  
+      let data = null;
+  
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
       }
-
+  
+      if (!response.ok) {
+        const message =
+          data?.message ||
+          data?.error ||
+          data?.details ||
+          (typeof data === "string" ? data : null) ||
+          "Erreur lors de la création.";
+  
+        throw new Error(message);
+      }
+  
       setSuccessOpen(true);
       setTimeout(() => {
         setSuccessOpen(false);
         navigate("/gestion-empl");
       }, 1500);
+  
     } catch (error) {
-      console.warn("API indisponible -> simulation locale");
-      setSuccessOpen(true);
-      setTimeout(() => {
-        setSuccessOpen(false);
-        navigate("/gestion-empl");
-      }, 1500);
+      console.error("Erreur API :", error);
+  
+      let message = error.message;
+  
+      if (
+        message.toLowerCase().includes("internal") ||
+        message.toLowerCase().includes("500")
+      ) {
+        message = "Erreur serveur. Vérifiez les données saisies.";
+      }
+  
+      setErrorMessage(message);
+      setErrorOpen(true);
+  
     } finally {
       setLoading(false);
     }
@@ -207,12 +238,6 @@ function CreerEmpl() {
           </tbody>
         </table>
 
-        {errorMessage && (
-          <div className="mt-[25px] text-red-600 text-[20px] font-bold">
-            {errorMessage}
-          </div>
-        )}
-
         <button
           onClick={handleCreate}
           disabled={loading || loadingOptions}
@@ -228,6 +253,32 @@ function CreerEmpl() {
             <span className="font-bold">Emplacement créé avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓
+            </div>
+          </div>
+        </div>
+      )}
+
+      {errorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black rounded-[20px]">
+            <div className="p-6">
+              <p className="text-center text-[24px] font-bold text-red-600">
+                Erreur
+              </p>
+              <p className="text-center text-[20px] font-bold mt-[20px]">
+                {errorMessage}
+              </p>
+              <div className="border-b border-black mt-6" />
+            </div>
+
+            <div className="pb-8 flex justify-center">
+              <button
+                onClick={closeErrorPopup}
+                type="button"
+                className="bg-[#863545] text-white font-extrabold text-[28px] px-[40px] py-[12px] rounded-[40px] m-[15px]"
+              >
+                Fermer
+              </button>
             </div>
           </div>
         </div>

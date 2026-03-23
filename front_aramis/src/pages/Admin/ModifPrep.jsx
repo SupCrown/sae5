@@ -37,7 +37,7 @@ function ModifPrep() {
           firstname: user.firstname ?? testData.firstname,
           lastname: user.lastname ?? testData.lastname,
           login: user.login ?? testData.login,
-          isAdmin: user.isAdmin ?? false,
+          isAdmin: user.admin ?? false,
         });
       } catch (error) {
         console.warn("API non dispo -> fallback");

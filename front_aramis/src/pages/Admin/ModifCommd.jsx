@@ -6,20 +6,29 @@ function ModifCommd() {
   const { id } = useParams();
 
   const testData = {
-    support: "SUP-001",
-    codemb: "EMB01",
-    cliliv: "CL001",
-    nomcli: "Client A",
-    itm8: "ITM0001",
-    designation: "Produit A",
-    nbColis: 38,
-    zone: "H",
-    allee: "08",
-    dpl: "023",
-    niveau: "1",
+    orderDate: "2026-03-23",
+    customerId: 101,
+    priority: false,
+    supports: [
+      {
+        typeId: 1,
+        products: [
+          {
+            productID: 12,
+            quantity: 3,
+          },
+        ],
+      },
+    ],
   };
 
-  const [form, setForm] = useState(testData);
+  const [form, setForm] = useState({
+    orderDate: "",
+    customerId: "",
+    priority: false,
+    supports: [],
+  });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
@@ -30,7 +39,7 @@ function ModifCommd() {
       try {
         setLoading(true);
 
-        const response = await fetch(`/order/${id}`, {
+        const response = await fetch(`http://147.93.55.68/order/${id}`, {
           method: "GET",
         });
 
@@ -40,19 +49,26 @@ function ModifCommd() {
 
         const order = await response.json();
 
-        setForm({
-          support: order.support ?? testData.support,
-          codemb: order.codemb ?? testData.codemb,
-          cliliv: order.cliliv ?? testData.cliliv,
-          nomcli: order.nomcli ?? testData.nomcli,
-          itm8: order.itm8 ?? testData.itm8,
-          designation: order.designation ?? testData.designation,
-          nbColis: order.nbColis ?? order.nbcolis ?? testData.nbColis,
-          zone: order.zone ?? testData.zone,
-          allee: order.allee ?? order.driveway ?? testData.allee,
-          dpl: order.dpl ?? order.location ?? testData.dpl,
-          niveau: order.niveau ?? order.level ?? testData.niveau,
-        });
+        const mappedSupports =
+          Array.isArray(order.supports) && order.supports.length
+            ? order.supports.map((support) => ({
+                typeId: support.type?.typeID ?? "",
+                products:
+                  Array.isArray(support.products) && support.products.length
+                    ? support.products.map((product) => ({
+                        productID: product.productID ?? product.productId ?? "",
+                        quantity: product.quantity ?? "",
+                      }))
+                    : [{ productID: "", quantity: "" }],
+              }))
+            : testData.supports;
+
+          setForm({
+            orderDate: order.orderDate ?? testData.orderDate,
+            customerId: order.customerID ?? testData.customerId,
+            priority: order.priority ?? testData.priority,
+            supports: mappedSupports,
+          });
       } catch (error) {
         console.warn("API non dispo -> fallback test data");
         setForm(testData);
@@ -66,52 +82,152 @@ function ModifCommd() {
     }
   }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleMainChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleSupportChange = (supportIndex, field, value) => {
+    setForm((prev) => {
+      const updatedSupports = [...prev.supports];
+      updatedSupports[supportIndex] = {
+        ...updatedSupports[supportIndex],
+        [field]: value,
+      };
+
+      return {
+        ...prev,
+        supports: updatedSupports,
+      };
+    });
+  };
+
+  const handleProductChange = (supportIndex, productIndex, field, value) => {
+    setForm((prev) => {
+      const updatedSupports = [...prev.supports];
+      const updatedProducts = [...updatedSupports[supportIndex].products];
+
+      updatedProducts[productIndex] = {
+        ...updatedProducts[productIndex],
+        [field]: value,
+      };
+
+      updatedSupports[supportIndex] = {
+        ...updatedSupports[supportIndex],
+        products: updatedProducts,
+      };
+
+      return {
+        ...prev,
+        supports: updatedSupports,
+      };
+    });
+  };
+
+  const addSupport = () => {
+    setForm((prev) => ({
+      ...prev,
+      supports: [
+        ...prev.supports,
+        {
+          typeId: "",
+          products: [{ productID: "", quantity: "" }],
+        },
+      ],
+    }));
+  };
+
+  const removeSupport = (supportIndex) => {
+    setForm((prev) => ({
+      ...prev,
+      supports: prev.supports.filter((_, index) => index !== supportIndex),
+    }));
+  };
+
+  const addProduct = (supportIndex) => {
+    setForm((prev) => {
+      const updatedSupports = [...prev.supports];
+      updatedSupports[supportIndex] = {
+        ...updatedSupports[supportIndex],
+        products: [
+          ...updatedSupports[supportIndex].products,
+          { productID: "", quantity: "" },
+        ],
+      };
+
+      return {
+        ...prev,
+        supports: updatedSupports,
+      };
+    });
+  };
+
+  const removeProduct = (supportIndex, productIndex) => {
+    setForm((prev) => {
+      const updatedSupports = [...prev.supports];
+      updatedSupports[supportIndex] = {
+        ...updatedSupports[supportIndex],
+        products: updatedSupports[supportIndex].products.filter(
+          (_, index) => index !== productIndex
+        ),
+      };
+
+      return {
+        ...prev,
+        supports: updatedSupports,
+      };
+    });
+  };
+
+  const validateForm = () => {
+    if (!form.orderDate || !form.customerId || form.supports.length === 0) {
+      return false;
+    }
+
+    for (const support of form.supports) {
+      if (!support.typeId || support.products.length === 0) {
+        return false;
+      }
+
+      for (const product of support.products) {
+        if (!product.productID || !product.quantity) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   };
 
   const handleUpdate = async () => {
     setErrorMessage("");
 
-    if (
-      !form.support ||
-      !form.codemb ||
-      !form.cliliv ||
-      !form.nomcli ||
-      !form.itm8 ||
-      !form.designation ||
-      !form.nbColis ||
-      !form.zone ||
-      !form.allee ||
-      !form.dpl ||
-      !form.niveau
-    ) {
-      setErrorMessage("Veuillez remplir tous les champs.");
+    if (!validateForm()) {
+      setErrorMessage("Veuillez remplir tous les champs obligatoires.");
       return;
     }
 
     const payload = {
-      support: form.support,
-      codemb: form.codemb,
-      cliliv: form.cliliv,
-      nomcli: form.nomcli,
-      itm8: form.itm8,
-      designation: form.designation,
-      nbColis: Number(form.nbColis),
-      zone: form.zone,
-      allee: form.allee,
-      dpl: form.dpl,
-      niveau: form.niveau,
+      orderDate: form.orderDate,
+      customerID: Number(form.customerId),
+      priority: form.priority,
+      supports: form.supports.map((support) => ({
+        typeId: Number(support.typeId),
+        products: support.products.map((product) => ({
+          productID: Number(product.productID),
+          quantity: Number(product.quantity),
+        })),
+      })),
     };
 
     try {
       setSaving(true);
 
-      const response = await fetch(`/order/update/${id}`, {
+      const response = await fetch(`http://147.93.55.68/order/update/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -140,6 +256,8 @@ function ModifCommd() {
     }
   };
 
+  const goBack = () => navigate("/gestion-commd");
+
   if (loading) {
     return (
       <div className="p-4 mt-[200px] flex justify-center text-[24px] font-bold">
@@ -148,60 +266,146 @@ function ModifCommd() {
     );
   }
 
-  const goBack = () => navigate("/gestion-commd");
-
   return (
     <div className="p-4 mt-[80px] flex flex-col items-center relative">
-      <div className="w-[1500px] flex flex-col items-center">
-        {/* TABLEAU LIGNE 1 */}
-        <table className="text-center border-collapse mb-[10px]">
-          <thead>
-            <tr>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">N° Support</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Codemb</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Cliliv</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Nomcli</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">ITM 8</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Désignation</th>
-            </tr>
-          </thead>
+      <div className="w-[1400px] flex flex-col items-center">
+        <h2 className="text-[28px] font-[800] mb-[25px]">
+          Modification d’une commande
+        </h2>
 
-          <tbody>
-            <tr>
-              <td><Input name="support" value={form.support} onChange={handleChange} /></td>
-              <td><Input name="codemb" value={form.codemb} onChange={handleChange} /></td>
-              <td><Input name="cliliv" value={form.cliliv} onChange={handleChange} /></td>
-              <td><Input name="nomcli" value={form.nomcli} onChange={handleChange} /></td>
-              <td><Input name="itm8" value={form.itm8} onChange={handleChange} /></td>
-              <td><Input name="designation" value={form.designation} onChange={handleChange} /></td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="w-full max-w-[1100px] border border-gray-300 rounded-[30px] p-[30px] bg-white">
+          <div className="flex justify-center gap-[30px] flex-wrap">
+            <Input
+              label="Date commande"
+              name="orderDate"
+              type="date"
+              value={form.orderDate}
+              onChange={handleMainChange}
+            />
 
-        <div className="h-[20px]" />
+            <Input
+              label="ID client"
+              name="customerId"
+              type="number"
+              value={form.customerId}
+              onChange={handleMainChange}
+            />
 
-        {/* TABLEAU LIGNE 2 */}
-        <table className="text-center border-collapse">
-          <thead>
-            <tr>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Nb Colis</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Z</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">All</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Dpl</th>
-              <th className="text-[18px] font-bold px-[10px] pb-[15px]">Niv</th>
-            </tr>
-          </thead>
+            <div className="flex flex-col items-center justify-center">
+              <label className="text-[18px] font-bold mb-[12px]">Prioritaire</label>
+              <input
+                type="checkbox"
+                name="priority"
+                checked={form.priority}
+                onChange={handleMainChange}
+                className="w-[28px] h-[28px]"
+              />
+            </div>
+          </div>
 
-          <tbody>
-            <tr>
-              <td><Input name="nbColis" type="number" value={form.nbColis} onChange={handleChange} /></td>
-              <td><Input name="zone" value={form.zone} onChange={handleChange} /></td>
-              <td><Input name="allee" value={form.allee} onChange={handleChange} /></td>
-              <td><Input name="dpl" value={form.dpl} onChange={handleChange} /></td>
-              <td><Input name="niveau" value={form.niveau} onChange={handleChange} /></td>
-            </tr>
-          </tbody>
-        </table>
+          <div className="mt-[35px]">
+            {form.supports.map((support, supportIndex) => (
+              <div
+                key={supportIndex}
+                className="mb-[30px] border border-gray-300 rounded-[25px] p-[20px] bg-[#f8f8f8]"
+              >
+                <div className="flex items-center justify-between mb-[20px]">
+                  <h3 className="text-[22px] font-bold">
+                    Support {supportIndex + 1}
+                  </h3>
+
+                  {form.supports.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSupport(supportIndex)}
+                      className="px-[25px] py-[10px] rounded-[30px] bg-[#D9D9D9] font-bold"
+                    >
+                      Supprimer le support
+                    </button>
+                  )}
+                </div>
+
+                <div className="mb-[20px]">
+                  <Input
+                    label="Type ID"
+                    type="number"
+                    value={support.typeId}
+                    onChange={(e) =>
+                      handleSupportChange(supportIndex, "typeId", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div className="flex flex-col gap-[15px]">
+                  {support.products.map((product, productIndex) => (
+                    <div
+                      key={productIndex}
+                      className="flex justify-center items-end gap-[20px] flex-wrap"
+                    >
+                      <Input
+                        label="Product ID"
+                        type="number"
+                        value={product.productID}
+                        onChange={(e) =>
+                          handleProductChange(
+                            supportIndex,
+                            productIndex,
+                            "productID",
+                            e.target.value
+                          )
+                        }
+                      />
+
+                      <Input
+                        label="Quantité"
+                        type="number"
+                        value={product.quantity}
+                        onChange={(e) =>
+                          handleProductChange(
+                            supportIndex,
+                            productIndex,
+                            "quantity",
+                            e.target.value
+                          )
+                        }
+                      />
+
+                      {support.products.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeProduct(supportIndex, productIndex)}
+                          className="px-[25px] py-[18px] rounded-[30px] bg-[#D9D9D9] font-bold"
+                        >
+                          Supprimer
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-center mt-[20px]">
+                  <button
+                    type="button"
+                    onClick={() => addProduct(supportIndex)}
+                    className="px-[35px] py-[15px] rounded-[35px] bg-[#CCB5A5] font-bold"
+                  >
+                    + Ajouter un produit
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={addSupport}
+                className="px-[40px] py-[18px] rounded-[35px] bg-[#CCB5A5] font-bold text-[18px]"
+              >
+                + Ajouter un support
+              </button>
+            </div>
+          </div>
+        </div>
 
         {errorMessage && (
           <div className="mt-[25px] text-red-600 text-[20px] font-bold">
@@ -230,25 +434,28 @@ function ModifCommd() {
       )}
 
       <button
-          onClick={goBack}
-          disabled={saving}
-          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
-        >
-          Retour à la gestion des commandes
-        </button>
+        onClick={goBack}
+        disabled={saving}
+        className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
+      >
+        Retour à la gestion des commandes
+      </button>
     </div>
   );
 }
 
-function Input({ name, value, onChange, type = "text" }) {
+function Input({ label, name, value, onChange, type = "text" }) {
   return (
-    <input
-      type={type}
-      name={name}
-      value={value}
-      onChange={onChange}
-      className="w-[120px] px-[16px] py-[16px] border border-gray-300 rounded-[40px] bg-[#CCB5A5] text-center"
-    />
+    <div className="flex flex-col items-center">
+      {label && <label className="text-[18px] font-bold mb-[10px]">{label}</label>}
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-[180px] px-[18px] py-[18px] border border-gray-300 rounded-[40px] bg-[#CCB5A5] text-center"
+      />
+    </div>
   );
 }
 
