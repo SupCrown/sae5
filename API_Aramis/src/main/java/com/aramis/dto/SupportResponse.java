@@ -33,6 +33,7 @@ public class SupportResponse {
         if (support.getUser() != null) {
             preparer = new UserResponse(support.getUser());
         }
+        this.type = support.getType();
         datePreparation = support.getDatePreparation();
         this.products = products;
     }

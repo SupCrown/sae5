@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -81,7 +82,7 @@ public class PositionController {
         Optional<Level> levelOpt = levelRepository.findById(request.getLevelId());
 
         Optional<Location> existingLocation = locationRepository.findByDrivewayAndLevel(drivewayOpt.get(), levelOpt.get());
-        if (existingLocation.isPresent()) {
+        if (existingLocation.isPresent() && !Objects.equals(existingLocation.get().getLocationID(), id)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request : emplacement déjà ajouté.");
         }
 

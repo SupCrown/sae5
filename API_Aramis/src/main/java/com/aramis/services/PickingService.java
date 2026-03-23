@@ -77,8 +77,9 @@ public class PickingService {
     // ========================================================================
     @Transactional
     public PickingTaskResponse assignOrderManually(int login, int orderId) {
-        User user = userRepo.findByLogin(login);
-        if (user == null) throw new RuntimeException("User introuvable Login: " + login);
+        Optional<User> userOpt = userRepo.findByLogin(login);
+        if (userOpt.isEmpty()) throw new RuntimeException("User introuvable Login: " + login);
+        User user = userOpt.get();
 
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Commande introuvable ID: " + orderId));

@@ -61,6 +61,12 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<Object> createUser(@Valid @RequestBody CreateUserRequest request) {
+        Optional<User> existingLogin = userRepository.findByLogin(request.getLogin());
+        if (existingLogin.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("Bad Request : un utilisateur avec le login : %03d, existe déjà.", request.getLogin()));
+
+        }
+
         User user = new User();
         user.setFirstname(request.getFirstname());
         user.setLastname(request.getLastname());
@@ -90,6 +96,12 @@ public class UserController {
 
     @PostMapping("/update/{id}")
     public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody CreateUserRequest request) {
+        Optional<User> existingLogin = userRepository.findByLogin(request.getLogin());
+        if (existingLogin.isPresent() && !Objects.equals(existingLogin.get().getUserID(), id)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("Bad Request : un utilisateur avec le login : %03d, existe déjà.", request.getLogin()));
+
+        }
+
         Optional<User> existingOpt = userRepository.findById(id);
         if (existingOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
