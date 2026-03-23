@@ -4,7 +4,6 @@ import com.aramis.configurations.AppConfigurationProperties;
 import com.aramis.dto.AuthRequest;
 import com.aramis.models.user.UserRepository;
 import com.aramis.services.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.SameSiteCookies;
