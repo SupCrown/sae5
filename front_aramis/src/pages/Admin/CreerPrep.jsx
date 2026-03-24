@@ -103,7 +103,7 @@ function CreerPrep() {
                   value={form.firstname}
                   onChange={handleChange}
                   placeholder="..."
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
 
@@ -114,7 +114,7 @@ function CreerPrep() {
                   value={form.lastname}
                   onChange={handleChange}
                   placeholder="..."
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
 
@@ -125,7 +125,7 @@ function CreerPrep() {
                   value={form.login}
                   onChange={handleChange}
                   placeholder="..."
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
 

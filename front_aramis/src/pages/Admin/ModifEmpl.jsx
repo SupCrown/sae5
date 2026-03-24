@@ -175,7 +175,7 @@ function ModifEmpl() {
                   name="locationCode"
                   value={form.locationCode}
                   onChange={handleChange}
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
 
@@ -185,7 +185,7 @@ function ModifEmpl() {
                   name="drivewayId"
                   value={form.drivewayId}
                   onChange={handleChange}
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
 
@@ -195,7 +195,7 @@ function ModifEmpl() {
                   name="levelId"
                   value={form.levelId}
                   onChange={handleChange}
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
             </tr>

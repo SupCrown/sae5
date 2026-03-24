@@ -194,7 +194,7 @@ function CreerEmpl() {
                   value={form.locationCode}
                   onChange={handleChange}
                   placeholder="..."
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
 
@@ -203,7 +203,7 @@ function CreerEmpl() {
                   name="drivewayId"
                   value={form.drivewayId}
                   onChange={handleChange}
-                  className="w-[260px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[260px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 >
                   <option value="">Choisir une allée</option>
                   {driveways.map((driveway) => (
@@ -224,7 +224,7 @@ function CreerEmpl() {
                   name="levelId"
                   value={form.levelId}
                   onChange={handleChange}
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 >
                   <option value="">Choisir un niveau</option>
                   {levels.map((level) => (

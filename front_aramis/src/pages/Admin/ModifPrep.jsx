@@ -140,7 +140,7 @@ function ModifPrep() {
                   name="firstname"
                   value={form.firstname}
                   onChange={handleChange}
-                  className="w-[200px] px-[20px] py-[20px] border rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[200px] px-[20px] py-[20px] border rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
 
@@ -150,7 +150,7 @@ function ModifPrep() {
                   name="lastname"
                   value={form.lastname}
                   onChange={handleChange}
-                  className="w-[200px] px-[20px] py-[20px] border rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[200px] px-[20px] py-[20px] border rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
 
@@ -160,7 +160,7 @@ function ModifPrep() {
                   name="login"
                   value={form.login}
                   onChange={handleChange}
-                  className="w-[200px] px-[20px] py-[20px] border rounded-[50px] bg-[#CCB5A5] text-center"
+                  className="w-[200px] px-[20px] py-[20px] border rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
                 />
               </td>
 
