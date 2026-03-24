@@ -131,7 +131,7 @@ public class OrderController {
 
     @PostMapping("/create")
     public ResponseEntity<Object> create(@RequestBody OrderRequest request) {
-        Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
+        Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerID());
         if (customerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -142,7 +142,7 @@ public class OrderController {
             Order saved = orderRepository.save(order);
 
             for (SupportRequest supportRequest : request.getSupports()) {
-                Optional<SupportType> type = supportTypeRepository.findById(supportRequest.getTypeId());
+                Optional<SupportType> type = supportTypeRepository.findById(supportRequest.getTypeID());
 
                 if (type.isPresent()) {
                     Support support = supportRepository.save(supportRequest.toSupport(saved, type.get()));
@@ -180,7 +180,7 @@ public class OrderController {
             return ResponseEntity.notFound().build();
         }
 
-        Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerId());
+        Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerID());
         if (customerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

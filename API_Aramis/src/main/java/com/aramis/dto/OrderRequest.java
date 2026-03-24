@@ -21,7 +21,7 @@ public class OrderRequest {
     @NotNull
     private Date orderDate;
     @NotNull
-    private Integer customerId;
+    private Integer customerID;
     private boolean priority;
     @NotNull
     private List<SupportRequest> supports;

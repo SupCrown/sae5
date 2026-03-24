@@ -95,11 +95,11 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 ```json
 {
     "orderDate" : "Date de la commande ex : '2026-03-23'",
-    "customerId" : "ID du clien", 
+    "customerID" : "ID du clien", 
     "priority" : "(booléen) est-ce que la commande dois-être réalisée en prioritée",
     "supports" : [
         {
-            "typeId" : "Identifiant du type de support",
+            "typeID" : "Identifiant du type de support",
             "products" : [
                 {
                     "productID" : "Identifiant du produit à ajouter dans le support",

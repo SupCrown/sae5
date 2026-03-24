@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SupportRequest {
     @NotNull
-    private Integer typeId;
+    private Integer typeID;
     @NotNull
     public List<ProductSupportRequest> products;
 
