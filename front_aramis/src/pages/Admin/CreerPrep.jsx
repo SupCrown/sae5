@@ -13,6 +13,7 @@ function CreerPrep() {
 
   const [loading, setLoading] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
@@ -24,18 +25,24 @@ function CreerPrep() {
     }));
   };
 
+  const closeErrorPopup = () => {
+    setErrorOpen(false);
+  };
+
   const handleCreate = async () => {
     setErrorMessage("");
+    setErrorOpen(false);
 
     if (!form.firstname || !form.lastname || !form.login) {
       setErrorMessage("Veuillez remplir tous les champs obligatoires.");
+      setErrorOpen(true);
       return;
     }
 
     const payload = {
-      firstname: form.firstname,
-      lastname: form.lastname,
-      login: form.login,
+      firstname: form.firstname.trim(),
+      lastname: form.lastname.trim(),
+      login: form.login.trim(),
       isAdmin: form.isAdmin,
     };
 
@@ -50,8 +57,27 @@ function CreerPrep() {
         body: JSON.stringify(payload),
       });
 
+      let data = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
       if (!response.ok) {
-        throw new Error("Création impossible");
+        let backendMessage =
+          data?.message ||
+          data?.error ||
+          data?.details ||
+          (typeof data === "string" ? data : null) ||
+          "Création impossible.";
+
+        if (backendMessage.toLowerCase().includes("bad request")) {
+          backendMessage = "Données invalides. Vérifiez les champs.";
+        }
+
+        throw new Error(backendMessage);
       }
 
       setSuccessOpen(true);
@@ -60,12 +86,20 @@ function CreerPrep() {
         navigate("/gestion-prep");
       }, 1500);
     } catch (error) {
-      console.warn("API indisponible -> simulation locale");
-      setSuccessOpen(true);
-      setTimeout(() => {
-        setSuccessOpen(false);
-        navigate("/gestion-prep");
-      }, 1500);
+      console.warn("Erreur création préparateur :", error);
+
+      let message = error.message || "Erreur lors de la création.";
+
+      if (
+        message.toLowerCase().includes("internal") ||
+        message.toLowerCase().includes("500")
+      ) {
+        message =
+          "Impossible de créer ce préparateur. Vérifiez les données saisies.";
+      }
+
+      setErrorMessage(message);
+      setErrorOpen(true);
     } finally {
       setLoading(false);
     }
@@ -144,12 +178,6 @@ function CreerPrep() {
           </tbody>
         </table>
 
-        {errorMessage && (
-          <div className="mt-[25px] text-red-600 text-[20px] font-bold">
-            {errorMessage}
-          </div>
-        )}
-
         <button
           onClick={handleCreate}
           disabled={loading}
@@ -170,12 +198,39 @@ function CreerPrep() {
         </div>
       )}
 
+      {errorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black rounded-[20px]">
+            <div className="p-6">
+              <p className="text-center text-[24px] font-bold text-red-600">
+                Erreur
+              </p>
+              <p className="text-center text-[20px] font-bold mt-[20px]">
+                {errorMessage}
+              </p>
+              <div className="border-b border-black mt-6" />
+            </div>
+
+            <div className="pb-8 flex justify-center">
+              <button
+                onClick={closeErrorPopup}
+                type="button"
+                className="bg-[#863545] text-white font-extrabold text-[28px] px-[40px] py-[12px] rounded-[40px] m-[15px]"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <button
-          onClick={goBack}
-          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
-        >
-          Retour à la gestion des préparateurs
-        </button>
+        onClick={goBack}
+        disabled={loading}
+        className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
+      >
+        Retour à la gestion des préparateurs
+      </button>
     </div>
   );
 }

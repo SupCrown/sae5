@@ -210,10 +210,10 @@ function CreerCommd() {
 
     const payload = {
       orderDate: form.orderDate,
-      customerID: Number(form.customerID),
+      customerId: Number(form.customerID),
       priority: form.priority,
       supports: form.supports.map((support) => ({
-        typeId: Number(support.typeId),
+        typeID: Number(support.typeId),
         products: support.products.map((product) => ({
           productID: Number(product.productID),
           quantity: Number(product.quantity),
