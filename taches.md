@@ -117,12 +117,22 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 }
 ```
 - `/order/update/{id}` **[POST]** / **SUPERVISEUR** : **modifier** une commande.
-- `/order/delete/{id}` **[POST]** / **SUPERVISEUR** : **supprimer** une commande.
+- `/order/delete/{id}` **[DELETE]** / **SUPERVISEUR** : **supprimer** une commande.
 - `/order/{id}` **[GET]** / **SUPERVISEUR** : **consulter** une commande.
 - `/order/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** toutes les commandes ordonnées par des pages :
     - `page` : valeur par défaut `0`.
     - `size` : valeur par défaut `20`.
-- `/order/import` **[POST]** / **SUPERVISEUR** : import CSV.
+- `/order/import` **[POST]** / **SUPERVISEUR** : import CSV : 
+```json
+{
+    "orderDate" : "Date de la commande ex : '2026-03-23'",
+    "customerID" : "ID du clien", 
+    "priority" : "(booléen) est-ce que la commande dois-être réalisée en prioritée",
+    "typeID" : "type des supports à importer",
+    "file" : "fichier csv contenant les infos des support à importer"
+}
+```
+
 
 #### CRUD clients
 
@@ -133,7 +143,7 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     "code" : "Code à 5 chiffre unique du client"
 }
 ```
-- `/order/delete/{id}` **[POST]** / **SUPERVISEUR** : **supprimer** un client.
+- `/order/delete/{id}` **[DELETE]** / **SUPERVISEUR** : **supprimer** un client.
 - `/order/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un client.
 - `/order/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les clients ordonnés par des pages :
     - `page` : valeur par défaut `0`.
@@ -155,7 +165,7 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `drivewayId` : identifiant de l'allée.
     - `levelId` : identifiant du niveau.
 - `/position/update/{id}` **[POST]** / **SUPERVISEUR** : **modifier** un emplacement.
-- `/position/delete/{id}` **[POST]** / **SUPERVISEUR** : **supprimer** un emplacement.
+- `/position/delete/{id}` **[DELETE]** / **SUPERVISEUR** : **supprimer** un emplacement.
 - `/position/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un emplacement.
 - `/position/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les emplacements ordonnés par des pages :
     - `page` : valeur par défaut `0`.
