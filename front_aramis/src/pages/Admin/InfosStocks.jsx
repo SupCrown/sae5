@@ -25,7 +25,11 @@ function InfosStocks() {
   const [quantityToAdd, setQuantityToAdd] = useState("");
   const [quantityToTake, setQuantityToTake] = useState("");
 
+  const [actionLoading, setActionLoading] = useState(false);
+
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errorOpen, setErrorOpen] = useState(false);
 
   const goBack = () => navigate("/gestion-stocks");
 
@@ -69,15 +73,59 @@ function InfosStocks() {
     setTimeout(() => setSuccessMessage(""), 2000);
   };
 
+  const showError = (message) => {
+    setErrorMessage(message);
+    setErrorOpen(true);
+  };
+
+  const closeErrorPopup = () => {
+    setErrorOpen(false);
+  };
+
+  const closeAddPopup = () => {
+    setAddPopupOpen(false);
+    setQuantityToAdd("");
+  };
+
+  const closeTakePopup = () => {
+    setTakePopupOpen(false);
+    setQuantityToTake("");
+  };
+
+  const extractBackendMessage = async (response, defaultMessage) => {
+    try {
+      const data = await response.json();
+      return (
+        data?.message ||
+        data?.error ||
+        data?.details ||
+        (typeof data === "string" ? data : null) ||
+        defaultMessage
+      );
+    } catch {
+      try {
+        const text = await response.text();
+        return text || defaultMessage;
+      } catch {
+        return defaultMessage;
+      }
+    }
+  };
+
   const handleAddStock = async () => {
+    setErrorMessage("");
+    setErrorOpen(false);
+
     const qty = Number(quantityToAdd);
 
     if (!qty || qty <= 0) {
-      alert("Veuillez entrer une quantité valide à ajouter");
+      showError("Veuillez entrer une quantité valide à ajouter.");
       return;
     }
 
     try {
+      setActionLoading(true);
+
       const response = await fetch("http://147.93.55.68/product/add", {
         method: "POST",
         headers: {
@@ -90,34 +138,62 @@ function InfosStocks() {
       });
 
       if (!response.ok) {
-        throw new Error("API indisponible");
+        let message = await extractBackendMessage(
+          response,
+          "Ajout de stock impossible."
+        );
+
+        if (message.toLowerCase().includes("bad request")) {
+          message = "Données invalides. Vérifiez la quantité à ajouter.";
+        }
+
+        throw new Error(message);
       }
 
       setStock((prev) => ({
         ...prev,
         quantity: Number(prev.quantity) + qty,
       }));
-    } catch (error) {
-      setStock((prev) => ({
-        ...prev,
-        quantity: Number(prev.quantity) + qty,
-      }));
-    }
 
-    setQuantityToAdd("");
-    setAddPopupOpen(false);
-    showSuccess("Quantité ajoutée avec succès !");
+      closeAddPopup();
+      showSuccess("Quantité ajoutée avec succès !");
+    } catch (error) {
+      console.warn("Erreur ajout stock :", error);
+
+      let message = error.message || "Erreur lors de l’ajout du stock.";
+
+      if (
+        message.toLowerCase().includes("internal") ||
+        message.toLowerCase().includes("500")
+      ) {
+        message = "Erreur serveur. Impossible d’ajouter cette quantité.";
+      }
+
+      showError(message);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleTakeStock = async () => {
+    setErrorMessage("");
+    setErrorOpen(false);
+
     const qty = Number(quantityToTake);
 
     if (!qty || qty <= 0) {
-      alert("Veuillez entrer une quantité valide à retirer");
+      showError("Veuillez entrer une quantité valide à retirer.");
+      return;
+    }
+
+    if (qty > Number(stock.quantity)) {
+      showError("La quantité à retirer dépasse le stock disponible.");
       return;
     }
 
     try {
+      setActionLoading(true);
+
       const response = await fetch("http://147.93.55.68/product/take", {
         method: "POST",
         headers: {
@@ -130,23 +206,41 @@ function InfosStocks() {
       });
 
       if (!response.ok) {
-        throw new Error("API indisponible");
+        let message = await extractBackendMessage(
+          response,
+          "Retrait de stock impossible."
+        );
+
+        if (message.toLowerCase().includes("bad request")) {
+          message = "Données invalides. Vérifiez la quantité à retirer.";
+        }
+
+        throw new Error(message);
       }
 
       setStock((prev) => ({
         ...prev,
         quantity: Math.max(0, Number(prev.quantity) - qty),
       }));
-    } catch (error) {
-      setStock((prev) => ({
-        ...prev,
-        quantity: Math.max(0, Number(prev.quantity) - qty),
-      }));
-    }
 
-    setQuantityToTake("");
-    setTakePopupOpen(false);
-    showSuccess("Quantité retirée avec succès !");
+      closeTakePopup();
+      showSuccess("Quantité retirée avec succès !");
+    } catch (error) {
+      console.warn("Erreur retrait stock :", error);
+
+      let message = error.message || "Erreur lors du retrait du stock.";
+
+      if (
+        message.toLowerCase().includes("internal") ||
+        message.toLowerCase().includes("500")
+      ) {
+        message = "Erreur serveur. Impossible de retirer cette quantité.";
+      }
+
+      showError(message);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   if (loading) {
@@ -189,14 +283,16 @@ function InfosStocks() {
         <div className="flex gap-8 mt-[40px]">
           <button
             onClick={() => setAddPopupOpen(true)}
-            className="px-[60px] py-[20px] text-[20px] font-[800] bg-[#CCB5A5] rounded-[50px]"
+            disabled={actionLoading}
+            className="px-[60px] py-[20px] text-[20px] font-[800] bg-[#CCB5A5] rounded-[50px] disabled:opacity-50"
           >
             Ajouter du stock
           </button>
 
           <button
             onClick={() => setTakePopupOpen(true)}
-            className="px-[60px] py-[20px] text-[20px] font-[800] bg-[#863545] text-white rounded-[50px] ml-[20px]"
+            disabled={actionLoading}
+            className="px-[60px] py-[20px] text-[20px] font-[800] bg-[#863545] text-white rounded-[50px] ml-[20px] disabled:opacity-50"
           >
             Retirer du stock
           </button>
@@ -227,18 +323,17 @@ function InfosStocks() {
               <button
                 onClick={handleAddStock}
                 type="button"
-                className="bg-[#E6463A] font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px] m-[15px]"
+                disabled={actionLoading}
+                className="bg-[#E6463A] font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px] m-[15px] disabled:opacity-50"
               >
-                Confirmer
+                {actionLoading ? "Chargement..." : "Confirmer"}
               </button>
 
               <button
-                onClick={() => {
-                  setAddPopupOpen(false);
-                  setQuantityToAdd("");
-                }}
+                onClick={closeAddPopup}
                 type="button"
-                className="bg-[#863545] font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px] m-[15px]"
+                disabled={actionLoading}
+                className="bg-[#863545] text-white font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px] m-[15px] disabled:opacity-50"
               >
                 Annuler
               </button>
@@ -248,7 +343,7 @@ function InfosStocks() {
       )}
 
       {takePopupOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#ffffff] ">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#ffffff]">
           <div className="w-[650px] border-2 border-black rounded-[20px]">
             <div className="p-6">
               <p className="text-center text-[26px] font-bold mb-6">
@@ -271,18 +366,17 @@ function InfosStocks() {
               <button
                 onClick={handleTakeStock}
                 type="button"
-                className="bg-[#E6463A] font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px] m-[15px]"
+                disabled={actionLoading}
+                className="bg-[#E6463A] font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px] m-[15px] disabled:opacity-50"
               >
-                Confirmer
+                {actionLoading ? "Chargement..." : "Confirmer"}
               </button>
 
               <button
-                onClick={() => {
-                  setTakePopupOpen(false);
-                  setQuantityToTake("");
-                }}
+                onClick={closeTakePopup}
                 type="button"
-                className="bg-[#863545] font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px] m-[15px]"
+                disabled={actionLoading}
+                className="bg-[#863545] text-white font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px] m-[15px] disabled:opacity-50"
               >
                 Annuler
               </button>
@@ -293,7 +387,7 @@ function InfosStocks() {
 
       {successMessage && (
         <div className="fixed bottom-8 z-50 w-full flex justify-center">
-          <div className="w-[650px] border-2 bg-[#ffffff] px-[30px] py-[20px] flex items-center justify-between rounded-[40px] bg-[#ffffff]">
+          <div className="w-[650px] border-2 bg-[#ffffff] px-[30px] py-[20px] flex items-center justify-between rounded-[40px]">
             <span className="font-bold">{successMessage}</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓
@@ -301,17 +395,42 @@ function InfosStocks() {
           </div>
         </div>
       )}
-      
-       <button
-                onClick={goBack}
-                type="button"
-                className="bg-[#D9D9D9] mt-[50px] text-white font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px]"
-              >
-                Retour à la gestion des stocks
-              </button>
-    </div>
 
-    
+      {errorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black rounded-[20px]">
+            <div className="p-6">
+              <p className="text-center text-[24px] font-bold text-red-600">
+                Erreur
+              </p>
+              <p className="text-center text-[20px] font-bold mt-[20px]">
+                {errorMessage}
+              </p>
+              <div className="border-b border-black mt-6" />
+            </div>
+
+            <div className="pb-8 flex justify-center">
+              <button
+                onClick={closeErrorPopup}
+                type="button"
+                className="bg-[#863545] text-white font-extrabold text-[28px] px-[40px] py-[12px] rounded-[40px] m-[15px]"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={goBack}
+        type="button"
+        disabled={actionLoading}
+        className="bg-[#D9D9D9] mt-[50px] text-black font-extrabold text-[28px] px-[30px] py-[10px] rounded-[40px] disabled:opacity-50"
+      >
+        Retour à la gestion des stocks
+      </button>
+    </div>
   );
 }
 
@@ -321,7 +440,7 @@ function Input({ value }) {
       type="text"
       value={value}
       readOnly
-      className="w-[150px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+      className="w-[150px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
     />
   );
 }

@@ -43,7 +43,7 @@ function CreerPrep() {
       firstname: form.firstname.trim(),
       lastname: form.lastname.trim(),
       login: form.login.trim(),
-      isAdmin: form.isAdmin,
+      admin: form.isAdmin,
     };
 
     try {

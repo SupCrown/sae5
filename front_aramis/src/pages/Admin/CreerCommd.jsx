@@ -210,7 +210,7 @@ function CreerCommd() {
 
     const payload = {
       orderDate: form.orderDate,
-      customerId: Number(form.customerID),
+      customerID: Number(form.customerID),
       priority: form.priority,
       supports: form.supports.map((support) => ({
         typeID: Number(support.typeId),
@@ -579,7 +579,7 @@ function Input({ label, name, value, onChange, type = "text" }) {
         value={value}
         onChange={onChange}
         placeholder="..."
-        className="w-[180px] px-[18px] py-[18px] border border-gray-300 rounded-[40px] bg-[#CCB5A5] text-center"
+        className="w-[180px] px-[18px] py-[18px] border border-gray-300 rounded-[40px] bg-[#CCB5A5] text-center text-[20px]"
       />
     </div>
   );
