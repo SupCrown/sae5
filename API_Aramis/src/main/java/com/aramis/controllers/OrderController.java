@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -130,7 +131,7 @@ public class OrderController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Object> create(@RequestBody OrderRequest request) {
+    public ResponseEntity<Object> create(@Valid @RequestBody OrderRequest request) {
         Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerID());
         if (customerOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -174,7 +175,7 @@ public class OrderController {
     }
 
     @PostMapping("/update/{id}")
-    public ResponseEntity<Object> update(@PathVariable Integer id, @RequestBody OrderRequest request) {
+    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody OrderRequest request) {
         Optional<Order> existingOpt = orderRepository.findById(id);
         if (existingOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -201,7 +202,7 @@ public class OrderController {
 
     }
 
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
         if (!orderRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
