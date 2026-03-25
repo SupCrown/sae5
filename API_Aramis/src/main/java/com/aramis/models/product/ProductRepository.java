@@ -19,4 +19,6 @@ public interface ProductRepository extends CrudRepository<Product, Integer> {
 
     @Query("SELECT new com.aramis.dto.ProductSupportFormBD(p, c.approvedQuantity) FROM Product p JOIN Contain c ON p.productID = c.product.productID WHERE c.support.supportID = ?1")
     Iterable<ProductSupportFormBD> findAllProductBySupportID(Integer id);
+
+    Optional<Product> findByProductCode(int productCode);
 }

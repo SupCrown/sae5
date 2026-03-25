@@ -79,8 +79,7 @@ public class OrderController {
 
     // Endpoint 1 : Attribution Automatique
     @GetMapping("/autoAssign")
-    public ResponseEntity<PickingTaskResponse> autoAssign(
-    ) {
+    public ResponseEntity<PickingTaskResponse> autoAssign() {
         var userID = AuthService.getUserID(request, properties);
         PickingTaskResponse task = pickingService.getNextTask(userID);
         return ResponseEntity.ok(task);
@@ -88,9 +87,7 @@ public class OrderController {
 
     // Endpoint 2 : Attribution Manuelle
     @GetMapping("/manualAssign")
-    public ResponseEntity<PickingTaskResponse> manualAssign(
-            @RequestParam(name = "PreparateurID") int preparateurId,
-            @RequestParam(name = "CommandeID") int orderId) {
+    public ResponseEntity<PickingTaskResponse> manualAssign(@RequestParam(name = "PreparateurID") int preparateurId, @RequestParam(name = "CommandeID") int orderId) {
 
         PickingTaskResponse task = pickingService.assignOrderManually(preparateurId, orderId);
         return ResponseEntity.ok(task);
@@ -98,10 +95,7 @@ public class OrderController {
 
     // Endpoint 3 : Étape suivante de la commande
     @GetMapping("/nextStep")
-    public ResponseEntity<PickingTaskResponse> nextStep(
-            @RequestParam int orderId,
-            @RequestParam boolean missingItem
-    ) {
+    public ResponseEntity<PickingTaskResponse> nextStep(@RequestParam int orderId, @RequestParam boolean missingItem ) {
         var userID = AuthService.getUserID(request, properties);
         var nextStep = pickingService.getNextStep(userID, orderId, missingItem);
         return ResponseEntity.ok(nextStep);
@@ -218,60 +212,93 @@ public class OrderController {
     }
 
     @PostMapping("/import")
-    public ResponseEntity<List<Order>> importCsv(@RequestParam("file") MultipartFile file) {
-        List<Order> imported = new ArrayList<>();
+    public ResponseEntity<Object> importCsv(@ModelAttribute OrderImportRequest request) {
+        Optional<Customer> customerOpt = customerRepository.findById(request.getCustomerID());
+        if (customerOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Bad Resquest : Customer introuvable");
+        }
+        Customer customer = customerOpt.get();
+
+        Optional<SupportType> typeOpt = supportTypeRepository.findById(request.getTypeID());
+        if (typeOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Bad Resquest : Type introuvable");
+        }
+        SupportType type = typeOpt.get();
+
+        Order order = request.toOrder(customer);
+        order = orderRepository.save(order);
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
+        List<SupportResponse> supportResponses = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+                new InputStreamReader(request.getFile().getInputStream(), StandardCharsets.UTF_8))) {
 
             String line;
+            Support support = new Support();
+            support.setType(type);
+            support.setOrder(order);
+            support.setDateCreation(now);
+            support.setDateModification(now);
+            support = supportRepository.save(support);
+            List<ProductSupportResponse> productSupportResponses = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
                 String trimmed = line.trim();
+
                 if (trimmed.isEmpty()) {
                     continue;
+                }
+
+                if (line.replace(";", "").replace(",", "").isEmpty()) {
+                    supportResponses.add(new SupportResponse(support, productSupportResponses));
+                    support = new Support();
+                    support.setType(type);
+                    support.setOrder(order);
+                    support.setDateCreation(now);
+                    support.setDateModification(now);
+                    support = supportRepository.save(support);
+                    productSupportResponses = new ArrayList<>();
                 }
 
                 String[] parts = trimmed.split(";");
                 if (parts.length < 3) {
                     parts = trimmed.split(",");
                 }
+
                 if (parts.length < 3) {
                     continue;
                 }
 
-                Integer customerId;
                 try {
-                    customerId = Integer.parseInt(parts[0].trim());
-                } catch (NumberFormatException e) {
+                    int productCode = Integer.parseInt(parts[4].trim());
+                    int quantity = Integer.parseInt(parts[6].trim());
+
+                    Optional<Product> productOpt = productRepository.findByProductCode(productCode);
+                    if (productOpt.isEmpty()) {
+                        continue;
+                    }
+                    Product product = productOpt.get();
+
+                    productSupportResponses.add(new ProductSupportResponse(product, quantity));
+
+                    Contain contain = new Contain();
+                    contain.setSupport(support);
+                    contain.setProduct(product);
+                    contain.setApprovedQuantity(quantity);
+                    contain.setDateModification(now);
+                    contain.setDateCreation(now);
+
+                    containRepository.save(contain);
+                } catch (Exception e) {
                     continue;
                 }
-
-                Optional<Customer> customerOpt = customerRepository.findById(customerId);
-                if (customerOpt.isEmpty()) {
-                    continue;
-                }
-
-                String statusName = parts[1].trim();
-                String priorityValue = parts[2].trim();
-
-                boolean priority = "1".equals(priorityValue) || "true".equalsIgnoreCase(priorityValue);
-
-                Order order = new Order();
-                order.setCustomer(customerOpt.get());
-                order.setOrderDate(new java.sql.Date(now.getTime()));
-                order.setStatus(com.aramis.utils.EPrepareStatus.valueOf(statusName));
-                order.setPriority(priority);
-                order.setDateCreation(now);
-                order.setDateModification(now);
-
-                imported.add(orderRepository.save(order));
             }
+            support = supportRepository.save(support);
+            supportResponses.add(new SupportResponse(support, productSupportResponses));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.badRequest().body("Bad Request : " + e.getMessage());
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(imported);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new OrderResponse(order, supportResponses));
     }
 
     @GetMapping("testPlacement/{id}")
