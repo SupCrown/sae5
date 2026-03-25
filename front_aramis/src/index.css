@@ -14,3 +14,13 @@ html, body, #root {
 * {
   box-sizing: border-box;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+>>>>>>> front_aramis/src/index.css
