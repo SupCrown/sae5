@@ -12,4 +12,7 @@ public class PickingTaskResponse {
 
     private ProductPlacement step;
     private Integer placedQuantity;
+    private Integer quantityToPlace;
+    private Integer orderID;
+    private String location;
 }

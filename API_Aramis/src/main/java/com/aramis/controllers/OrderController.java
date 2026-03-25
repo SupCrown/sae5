@@ -95,9 +95,9 @@ public class OrderController {
 
     // Endpoint 3 : Étape suivante de la commande
     @GetMapping("/nextStep")
-    public ResponseEntity<PickingTaskResponse> nextStep(@RequestParam int orderId, @RequestParam boolean missingItem ) {
+    public ResponseEntity<PickingTaskResponse> nextStep(@RequestParam int orderID, @RequestParam boolean missingItem ) {
         var userID = AuthService.getUserID(request, properties);
-        var nextStep = pickingService.getNextStep(userID, orderId, missingItem);
+        var nextStep = pickingService.getNextStep(userID, orderID, missingItem);
         return ResponseEntity.ok(nextStep);
     }
 
@@ -235,6 +235,7 @@ public class OrderController {
 
             String line;
             Support support = new Support();
+            support.setStatus(EPrepareStatus.Pending);
             support.setType(type);
             support.setOrder(order);
             support.setDateCreation(now);
@@ -251,6 +252,7 @@ public class OrderController {
                 if (line.replace(";", "").replace(",", "").isEmpty()) {
                     supportResponses.add(new SupportResponse(support, productSupportResponses));
                     support = new Support();
+                    support.setStatus(EPrepareStatus.Pending);
                     support.setType(type);
                     support.setOrder(order);
                     support.setDateCreation(now);
@@ -283,6 +285,7 @@ public class OrderController {
                     Contain contain = new Contain();
                     contain.setSupport(support);
                     contain.setProduct(product);
+                    contain.setServedQuantity(0);
                     contain.setApprovedQuantity(quantity);
                     contain.setDateModification(now);
                     contain.setDateCreation(now);

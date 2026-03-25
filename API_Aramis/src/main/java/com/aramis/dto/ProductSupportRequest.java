@@ -28,6 +28,7 @@ public class ProductSupportRequest {
         Contain contain = new Contain();
         contain.setProduct(product);
         contain.setSupport(support);
+        contain.setApprovedQuantity(0);
         contain.setApprovedQuantity(quantity);
         contain.setDateCreation(now);
         contain.setDateModification(now);

@@ -66,7 +66,7 @@ public class SupportService {
         return clearedProductPlacements;
     }
 
-    public static List<Product> calculSupport(List<Product> products, List<Contain> contains) {
+    public static List<Product> calculSupport(Iterable<Product> products, List<Contain> contains) {
         List<Product> calculatedProducts = new ArrayList<>();
         for (Product product : products) {
             Contain contain = contains.stream().filter(filteredContain -> Objects.equals(filteredContain.getProduct().getProductID(), product.getProductID())).findFirst().orElse(null);

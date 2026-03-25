@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface ProductRepository extends CrudRepository<Product, Integer> {
     @Query("SELECT p FROM Contain c JOIN Product p ON c.product.productID = p.productID WHERE c.support.supportID = ?1 order by p.productID")
-    List<Product> findProductsBySupportID(Integer supportID);
+    Iterable<Product> findProductsBySupportID(Integer supportID);
 
     Iterable<Product> findAll(Pageable pageable);
 

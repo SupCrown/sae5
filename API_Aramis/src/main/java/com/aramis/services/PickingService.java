@@ -15,15 +15,15 @@ import com.aramis.models.support.SupportRepository;
 import com.aramis.models.user.User;
 import com.aramis.models.user.UserRepository;
 import com.aramis.utils.PickingTaskResponseType;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.*;
 
 @Service
 public class PickingService {
@@ -54,7 +54,14 @@ public class PickingService {
 
         Optional<Support> currentSupport = supportRepo.findByUserAndStatus(user.get(), EPrepareStatus.Preparing);
 
-        return currentSupport.map(support -> calculateNextProduct(support, true, false)).orElseGet(() -> startNewOrder(user.get()));
+        if (currentSupport.isPresent()) {
+            Support support = currentSupport.get();
+            PickingTaskResponse resp = calculateNextProduct(support, true, false);
+            resp.setOrderID(support.getOrder().getOrderID());
+            return resp;
+        } else {
+            return startNewOrder(user.get());
+        }
     }
 
     private PickingTaskResponse startNewOrder(User user) {
@@ -132,7 +139,9 @@ public class PickingService {
                 }
             }
             if (nextSupport != null) {
-                return calculateNextProduct(nextSupport, true, false);
+                PickingTaskResponse resp = calculateNextProduct(nextSupport, true, false);
+                resp.setOrderID(order.getOrderID());
+                return resp;
             }
         }
         PickingTaskResponse resp = new PickingTaskResponse();
@@ -148,20 +157,7 @@ public class PickingService {
             String nestedPlacements = support.getNestedProductsPlacements();
             List<ProductPlacement> plan;
             if(nestedPlacements == null || nestedPlacements.isEmpty()) {
-                Iterable<ProductSupportFormBD> products = productRepo.findAllProductBySupportID(support.getSupportID());
-
-                List<Product> productsToNest = new ArrayList<>();
-                for (Product product : products) {
-                    productsToNest.add(product);
-                }
-
-                plan = SupportService.calculateOptimisedSupport(productsToNest, support.getType());
-
-                ObjectMapper objectMapper = new ObjectMapper();
-                nestedPlacements = objectMapper.writeValueAsString(plan);
-
-                support.setNestedProductsPlacements(nestedPlacements);
-                supportRepo.save(support);
+                plan = getProductPlacements(support);
             } else {
                 plan = objectMapper.readValue(
                         nestedPlacements,
@@ -171,17 +167,23 @@ public class PickingService {
 
             List<Contain> contents = containRepo.findBySupport(support);
 
-            PickingTaskResponse resp = getCurrentStep(plan, contents);
+            PickingTaskResponseAndContainID resp = getCurrentStep(plan, contents);
             if (!initOrder) {
-                updateSupport(support, resp.getStep().getProductId(), missingItem);
+                updateSupport(resp.containID, missingItem);
+
+                if (missingItem) {
+                    getProductPlacements(support);
+                }
+
                 resp = getCurrentStep(plan, contents);
             }
 
-            if (resp != null) {
-                return resp;
+            if (resp.response != null) {
+                return resp.response;
             }
 
             support.setStatus(EPrepareStatus.Done);
+            support.setDatePreparation(Date.valueOf(LocalDate.now()));
             supportRepo.save(support);
             PickingTaskResponse r = new PickingTaskResponse();
             r.setType(PickingTaskResponseType.FINISHED);
@@ -192,8 +194,22 @@ public class PickingService {
         }
     }
 
-    private static PickingTaskResponse getCurrentStep(List<ProductPlacement> plan, List<Contain> contents) {
-        PickingTaskResponse resp = null;
+    private List<ProductPlacement> getProductPlacements(Support support) throws JsonProcessingException {
+        List<Contain> contains = containRepo.findAllBySupportId(support.getSupportID());
+        List<Product> products = SupportService.calculSupport(productRepo.findProductsBySupportID(support.getSupportID()), contains);
+
+        List<ProductPlacement> plan = SupportService.calculateOptimisedSupport(products, support.getType());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String nestedPlacements = objectMapper.writeValueAsString(plan);
+
+        support.setNestedProductsPlacements(nestedPlacements);
+        supportRepo.save(support);
+        return plan;
+    }
+
+    private static PickingTaskResponseAndContainID getCurrentStep(List<ProductPlacement> plan, List<Contain> contents) {
+        PickingTaskResponseAndContainID resp = new PickingTaskResponseAndContainID();
         for (ProductPlacement step : plan) {
             int pId = step.getProductId();
 
@@ -211,18 +227,21 @@ public class PickingService {
                 List<ProductPlacement> sameProduct = plan.stream().filter(s -> s.getProductId() == pId).toList();
                 ProductPlacement nextStep = sameProduct.get(contain.getServedQuantity());
 
-                resp = new PickingTaskResponse();
-                resp.setType(PickingTaskResponseType.PICK_PRODUCT);
-                resp.setStep(nextStep);
-                resp.setPlacedQuantity(contain.getServedQuantity());
+                resp.response = new PickingTaskResponse();
+                resp.response.setType(PickingTaskResponseType.PICK_PRODUCT);
+                resp.response.setStep(nextStep);
+                resp.response.setPlacedQuantity(contain.getServedQuantity());
+                resp.response.setQuantityToPlace(contain.getApprovedQuantity());
+                resp.response.setLocation(contain.getProduct().getLocation().toString());
+                resp.containID = contain.getContainID();
                 break;
             }
         }
         return resp;
     }
 
-    private void updateSupport(Support support, int productID, boolean missingItem) {
-        Optional<Contain> contain = containRepo.findBySupportAndProductProductID(support, productID);
+    private void updateSupport(int containID, boolean missingItem) {
+        Optional<Contain> contain = containRepo.findById(containID);
 
         if (contain.isPresent()) {
             Contain currentContain = contain.get();
@@ -244,9 +263,9 @@ public class PickingService {
     // ou marquées comme manquantes.
     // ========================================================================
     @Transactional
-    public PickingTaskResponse getNextStep(int userId, int orderId, boolean missingItem) {
-        Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Commande introuvable ID: " + orderId));
+    public PickingTaskResponse getNextStep(int userId, int orderID, boolean missingItem) {
+        Order order = orderRepo.findById(orderID)
+                .orElseThrow(() -> new RuntimeException("Commande introuvable ID: " + orderID));
 
         Iterable<Support> supports = supportRepo.findAllByOrderOrderBySupportIDDesc(order);
 
@@ -266,9 +285,26 @@ public class PickingService {
                 }
             }
 
+            if (nextStep == null || nextStep.getType() == PickingTaskResponseType.FINISHED) {
+                order.setStatus(EPrepareStatus.Done);
+                orderRepo.save(order);
+                PickingTaskResponse r = new PickingTaskResponse();
+                r.setType(PickingTaskResponseType.FINISHED);
+                return r;
+            }
+
+            nextStep.setOrderID(orderID);
             return nextStep;
         } catch (Exception e) {
             throw new RuntimeException("Erreur lors du calcul de l'étape suivante", e);
+        }
+    }
+
+    private static class PickingTaskResponseAndContainID {
+        public PickingTaskResponse response;
+        public int containID;
+
+        public PickingTaskResponseAndContainID() {
         }
     }
 }
