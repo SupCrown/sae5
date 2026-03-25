@@ -67,7 +67,7 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - **Sinon** : récupération d'une commande en cours en cas de crash. 
         - `307` : la prépration de la commande n'avait pas été finalisée à la dernière fermeture de l'application.
 - `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : Assignation d'une commande manuellement en fonction d'un id d'utilisateur et renvoi de la première étape.
-- `/order/nextStep?orderId=xxx?missingItem=yyy` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante.
+- `/order/nextStep?orderID=xxx?missingItem=yyy` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante.
     - Si la **quantité validée == quantité servie** OU s'il y a **au moins un colis manquant** sur la quantité validée.
 
 #### Calcul et envoi des statistiques pour superviseurs et préparateurs
