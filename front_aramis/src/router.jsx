@@ -1,5 +1,10 @@
-import { createBrowserRouter } from "react-router-dom";
-import App from "./App.jsx";
+import React from 'react';
+import { Routes, Route, Navigate } from "react-router-dom";
+import Home from "./pages/Home";
+import Auth from "./pages/Auth";
+import Palette from "./pages/palette";
+import StartCommande from "./pages/StartCommande";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import GestionEmpl from "./pages/Admin/GestionEmpl.jsx";
 import ModifEmpl from "./pages/Admin/ModifEmpl.jsx";
 import CreerEmpl from "./pages/Admin/CreerEmpl.jsx";
@@ -16,28 +21,137 @@ import Stat from "./pages/Admin/Stat.jsx";
 import Listen from "./pages/ListenPage.jsx";
 
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <App />,
-    children: [
-      { index: true, element: <GestionPrep /> },
-      { path: "gestion-prep", element: <GestionPrep /> },
-      { path: "modif-prep/:id", element: <ModifPrep /> },
-      { path: "creer-prep", element: <CreerPrep /> },
-      { path: "gestion-empl", element: <GestionEmpl /> },
-      { path: "modif-empl/:id", element: <ModifEmpl /> },
-      { path: "creer-empl", element: <CreerEmpl /> },
-      { path: "gestion-commd", element: <GestionCommd /> },
-      { path: "modif-commd/:id", element: <ModifCommd /> },
-      { path: "creer-commd", element: <CreerCommd /> },
-      { path: "gestion-stocks", element: <GestionStocks /> },
-      { path: "creer-stocks", element: <CreerStocks /> },
-      { path: "infos-stocks/:id", element: <InfosStocks />},
-      { path: "stat", element: <Stat /> },
-      { path: "listen", element: <Listen /> },
-    ],
-  },
-]);
+export default function AppRouter() {
+ return (
+   <Routes>
+     {/* Route publique */}
+     <Route path="/auth" element={<Auth />} />
 
-export default router;
+
+     {/* Routes protégées */}
+     <Route path="/" element={
+       <ProtectedRoute>
+         <Home />
+       </ProtectedRoute>
+     } />
+    
+     <Route path="/palette" element={
+       <ProtectedRoute>
+         <Palette />
+       </ProtectedRoute>
+     } />
+    
+     <Route path="/start" element={
+       <ProtectedRoute>
+         <StartCommande />
+       </ProtectedRoute>
+     } />
+
+
+           <Route path="gestion-prep" element={
+       <ProtectedRoute>
+         <GestionPrep />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="modif-prep/:id" element={
+       <ProtectedRoute>
+         <ModifPrep />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="creer-prep" element={
+       <ProtectedRoute>
+         <CreerPrep />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="gestion-empl" element={
+       <ProtectedRoute>
+         <GestionEmpl />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="modif-empl/:id" element={
+       <ProtectedRoute>
+         <ModifEmpl />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="creer-empl" element={
+       <ProtectedRoute>
+         <CreerEmpl />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="gestion-commd" element={
+       <ProtectedRoute>
+         <GestionCommd />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="modif-commd/:id" element={
+       <ProtectedRoute>
+         <ModifCommd />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="creer-commd" element={
+       <ProtectedRoute>
+         <CreerCommd />
+       </ProtectedRoute>
+     } />
+    
+     <Route path="gestion-stocks" element={
+       <ProtectedRoute>
+         <GestionStocks />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="creer-stocks" element={
+       <ProtectedRoute>
+         <CreerStocks />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="infos-stocks/:id" element={
+       <ProtectedRoute>
+         <InfosStocks />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="stat" element={
+       <ProtectedRoute>
+         <Stat />
+       </ProtectedRoute>
+     } />
+
+
+     <Route path="listen" element={
+       <ProtectedRoute>
+         <Listen />
+       </ProtectedRoute>
+     } />
+
+
+     {/* Redirection automatique si la route n'existe pas */}
+     <Route path="*" element={<Navigate to="/" replace />} />
+   </Routes>
+ );
+}
+
+
+
+
+

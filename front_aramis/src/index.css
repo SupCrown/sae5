@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  display: block !important; /* Annule le flex de Vite */
+}
+
+* {
+  box-sizing: border-box;
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -10,3 +23,4 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+>>>>>>> front_aramis/src/index.css

@@ -1,59 +1,55 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import UserIcon from "./assets/User.png";
-import ArrowBack from "./assets/Flechegauche.png";
+import React, { useState } from 'react';
+import AppRouter from "./router";
+import Navbar from "./components/Sidebar"; 
+import "./App.css";
 
 export default function App() {
-  const navigate = useNavigate();
-  const [userName, setUserName] = useState("Utilisateur");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    const user = localStorage.getItem("userName");
-    if (user) setUserName(user);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("userName");
-    navigate("/login");
-  };
-
-  const handleNavigation = (e) => {
-    navigate(e.target.value);
+  // Fonction pour ouvrir/fermer le menu
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
   return (
-    <div>
-      <header className="flex items-center justify-between px-6 py-4 border-b-[10px] border-[#AD211B] bg-white">
+    <div className="flex h-screen w-screen overflow-hidden bg-white relative">
+      
+      {/* BOUTON MENU TOGGLE */}
+      <button 
+        onClick={toggleSidebar}
+        className="absolute top-6 right-8 z-[110] bg-[#870000] p-3 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
+      >
+        {/* On change l'icône si le menu est ouvert */}
+        {isSidebarOpen ? (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        ) : (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        )}
+      </button>
 
-        {/* FLECHE DECONNEXION */}
-        <button
-          onClick={handleLogout}
-          className="border-2 border-[#000000] px-6 py-2 hover:bg-gray-100 transition bg-[#ffffff]"
-        >
-          <img src={ArrowBack} alt="Retour" className="w-[30px] px-[60px]" />
-        </button>
+      {/* Sidebar et Overlay */}
+      {isSidebarOpen && (
+        <>
+          {/* L'overlay permet toujours de fermer en cliquant n'importe où ailleurs */}
+          <div 
+            className="fixed inset-0 bg-black/40 z-[60] backdrop-blur-sm animate-in fade-in duration-300"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+          <Navbar closeSidebar={() => setIsSidebarOpen(false)} />
+        </>
+      )}
 
-        {/* SELECT NAVIGATION */}
-        <select
-          onChange={handleNavigation}
-          className="text-[20px] font-bold px-[6px] py-[2px] border-2 border-black rounded-md shadow-sm bg-white cursor-pointer hover:bg-gray-100"
-        >
-          <option value="/gestion-prep">Gestion Préparateurs</option>
-          <option value="/gestion-empl">Gestion Emplacements</option>
-          <option value="/gestion-commd">Gestion Commandes</option>
-          <option value="/gestion-stocks">Gestion Stocks</option>
-          <option value="/stat">Statistiques</option>
-        </select>
-
-        {/* UTILISATEUR */}
-        <div className="flex items-center gap-3 text-[20px] font-bold">
-          <span>{userName}</span>
-          <img src={UserIcon} alt="User Icon" className="w-[40px] h-[40px] m-[12px]" />
-        </div>
-
-      </header>
-
-      <Outlet />
+      <main className="flex-1 h-full relative overflow-auto">
+        <AppRouter />
+      </main>
+      
     </div>
   );
 }
