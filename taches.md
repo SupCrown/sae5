@@ -238,6 +238,13 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `page` : valeur par défaut `0`.
     - `size` : valeur par défaut `20`.
 
+##### Zones
+
+- `/zone/{id}` **[GET]** / **SUPERVISEUR** : **consulter** une zone.
+- `/zone/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** toutes les zone ordonnées par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
 ##### Allées
 
 - `/driveway/{id}` **[GET]** / **SUPERVISEUR** : **consulter** une allée.
@@ -283,7 +290,8 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     "width" : "largeur du produit",
     "zone" : "nom de la zone de stockage du produit",
     "driveway" : "nom de l'allée de stockage du produit",
-    "location" : "numéro d'emplacment de stockage du produit"
+    "location" : "numéro d'emplacment de stockage du produit",
+    "level" : "numéro d'emplacment de stockage du produit"
 }
 ```
 - `/product/delete/{id}` **[DELETE]** / **SUPERVISEUR**.
