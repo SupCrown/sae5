@@ -16,6 +16,7 @@ function ModifPrep() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -50,7 +51,7 @@ function ModifPrep() {
 
     if (id) fetchUser();
   }, [id]);
- 
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -60,18 +61,24 @@ function ModifPrep() {
     }));
   };
 
+  const closeErrorPopup = () => {
+    setErrorOpen(false);
+  };
+
   const handleUpdate = async () => {
     setErrorMessage("");
+    setErrorOpen(false);
 
     if (!form.firstname || !form.lastname || !form.login) {
       setErrorMessage("Veuillez remplir tous les champs.");
+      setErrorOpen(true);
       return;
     }
 
     const payload = {
-      firstname: form.firstname,
-      lastname: form.lastname,
-      login: form.login,
+      firstname: form.firstname.trim(),
+      lastname: form.lastname.trim(),
+      login: form.login.trim(),
       admin: form.isAdmin,
     };
 
@@ -87,8 +94,27 @@ function ModifPrep() {
         body: JSON.stringify(payload),
       });
 
+      let data = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
       if (!response.ok) {
-        throw new Error("Erreur modification");
+        let backendMessage =
+          data?.message ||
+          data?.error ||
+          data?.details ||
+          (typeof data === "string" ? data : null) ||
+          "Erreur modification.";
+
+        if (backendMessage.toLowerCase().includes("bad request")) {
+          backendMessage = "Données invalides. Vérifiez les champs.";
+        }
+
+        throw new Error(backendMessage);
       }
 
       setSuccessOpen(true);
@@ -97,17 +123,26 @@ function ModifPrep() {
         navigate("/gestion-prep");
       }, 1500);
     } catch (error) {
-      console.warn("API update indisponible -> simulation");
+      console.warn("Erreur modification préparateur :", error);
 
-      setSuccessOpen(true);
-      setTimeout(() => {
-        setSuccessOpen(false);
-        navigate("/gestion-prep");
-      }, 1500);
+      let message = error.message || "Erreur lors de la modification.";
+
+      if (
+        message.toLowerCase().includes("internal") ||
+        message.toLowerCase().includes("500")
+      ) {
+        message =
+          "Impossible de modifier ce préparateur. Vérifiez les données saisies.";
+      }
+
+      setErrorMessage(message);
+      setErrorOpen(true);
     } finally {
       setSaving(false);
     }
   };
+
+  const goBack = () => navigate("/gestion-prep");
 
   if (loading) {
     return (
@@ -117,20 +152,24 @@ function ModifPrep() {
     );
   }
 
-  const goBack = () => navigate("/gestion-prep");
-
   return (
     <div className="p-4 mt-[200px] flex flex-col items-center relative">
       <div className="w-[1000px] flex flex-col items-center">
-
-        {/* TABLE */}
         <table className="text-center border-collapse">
           <thead>
             <tr>
-              <th className="text-[30px] font-bold px-[40px] pb-[20px]">Prénom</th>
-              <th className="text-[30px] font-bold px-[40px] pb-[20px]">Nom</th>
-              <th className="text-[30px] font-bold px-[40px] pb-[20px]">Login</th>
-              <th className="text-[30px] font-bold px-[40px] pb-[20px]">Superviseur</th>
+              <th className="text-[30px] font-bold px-[40px] pb-[20px]">
+                Prénom
+              </th>
+              <th className="text-[30px] font-bold px-[40px] pb-[20px]">
+                Nom
+              </th>
+              <th className="text-[30px] font-bold px-[40px] pb-[20px]">
+                Login
+              </th>
+              <th className="text-[30px] font-bold px-[40px] pb-[20px]">
+                Superviseur
+              </th>
             </tr>
           </thead>
 
@@ -179,23 +218,15 @@ function ModifPrep() {
           </tbody>
         </table>
 
-        {errorMessage && (
-          <div className="mt-[20px] text-red-600 font-bold">
-            {errorMessage}
-          </div>
-        )}
-
-        {/* BUTTON */}
         <button
           onClick={handleUpdate}
           disabled={saving}
-          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#CCB5A5] rounded-[50px]"
+          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#CCB5A5] rounded-[50px] disabled:opacity-50"
         >
           {saving ? "Modification..." : "Modifier"}
         </button>
       </div>
 
-      {/* SUCCESS POPUP */}
       {successOpen && (
         <div className="fixed bottom-8 z-50 w-full flex justify-center">
           <div className="w-[650px] border-2 bg-[#ffffff] px-[30px] py-[20px] flex items-center justify-between rounded-[40px]">
@@ -207,14 +238,39 @@ function ModifPrep() {
         </div>
       )}
 
+      {errorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black rounded-[20px]">
+            <div className="p-6">
+              <p className="text-center text-[24px] font-bold text-red-600">
+                Erreur
+              </p>
+              <p className="text-center text-[20px] font-bold mt-[20px]">
+                {errorMessage}
+              </p>
+              <div className="border-b border-black mt-6" />
+            </div>
+
+            <div className="pb-8 flex justify-center">
+              <button
+                onClick={closeErrorPopup}
+                type="button"
+                className="bg-[#863545] text-white font-extrabold text-[28px] px-[40px] py-[12px] rounded-[40px] m-[15px]"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <button
-          onClick={goBack}
-          disabled={saving}
-          className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
-        >
-          Retour à la gestion des préparateurs
-        </button>
+        onClick={goBack}
+        disabled={saving}
+        className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
+      >
+        Retour à la gestion des préparateurs
+      </button>
     </div>
   );
 }
