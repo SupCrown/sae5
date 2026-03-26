@@ -152,7 +152,7 @@ public class PickingService {
     // ========================================================================
     // LOGIQUE : CONTINUER LE SUPPORT EN COURS
     // ========================================================================
-    private PickingTaskResponse calculateNextProduct(Support support, boolean initOrder, boolean missingItem) {
+    private PickingTaskResponse calculateNextProduct(Support support, boolean initSupport, boolean missingItem) {
         try {
             String nestedPlacements = support.getNestedProductsPlacements();
             List<ProductPlacement> plan;
@@ -168,7 +168,7 @@ public class PickingService {
             List<Contain> contents = containRepo.findBySupport(support);
 
             PickingTaskResponseAndContainID resp = getCurrentStep(plan, contents);;
-            if (initOrder) {
+            if (initSupport) {
                 resp.response.setPlacedProducts(getPlacedProductPlacements(support));
             } else {
                 updateSupport(resp.containID, missingItem);
@@ -318,7 +318,7 @@ public class PickingService {
                     if (nextStep == null) {
                         nextStep = calculateNextProduct(support, false, missingItem);
                     } else if (nextStep.getType() == PickingTaskResponseType.FINISHED) {
-                        nextStep = calculateNextProduct(support, false, missingItem);
+                        nextStep = calculateNextProduct(support, true, missingItem);
                         nextStep.setType(PickingTaskResponseType.NEW_SUPPORT);
                     }
                 }
