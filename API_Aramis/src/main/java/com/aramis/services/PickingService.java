@@ -181,6 +181,10 @@ public class PickingService {
             }
 
             if (resp.response != null) {
+                if (support.getStatus() == EPrepareStatus.Pending) {
+                    support.setStatus(EPrepareStatus.Preparing);
+                    supportRepo.save(support);
+                }
                 return resp.response;
             }
 
