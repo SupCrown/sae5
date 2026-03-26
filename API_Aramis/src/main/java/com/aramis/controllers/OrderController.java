@@ -207,21 +207,20 @@ public class OrderController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
         Optional<Order> orderOpt = orderRepository.findById(id);
-
         if (orderOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         Order order = orderOpt.get();
 
-        Iterable<Support> supports = supportRepository.findAllByOrder(order);
-        for (Support support : supports) {
-            List<Contain> contains = containRepository.findBySupport(support);
-            containRepository.deleteAll(contains);
-        }
-        supportRepository.deleteAll(supports);
-
         try {
-            orderRepository.deleteById(id);
+            Iterable<Support> supports = supportRepository.findAllByOrder(order);
+            for (Support support : supports) {
+                List<Contain> contains = containRepository.findBySupport(support);
+                containRepository.deleteAll(contains);
+            }
+            supportRepository.deleteAll(supports);
+
+            orderRepository.delete(order);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.error("Error while deleting order", e);

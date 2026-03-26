@@ -10,6 +10,8 @@ import com.aramis.models.level.Level;
 import com.aramis.models.level.LevelRepository;
 import com.aramis.models.location.Location;
 import com.aramis.models.location.LocationRepository;
+import com.aramis.models.product.Product;
+import com.aramis.models.product.ProductRepository;
 import com.aramis.utils.Role;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +35,13 @@ public class PositionController {
     private final LocationRepository locationRepository;
     private final DrivewayRepository drivewayRepository;
     private final LevelRepository levelRepository;
+    private final ProductRepository productRepository;
 
-    public PositionController(LocationRepository locationRepository, DrivewayRepository drivewayRepository, LevelRepository levelRepository) {
+    public PositionController(LocationRepository locationRepository, DrivewayRepository drivewayRepository, LevelRepository levelRepository, ProductRepository productRepository) {
         this.locationRepository = locationRepository;
         this.drivewayRepository = drivewayRepository;
         this.levelRepository = levelRepository;
+        this.productRepository = productRepository;
     }
 
     @Authorize(roles = Role.ADMIN)
@@ -110,12 +115,17 @@ public class PositionController {
     @Authorize(roles = Role.ADMIN)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
-        if (!locationRepository.existsById(id)) {
+        Optional<Location> locationOpt = locationRepository.findById(id);
+        if (locationOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        Location location = locationOpt.get();
 
         try {
-            locationRepository.deleteById(id);
+            Optional<Product> product = productRepository.findByLocation(location);
+            product.ifPresent(productRepository::delete);
+
+            locationRepository.delete(location);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.error("Error while deleting location", e);
