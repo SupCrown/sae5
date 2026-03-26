@@ -20,6 +20,8 @@ import CreerCommd from "./pages/Admin/CreerCommd.jsx";
 import GestionStocks from "./pages/Admin/GestionStocks.jsx";
 import CreerStocks from "./pages/Admin/CreerStocks.jsx";
 import InfosStocks from "./pages/Admin/InfosStocks.jsx";
+import CreerCli from "./pages/Admin/CreerCli.jsx"
+import GestionCli from "./pages/Admin/GestionCli.jsx"
 import Stat from "./pages/Admin/Stat.jsx";
 import Listen from "./pages/ListenPage.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
@@ -53,6 +55,9 @@ export default function AppRouter() {
       <Route path="/gestion-stocks" element={<AdminRoute><GestionStocks /></AdminRoute>} />
       <Route path="/creer-stocks" element={<AdminRoute><CreerStocks /></AdminRoute>} />
       <Route path="/infos-stocks/:id" element={<AdminRoute><InfosStocks /></AdminRoute>} />
+
+      <Route path="/gestion-cli" element={<AdminRoute><GestionCli /></AdminRoute>} />
+      <Route path="/creer-cli" element={<AdminRoute><CreerCli /></AdminRoute>} />
 
       <Route path="/stat" element={<AdminRoute><Stat /></AdminRoute>} />
 

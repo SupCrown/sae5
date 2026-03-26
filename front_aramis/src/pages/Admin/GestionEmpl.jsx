@@ -8,10 +8,10 @@ function GestionEmpl() {
   const navigate = useNavigate();
 
   const fallbackRows = [
-    { id: 1, zone: "H", driveway: "1", location: "1", level: "0" },
-    { id: 2, zone: "H", driveway: "1", location: "2", level: "0" },
-    { id: 3, zone: "H", driveway: "1", location: "3", level: "0" },
-    { id: 4, zone: "H", driveway: "1", location: "4", level: "0" },
+    { locationID: 1, zone: "H", driveway: "1", location: "1", level: "0" },
+    { locationID: 2, zone: "H", driveway: "1", location: "2", level: "0" },
+    { locationID: 3, zone: "H", driveway: "1", location: "3", level: "0" },
+    { locationID: 4, zone: "H", driveway: "1", location: "4", level: "0" },
   ];
 
   const [rows, setRows] = useState([]);
@@ -23,7 +23,7 @@ function GestionEmpl() {
   const [rowToDelete, setRowToDelete] = useState(null);
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToModif = (id) => navigate(`/modif-empl/${id}`);
+  const goToModif = (locationID) => navigate(`/modif-empl/${locationID}`);
   const goToCreer = () => navigate("/creer-empl");
 
   useEffect(() => {
@@ -35,7 +35,7 @@ function GestionEmpl() {
           `/api/position/all?page=${page}&size=${size}`,
           {
             method: "GET",
-            credentials: 'include',
+            credentials: "include",
           }
         );
 
@@ -52,7 +52,7 @@ function GestionEmpl() {
         }
 
         const mappedRows = positions.map((position, index) => ({
-          id: position.locationID ?? index + 1,
+          locationID: position.locationID ?? index + 1,
           zone: position.driveway?.zone?.zoneName ?? "A",
           driveway: position.driveway?.name ?? "1",
           location: position.locationCode ?? "000",
@@ -71,8 +71,8 @@ function GestionEmpl() {
     fetchPositions();
   }, [page, size]);
 
-  const handleDelete = (row, idx) => {
-    setRowToDelete({ id: row.id, idx });
+  const handleDelete = (locationID, idx) => {
+    setRowToDelete({ locationID, idx });
     setConfirmOpen(true);
   };
 
@@ -86,10 +86,10 @@ function GestionEmpl() {
 
     try {
       const response = await fetch(
-        `/api/position/delete/${rowToDelete.id}`,
+        `/api/position/delete/${rowToDelete.locationID}`,
         {
-          method: "POST",
-          credentials: 'include',
+          method: "DELETE",
+          credentials: "include",
         }
       );
 
@@ -97,7 +97,9 @@ function GestionEmpl() {
         throw new Error("Suppression impossible");
       }
 
-      setRows((prev) => prev.filter((row) => row.id !== rowToDelete.id));
+      setRows((prev) =>
+        prev.filter((row) => row.locationID !== rowToDelete.locationID)
+      );
     } catch (error) {
       console.warn("API delete indisponible -> suppression locale");
       setRows((prev) => prev.filter((_, i) => i !== rowToDelete.idx));
@@ -147,11 +149,11 @@ function GestionEmpl() {
 
             <tbody>
               {rows.map((r, idx) => {
-                const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
+                const rowClass = idx % 2 === 0 ? "bg-[#ffffff]" : "bg-[#F0F0F0]";
 
                 return (
                   <tr
-                    key={r.id ?? idx}
+                    key={r.locationID ?? idx}
                     className={`border-b border-black ${rowClass}`}
                   >
                     <td className="py-[10px] font-bold text-[20px]">{r.zone}</td>
@@ -162,7 +164,7 @@ function GestionEmpl() {
                     <td className="py-[10px] font-bold">
                       <button
                         className="px-[20px] py-[10px] rounded-[50px] mr-[10px]"
-                        onClick={() => goToModif(r.id)}
+                        onClick={() => goToModif(r.locationID)}
                         type="button"
                       >
                         <img
@@ -174,7 +176,7 @@ function GestionEmpl() {
 
                       <button
                         className="px-[20px] py-[10px] rounded-[50px]"
-                        onClick={() => handleDelete(r, idx)}
+                        onClick={() => handleDelete(r.locationID, idx)}
                         type="button"
                       >
                         <img
@@ -216,10 +218,10 @@ function GestionEmpl() {
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 bg-[#FFFFFF]">
-          <div className="bg-white w-[650px] border-2 border-black">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black">
             <div className="p-6">
-              <p className="text-center text-[22px] font-bold">
-                Voulez-vous vraiment supprimer cet emplacement ?
+              <p className="text-center text-[22px] font-bold m-[10px]">
+                Voulez-vous vraiment supprimer cet emplacement ? (La suppression de cet emplacement engendrera la suppression du produit associer)
               </p>
               <div className="border-b border-black mt-4" />
             </div>
@@ -247,7 +249,7 @@ function GestionEmpl() {
 
       {successOpen && (
         <div className="fixed w-full flex justify-center">
-          <div className="w-[650px] border-2 bg-white px-[30px] py-[20px] flex items-center justify-between rounded-[40px] bg-[#FFFFFF]">
+          <div className="w-[650px] border-2 bg-[#ffffff] px-[30px] py-[20px] flex items-center justify-between rounded-[40px]">
             <span className="font-bold">Emplacement supprimé avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓

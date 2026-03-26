@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import plusIcon from "../../assets/saisie-stocks-plus.png";
 import SuppBut from "../../assets/SuppBut.png";
-import ModifBut from "../../assets/ModifBut.png";
 import { useNavigate } from "react-router-dom";
 
 function GestionCommd() {
@@ -51,7 +50,6 @@ function GestionCommd() {
   const [rowToDelete, setRowToDelete] = useState(null);
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToModif = (id) => navigate(`/modif-commd/${id}`);
   const goToCreer = () => navigate("/creer-commd");
 
   useEffect(() => {
@@ -59,13 +57,10 @@ function GestionCommd() {
       try {
         setLoading(true);
 
-        const response = await fetch(
-          `/api/order/all?page=${page}&size=${size}`,
-          {
-            method: "GET",
-            credentials: 'include',
-          }
-        );
+        const response = await fetch(`/api/order/all?page=${page}&size=${size}`, {
+          method: "GET",
+          credentials: "include",
+        });
 
         if (!response.ok) {
           throw new Error("Erreur API");
@@ -88,7 +83,7 @@ function GestionCommd() {
           }, 0);
 
           return {
-            id: order.id ?? order.orderId ?? index + 1,
+            id: order.orderID ?? order.id ?? order.orderId ?? index + 1,
             orderDate: order.orderDate ?? "2026-03-23",
             customerId: order.customerID ?? "N/A",
             priority: order.priority ?? false,
@@ -109,8 +104,8 @@ function GestionCommd() {
     fetchOrders();
   }, [page, size]);
 
-  const handleDelete = (row, idx) => {
-    setRowToDelete({ id: row.id, idx });
+  const handleDelete = (orderId, idx) => {
+    setRowToDelete({ orderId, idx });
     setConfirmOpen(true);
   };
 
@@ -123,19 +118,18 @@ function GestionCommd() {
     if (!rowToDelete) return;
 
     try {
-      const response = await fetch(
-        `/api/order/delete/${rowToDelete.id}`,
-        {
-          method: "POST",
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`/api/order/delete/${rowToDelete.orderId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error("Suppression impossible");
       }
 
-      setRows((prev) => prev.filter((row) => row.id !== rowToDelete.id));
+      setRows((prev) =>
+        prev.filter((row) => row.id !== rowToDelete.orderId)
+      );
     } catch (error) {
       console.warn("API delete indisponible -> suppression locale");
       setRows((prev) => prev.filter((_, i) => i !== rowToDelete.idx));
@@ -180,13 +174,13 @@ function GestionCommd() {
                 <th className="py-2 font-bold text-[20px]">Prioritaire</th>
                 <th className="py-2 font-bold text-[20px]">Nb supports</th>
                 <th className="py-2 font-bold text-[20px]">Nb produits</th>
-                <th className="py-2 font-bold text-[20px]">Actions</th>
+                <th className="py-2 font-bold text-[20px]">Action</th>
               </tr>
             </thead>
 
             <tbody>
               {rows.map((r, idx) => {
-                const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
+                const rowClass = idx % 2 === 0 ? "bg-[#ffffff]" : "bg-[#F0F0F0]";
 
                 return (
                   <tr
@@ -203,19 +197,9 @@ function GestionCommd() {
 
                     <td className="py-[10px]">
                       <button
-                        className="px-[20px] py-[10px] mr-[10px]"
-                        onClick={() => goToModif(r.id)}
-                      >
-                        <img
-                          src={ModifBut}
-                          alt="Modifier"
-                          className="w-[20px]"
-                        />
-                      </button>
-
-                      <button
                         className="px-[20px] py-[10px]"
-                        onClick={() => handleDelete(r, idx)}
+                        onClick={() => handleDelete(r.id, idx)}
+                        type="button"
                       >
                         <img
                           src={SuppBut}
@@ -256,7 +240,7 @@ function GestionCommd() {
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 bg-[#FFFFFF]">
-          <div className="bg-white w-[650px] border-2 border-black">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black">
             <div className="p-6">
               <p className="text-center text-[22px] font-bold">
                 Voulez-vous vraiment supprimer cette commande ?
@@ -287,7 +271,7 @@ function GestionCommd() {
 
       {successOpen && (
         <div className="fixed w-full flex justify-center">
-          <div className="w-[650px] border-2 bg-white px-[30px] py-[20px] flex items-center justify-between rounded-[40px] bg-[#FFFFFF]">
+          <div className="w-[650px] border-2 bg-[#ffffff] px-[30px] py-[20px] flex items-center justify-between rounded-[40px]">
             <span className="font-bold">Commande supprimée avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓

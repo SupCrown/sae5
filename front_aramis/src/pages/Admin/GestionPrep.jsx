@@ -31,13 +31,10 @@ function GestionPrep() {
       try {
         setLoading(true);
 
-        const response = await fetch(
-          `/api/user/all?page=${page}&size=${size}`,
-          {
-            method: "GET",
-            credentials: 'include',
-          }
-        );
+        const response = await fetch(`/api/user/all?page=${page}&size=${size}`, {
+          method: "GET",
+          credentials: "include",
+        });
 
         if (!response.ok) {
           throw new Error("Erreur API");
@@ -71,8 +68,8 @@ function GestionPrep() {
     fetchUsers();
   }, [page, size]);
 
-  const handleDelete = (row, idx) => {
-    setRowToDelete({ id: row.id, idx });
+  const handleDelete = (id, idx) => {
+    setRowToDelete({ id, idx });
     setConfirmOpen(true);
   };
 
@@ -85,13 +82,10 @@ function GestionPrep() {
     if (!rowToDelete) return;
 
     try {
-      const response = await fetch(
-        `/api/user/delete/${rowToDelete.id}`,
-        {
-          method: "DELETE",
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`/api/user/delete/${rowToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error("Suppression impossible");
@@ -147,7 +141,7 @@ function GestionPrep() {
 
             <tbody>
               {rows.map((r, idx) => {
-                const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
+                const rowClass = idx % 2 === 0 ? "bg-[#ffffff]" : "bg-[#F0F0F0]";
 
                 return (
                   <tr
@@ -176,7 +170,7 @@ function GestionPrep() {
 
                       <button
                         className="px-[20px] py-[10px] rounded-[50px]"
-                        onClick={() => handleDelete(r, idx)}
+                        onClick={() => handleDelete(r.id, idx)}
                         type="button"
                       >
                         <img
@@ -218,7 +212,7 @@ function GestionPrep() {
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 bg-[#FFFFFF]">
-          <div className="bg-white w-[650px] border-2 border-black">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black">
             <div className="p-6">
               <p className="text-center text-[22px] font-bold">
                 Voulez-vous vraiment supprimer ce préparateur ?
@@ -249,7 +243,7 @@ function GestionPrep() {
 
       {successOpen && (
         <div className="fixed w-full flex justify-center">
-          <div className="w-[650px] border-2 bg-white px-[30px] py-[20px] flex items-center justify-between rounded-[40px] bg-[#FFFFFF]">
+          <div className="w-[650px] border-2 bg-[#ffffff] px-[30px] py-[20px] flex items-center justify-between rounded-[40px]">
             <span className="font-bold">Préparateur supprimé avec succès !</span>
             <div className="bg-[#3A0F24] text-[#ffffff] font-bold rounded-[30px] px-[30px] py-[20px]">
               ✓
