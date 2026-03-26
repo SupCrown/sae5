@@ -16,6 +16,7 @@ export const OrderProvider = ({ children }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preparateurId })
+        
       });
 
       if (response.status === 200 || response.status === 307) {
