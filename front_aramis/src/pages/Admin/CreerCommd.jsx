@@ -55,7 +55,7 @@ function CreerCommd() {
         setLoadingSupportTypes(true);
 
         const response = await fetch(
-          "http://147.93.55.68/supportType/all?page=0&size=100",
+          "/api/supportType/all?page=0&size=100",
           { method: "GET" }
         );
 
@@ -80,7 +80,7 @@ function CreerCommd() {
         setLoadingProducts(true);
 
         const response = await fetch(
-          "http://147.93.55.68/product/all?page=0&size=200",
+          "/api/product/all?page=0&size=200",
           { method: "GET" }
         );
 
@@ -105,20 +105,20 @@ function CreerCommd() {
         setLoadingCustomers(true);
 
         const response = await fetch(
-          "http://147.93.55.68/user/all?page=0&size=200",
+          "/api/customer/all?page=0&size=200",
           { method: "GET" }
         );
 
         if (!response.ok) {
-          throw new Error("Erreur récupération utilisateurs");
+          throw new Error("Erreur récupération clients");
         }
 
         const data = await response.json();
-        const userList = Array.isArray(data) ? data : data.content || [];
+        const customerList = Array.isArray(data) ? data : data.content || [];
 
-        setCustomers(userList);
+        setCustomers(customerList);
       } catch (error) {
-        console.warn("Impossible de charger les utilisateurs :", error);
+        console.warn("Impossible de charger les clients :", error);
         setCustomers([]);
       } finally {
         setLoadingCustomers(false);
@@ -155,12 +155,12 @@ function CreerCommd() {
     if (!customerID) return "";
 
     const foundCustomer = customers.find(
-      (customer) => String(customer.id) === String(customerID)
+      (customer) => String(customer.customerID) === String(customerID)
     );
 
     if (!foundCustomer) return "";
 
-    return `${foundCustomer.firstname ?? ""} ${foundCustomer.lastname ?? ""}`.trim();
+    return foundCustomer.name ?? "";
   };
 
   const showSuccess = (message) => {

@@ -9,43 +9,13 @@ function GestionStocks() {
 
   const fallbackRows = [
     {
-      id: 1,
+      productID: 1,
       productCode: "P-001",
       libel: "Produit A",
       quantity: 120,
       zone: "H",
       driveway: "08",
       location: "023",
-      level: "1",
-    },
-    {
-      id: 2,
-      productCode: "P-002",
-      libel: "Produit B",
-      quantity: 80,
-      zone: "A",
-      driveway: "02",
-      location: "110",
-      level: "2",
-    },
-    {
-      id: 3,
-      productCode: "P-003",
-      libel: "Produit C",
-      quantity: 45,
-      zone: "C",
-      driveway: "15",
-      location: "045",
-      level: "3",
-    },
-    {
-      id: 4,
-      productCode: "P-004",
-      libel: "Produit D",
-      quantity: 200,
-      zone: "F",
-      driveway: "01",
-      location: "301",
       level: "1",
     },
   ];
@@ -59,7 +29,7 @@ function GestionStocks() {
   const [rowToDelete, setRowToDelete] = useState(null);
   const [successOpen, setSuccessOpen] = useState(false);
 
-  const goToInfos = (id) => navigate(`/infos-stocks/${id}`);
+  const goToInfos = (productID) => navigate(`/infos-stocks/${productID}`);
   const goToCreer = () => navigate("/creer-stocks");
 
   useEffect(() => {
@@ -71,7 +41,7 @@ function GestionStocks() {
           `/api/product/all?page=${page}&size=${size}`,
           {
             method: "GET",
-            credentials: 'include',
+            credentials: "include",
           }
         );
 
@@ -88,7 +58,7 @@ function GestionStocks() {
         }
 
         const mappedRows = products.map((product, index) => ({
-          id: product.id ?? product.productID ?? index + 1,
+          productID: product.productID ?? product.id ?? index + 1,
           productCode: product.productCode ?? "P-000",
           quantity: product.quantity ?? 0,
           libel: product.libel ?? "Produit inconnu",
@@ -110,8 +80,8 @@ function GestionStocks() {
     fetchProducts();
   }, [page, size]);
 
-  const handleDelete = (row, idx) => {
-    setRowToDelete({ id: row.id, idx });
+  const handleDelete = (productID, idx) => {
+    setRowToDelete({ productID, idx });
     setConfirmOpen(true);
   };
 
@@ -125,10 +95,10 @@ function GestionStocks() {
 
     try {
       const response = await fetch(
-        `/api/product/delete/${rowToDelete.id}`,
+        `/api/product/delete/${rowToDelete.productID}`,
         {
           method: "DELETE",
-          credentials: 'include',
+          credentials: "include",
         }
       );
 
@@ -136,7 +106,9 @@ function GestionStocks() {
         throw new Error("API indisponible");
       }
 
-      setRows((prev) => prev.filter((row) => row.id !== rowToDelete.id));
+      setRows((prev) =>
+        prev.filter((row) => row.productID !== rowToDelete.productID)
+      );
     } catch (error) {
       console.warn("API delete indisponible -> suppression locale");
       setRows((prev) => prev.filter((_, i) => i !== rowToDelete.idx));
@@ -189,11 +161,11 @@ function GestionStocks() {
 
             <tbody>
               {rows.map((r, idx) => {
-                const rowClass = idx % 2 === 0 ? "bg-white" : "bg-[#F0F0F0]";
+                const rowClass = idx % 2 === 0 ? "bg-[#ffffff]" : "bg-[#F0F0F0]";
 
                 return (
                   <tr
-                    key={r.id ?? idx}
+                    key={r.productID ?? idx}
                     className={`border-b border-black ${rowClass}`}
                   >
                     <td className="py-[10px] font-bold">{r.productCode}</td>
@@ -208,24 +180,16 @@ function GestionStocks() {
                     <td className="py-[10px]">
                       <button
                         className="px-[20px] py-[10px] mr-[10px]"
-                        onClick={() => goToInfos(r.id)}
+                        onClick={() => goToInfos(r.productID)}
                       >
-                        <img
-                          src={ModifBut}
-                          alt="Modifier"
-                          className="w-[20px]"
-                        />
+                        <img src={ModifBut} alt="Modifier" className="w-[20px]" />
                       </button>
 
                       <button
                         className="px-[20px] py-[10px]"
-                        onClick={() => handleDelete(r, idx)}
+                        onClick={() => handleDelete(r.productID, idx)}
                       >
-                        <img
-                          src={SuppBut}
-                          alt="Supprimer"
-                          className="w-[20px]"
-                        />
+                        <img src={SuppBut} alt="Supprimer" className="w-[20px]" />
                       </button>
                     </td>
                   </tr>
@@ -237,9 +201,8 @@ function GestionStocks() {
           {showPagination && (
             <div className="flex justify-center items-center gap-6 mt-[30px]">
               <button
-                type="button"
                 onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold mr-[20px]"
+                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold"
               >
                 Précédent
               </button>
@@ -247,9 +210,8 @@ function GestionStocks() {
               <span className="text-[22px] font-bold">Page {page + 1}</span>
 
               <button
-                type="button"
                 onClick={() => setPage((prev) => prev + 1)}
-                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold ml-[20px]"
+                className="px-[30px] py-[15px] bg-gray-300 rounded-[20px] font-bold"
               >
                 Suivant
               </button>
@@ -260,7 +222,7 @@ function GestionStocks() {
 
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 bg-[#FFFFFF]">
-          <div className="bg-white w-[650px] border-2 border-black">
+          <div className="bg-[#ffffff] w-[650px] border-2 border-black">
             <div className="p-6">
               <p className="text-center text-[22px] font-bold">
                 Voulez-vous vraiment supprimer ce stock ?
@@ -268,18 +230,16 @@ function GestionStocks() {
               <div className="border-b border-black mt-4" />
             </div>
 
-            <div className="pb-8 flex items-center justify-center gap-20 m-[20px]">
+            <div className="pb-8 flex justify-center gap-20 m-[20px]">
               <button
                 onClick={confirmDelete}
-                type="button"
-                className="bg-[#E6463A] text-white font-extrabold text-[34px] px-[30px] py-[10px] rounded-[40px] mr-[70px]"
+                className="bg-[#E6463A] text-white font-extrabold text-[34px] px-[30px] py-[10px] rounded-[40px]"
               >
                 OUI
               </button>
 
               <button
                 onClick={cancelDelete}
-                type="button"
                 className="bg-[#863545] text-white font-extrabold text-[34px] px-[30px] py-[10px] rounded-[40px]"
               >
                 NON
