@@ -5,6 +5,7 @@ import Palette from "./pages/palette";
 import StartCommande from "./pages/StartCommande";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { authService } from "./services/authService";
+import { useState, useEffect } from "react";
 
 // Pages Admin
 import GestionEmpl from "./pages/Admin/GestionEmpl.jsx";
@@ -22,13 +23,19 @@ import InfosStocks from "./pages/Admin/InfosStocks.jsx";
 import Stat from "./pages/Admin/Stat.jsx";
 import Listen from "./pages/ListenPage.jsx";
 
+
 // Composant pour protéger les routes Admin
 const AdminRoute = ({ children }) => {
-  const token = authService.getToken();
-  const role = authService.getRole();
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    authService.getRole().then(userRole => {
+      setRole(userRole);
+    });
+  }, []);
   
-  if (!token) return <Navigate to="/auth" replace />;
-  if (role !== 'admin') return <Navigate to="/palette" replace />;
+  if (!authService.isLoggedIn()) return <Navigate to="/auth" replace />;
+  if (role !== 'ADMIN') return <Navigate to="/palette" replace />;
   
   return children;
 };

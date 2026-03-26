@@ -1,28 +1,16 @@
-const API_URL = "http://147.93.55.68";
+import { log } from "three";
 
 export const authService = {
   login: async (pin) => {
-    const response = await fetch(`${API_URL}/login`, {
+    const response = await fetch(`/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ login: parseInt(pin, 10) }),
-      credentials: 'include',
+      credentials: "include"
     });
 
     if (response.ok) {
       const data = await response.json();
-      
-      // Stockage des informations essentielles
-      localStorage.setItem("token", data.token);
-      
-      // On stocke le PIN comme PreparateurID pour l'appel autoAssign
-      localStorage.setItem("PreparateurID", pin);
-      
-      // On stocke un nom d'affichage (utilisé dans RecupCommande)
-      const isAdmin = pin === "421";
-      localStorage.setItem("userRole", isAdmin ? "admin" : "prep");
-      localStorage.setItem("username", isAdmin ? "Administrateur" : `Préparateur ${pin}`);
-      
       return data;
     }
     
@@ -32,27 +20,49 @@ export const authService = {
   },
 
   logout: async () => {
-    const token = localStorage.getItem("token");
     try {
-      await fetch(`${API_URL}/logout`, {
+      await fetch(`/api/logout`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        credentials: 'include',
+        credentials: "include"
       });
     } catch (err) {
-      console.warn("Serveur injoignable, nettoyage local uniquement.");
-    } finally {
-      // Nettoyage complet
-      localStorage.removeItem("token");
-      localStorage.removeItem("userRole");
-      localStorage.removeItem("PreparateurID");
-      localStorage.removeItem("username");
+      console.error("Erreur lors de la déconnexion:", err);
     }
   },
 
-  getToken: () => localStorage.getItem("token"),
-  getRole: () => localStorage.getItem("userRole")
+  isLoggedIn: async() => {
+      try {
+      const response = await fetch('/api/authStatus', {
+        method: 'GET',
+        credentials: 'include', 
+      });
+
+      // Renvoie true si 200, false pour 401, 403, 404, 500, etc.
+      return response.ok; 
+    } catch (error) {
+      console.error("Erreur lors de la vérification de l'auth:", error);
+      return false;
+    }
+  },
+  getRole: async () => {
+    try {
+      const response = await fetch('/api/getRole', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        return "USER"; // Si l'API répond une erreur (ex: 401), on met USER par défaut
+      }
+
+      const data = await response.json();
+      
+      // On retourne DIRECTEMENT la valeur reçue
+      return data.role || "USER"; 
+
+    } catch (error) {
+      console.error("Erreur lors de la récupération du rôle:", error);
+      return "USER"; // En cas de crash réseau, sécurité d'abord : USER
+    }
+  }
 };
