@@ -90,22 +90,22 @@ function CreerEmpl() {
   const handleCreate = async () => {
     setErrorMessage("");
     setErrorOpen(false);
-  
+
     if (!form.locationCode || !form.drivewayId || !form.levelId) {
       setErrorMessage("Veuillez remplir tous les champs.");
       setErrorOpen(true);
       return;
     }
-  
+
     const payload = {
-      locationCode: form.locationCode,
+      locationCode: form.locationCode.trim(),
       drivewayId: Number(form.drivewayId),
       levelId: Number(form.levelId),
     };
-  
+
     try {
       setLoading(true);
-  
+
       const response = await fetch("http://147.93.55.68/position/create", {
         method: "POST",
         headers: {
@@ -113,47 +113,49 @@ function CreerEmpl() {
         },
         body: JSON.stringify(payload),
       });
-  
+
       let data = null;
-  
+
       try {
         data = await response.json();
       } catch {
         data = null;
       }
-  
+
       if (!response.ok) {
-        const message =
+        let backendMessage =
           data?.message ||
           data?.error ||
           data?.details ||
           (typeof data === "string" ? data : null) ||
           "Erreur lors de la création.";
-  
-        throw new Error(message);
+
+        if (backendMessage.toLowerCase().includes("bad request")) {
+          backendMessage = "Données invalides. Vérifiez les champs.";
+        }
+
+        throw new Error(backendMessage);
       }
-  
+
       setSuccessOpen(true);
       setTimeout(() => {
         setSuccessOpen(false);
         navigate("/gestion-empl");
       }, 1500);
-  
     } catch (error) {
       console.error("Erreur API :", error);
-  
-      let message = error.message;
-  
+
+      let message = error.message || "Erreur lors de la création.";
+
       if (
         message.toLowerCase().includes("internal") ||
         message.toLowerCase().includes("500")
       ) {
         message = "Erreur serveur. Vérifiez les données saisies.";
       }
-  
+
       setErrorMessage(message);
       setErrorOpen(true);
-  
     } finally {
       setLoading(false);
     }
@@ -286,6 +288,7 @@ function CreerEmpl() {
 
       <button
         onClick={goBack}
+        disabled={loading || loadingOptions}
         className="px-[100px] py-[20px] mt-[40px] text-[20px] font-bold bg-[#D9D9D9] rounded-[50px]"
       >
         Retour à la gestion des emplacements

@@ -218,7 +218,7 @@ function Input({ name, value, onChange, type = "text" }) {
       value={value}
       onChange={onChange}
       placeholder="..."
-      className="w-[120px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center"
+      className="w-[120px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
     />
   );
 }

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import plusIcon from "../../assets/saisie-stocks-plus.png";
 
@@ -22,6 +22,21 @@ function CreerCommd() {
     ],
   });
 
+  const [importForm, setImportForm] = useState({
+    orderDate: "",
+    customerID: "",
+    priority: false,
+    typeID: "",
+  });
+
+  const [supportTypes, setSupportTypes] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [customers, setCustomers] = useState([]);
+
+  const [loadingSupportTypes, setLoadingSupportTypes] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingCustomers, setLoadingCustomers] = useState(true);
+
   const [manualLoading, setManualLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
 
@@ -33,6 +48,120 @@ function CreerCommd() {
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+
+  useEffect(() => {
+    const fetchSupportTypes = async () => {
+      try {
+        setLoadingSupportTypes(true);
+
+        const response = await fetch(
+          "http://147.93.55.68/supportType/all?page=0&size=100",
+          { method: "GET" }
+        );
+
+        if (!response.ok) {
+          throw new Error("Erreur récupération types supports");
+        }
+
+        const data = await response.json();
+        const types = Array.isArray(data) ? data : data.content || [];
+
+        setSupportTypes(types);
+      } catch (error) {
+        console.warn("Impossible de charger les types de supports :", error);
+        setSupportTypes([]);
+      } finally {
+        setLoadingSupportTypes(false);
+      }
+    };
+
+    const fetchProducts = async () => {
+      try {
+        setLoadingProducts(true);
+
+        const response = await fetch(
+          "http://147.93.55.68/product/all?page=0&size=200",
+          { method: "GET" }
+        );
+
+        if (!response.ok) {
+          throw new Error("Erreur récupération produits");
+        }
+
+        const data = await response.json();
+        const productList = Array.isArray(data) ? data : data.content || [];
+
+        setProducts(productList);
+      } catch (error) {
+        console.warn("Impossible de charger les produits :", error);
+        setProducts([]);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    const fetchCustomers = async () => {
+      try {
+        setLoadingCustomers(true);
+
+        const response = await fetch(
+          "http://147.93.55.68/user/all?page=0&size=200",
+          { method: "GET" }
+        );
+
+        if (!response.ok) {
+          throw new Error("Erreur récupération utilisateurs");
+        }
+
+        const data = await response.json();
+        const userList = Array.isArray(data) ? data : data.content || [];
+
+        setCustomers(userList);
+      } catch (error) {
+        console.warn("Impossible de charger les utilisateurs :", error);
+        setCustomers([]);
+      } finally {
+        setLoadingCustomers(false);
+      }
+    };
+
+    fetchSupportTypes();
+    fetchProducts();
+    fetchCustomers();
+  }, []);
+
+  const getSupportTypeLabel = (typeId) => {
+    if (!typeId) return "";
+
+    const foundType = supportTypes.find(
+      (type) => String(type.typeID) === String(typeId)
+    );
+
+    return foundType?.label || "";
+  };
+
+  const getProductLibel = (productID) => {
+    if (!productID) return "";
+
+    const foundProduct = products.find(
+      (product) =>
+        String(product.productID ?? product.id) === String(productID)
+    );
+
+    return foundProduct?.libel || "";
+  };
+
+  const getCustomerName = (customerID) => {
+    if (!customerID) return "";
+
+    const foundCustomer = customers.find(
+      (customer) => String(customer.id) === String(customerID)
+    );
+
+    if (!foundCustomer) return "";
+
+    return `${foundCustomer.firstname ?? ""} ${foundCustomer.lastname ?? ""}`.trim();
+  };
 
   const showSuccess = (message) => {
     setSuccessMessage(message);
@@ -55,6 +184,15 @@ function CreerCommd() {
     const { name, value, type, checked } = e.target;
 
     setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleImportMainChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    setImportForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
@@ -180,15 +318,19 @@ function CreerCommd() {
     return true;
   };
 
+  const validateImportForm = () => {
+    return (
+      importForm.orderDate &&
+      importForm.customerID &&
+      importForm.typeID &&
+      selectedFile
+    );
+  };
+
   const extractBackendMessage = async (response, defaultMessage) => {
     try {
       const data = await response.json();
-      return (
-        data?.message ||
-        data?.error ||
-        data?.details ||
-        defaultMessage
-      );
+      return data?.message || data?.error || data?.details || defaultMessage;
     } catch {
       try {
         const text = await response.text();
@@ -213,7 +355,7 @@ function CreerCommd() {
       customerID: Number(form.customerID),
       priority: form.priority,
       supports: form.supports.map((support) => ({
-        typeId: Number(support.typeId),
+        typeID: Number(support.typeId),
         products: support.products.map((product) => ({
           productID: Number(product.productID),
           quantity: Number(product.quantity),
@@ -242,16 +384,13 @@ function CreerCommd() {
 
       showSuccess("Commande créée avec succès !");
     } catch (error) {
-      console.warn("Erreur création commande :", error);
-
       let message = error.message || "Erreur lors de la création de la commande.";
 
       if (
         message.toLowerCase().includes("internal") ||
         message.toLowerCase().includes("500")
       ) {
-        message =
-          "Erreur serveur. Vérifiez les informations de la commande.";
+        message = "Erreur serveur. Vérifiez les informations de la commande.";
       }
 
       showError(message);
@@ -281,8 +420,11 @@ function CreerCommd() {
   };
 
   const handleImportCsv = async () => {
-    if (!selectedFile) {
-      showError("Veuillez d'abord sélectionner un fichier CSV.");
+    setErrorMessage("");
+    setErrorOpen(false);
+
+    if (!validateImportForm()) {
+      showError("Veuillez remplir tous les champs de l’import CSV.");
       return;
     }
 
@@ -290,6 +432,10 @@ function CreerCommd() {
       setImportLoading(true);
 
       const formData = new FormData();
+      formData.append("orderDate", importForm.orderDate);
+      formData.append("customerID", String(Number(importForm.customerID)));
+      formData.append("priority", String(importForm.priority));
+      formData.append("typeID", String(Number(importForm.typeID)));
       formData.append("file", selectedFile);
 
       const response = await fetch("http://147.93.55.68/order/import", {
@@ -307,8 +453,6 @@ function CreerCommd() {
 
       showSuccess("Import CSV réussi !");
     } catch (error) {
-      console.warn("Erreur import commande :", error);
-
       let message = error.message || "Erreur lors de l’import CSV.";
 
       if (
@@ -343,13 +487,29 @@ function CreerCommd() {
               onChange={handleMainChange}
             />
 
-            <Input
-              label="ID client"
-              name="customerID"
-              type="number"
-              value={form.customerID}
-              onChange={handleMainChange}
-            />
+            <div className="flex flex-col items-center">
+              <Input
+                label="ID client"
+                name="customerID"
+                type="number"
+                value={form.customerID}
+                onChange={handleMainChange}
+              />
+
+              {!loadingCustomers && getCustomerName(form.customerID) && (
+                <p className="mt-[10px] text-[16px] font-bold text-[#3A0F24]">
+                  {getCustomerName(form.customerID)}
+                </p>
+              )}
+
+              {!loadingCustomers &&
+                form.customerID &&
+                !getCustomerName(form.customerID) && (
+                  <p className="mt-[10px] text-[16px] font-bold text-red-600">
+                    Client introuvable
+                  </p>
+                )}
+            </div>
 
             <div className="flex flex-col items-center justify-center">
               <label className="text-[18px] font-bold mb-[12px]">
@@ -387,7 +547,7 @@ function CreerCommd() {
                   )}
                 </div>
 
-                <div className="mb-[20px]">
+                <div className="mb-[20px] flex flex-col items-center">
                   <Input
                     label="Type ID"
                     type="number"
@@ -396,6 +556,20 @@ function CreerCommd() {
                       handleSupportChange(supportIndex, "typeId", e.target.value)
                     }
                   />
+
+                  {!loadingSupportTypes && getSupportTypeLabel(support.typeId) && (
+                    <p className="mt-[10px] text-[16px] font-bold text-[#3A0F24]">
+                      {getSupportTypeLabel(support.typeId)}
+                    </p>
+                  )}
+
+                  {!loadingSupportTypes &&
+                    support.typeId &&
+                    !getSupportTypeLabel(support.typeId) && (
+                      <p className="mt-[10px] text-[16px] font-bold text-red-600">
+                        Type introuvable
+                      </p>
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-[15px]">
@@ -404,19 +578,35 @@ function CreerCommd() {
                       key={productIndex}
                       className="flex justify-center items-end gap-[20px] flex-wrap"
                     >
-                      <Input
-                        label="Product ID"
-                        type="number"
-                        value={product.productID}
-                        onChange={(e) =>
-                          handleProductChange(
-                            supportIndex,
-                            productIndex,
-                            "productID",
-                            e.target.value
-                          )
-                        }
-                      />
+                      <div className="flex flex-col items-center">
+                        <Input
+                          label="Product ID"
+                          type="number"
+                          value={product.productID}
+                          onChange={(e) =>
+                            handleProductChange(
+                              supportIndex,
+                              productIndex,
+                              "productID",
+                              e.target.value
+                            )
+                          }
+                        />
+
+                        {!loadingProducts && getProductLibel(product.productID) && (
+                          <p className="mt-[10px] text-[16px] font-bold text-[#3A0F24]">
+                            {getProductLibel(product.productID)}
+                          </p>
+                        )}
+
+                        {!loadingProducts &&
+                          product.productID &&
+                          !getProductLibel(product.productID) && (
+                            <p className="mt-[10px] text-[16px] font-bold text-red-600">
+                              Produit introuvable
+                            </p>
+                          )}
+                      </div>
 
                       <Input
                         label="Quantité"
@@ -483,41 +673,116 @@ function CreerCommd() {
           Import d’une commande par CSV
         </h2>
 
-        <label className="font-[800] text-[20px]">
-          Ajouter un fichier CSV
-        </label>
-
-        <button
-          onClick={handleClick}
-          type="button"
-          className="flex flex-col items-center gap-2 px-[220px] py-[60px] mt-[30px] text-[20px] font-bold rounded-[40px] bg-[#D9D9D9]"
-        >
-          {fileName ? (
-            <span>{fileName}</span>
-          ) : (
-            <img
-              src={plusIcon}
-              alt="Plus Icon"
-              className="w-[52px] h-[52px] m-[20px]"
+        <div className="w-full max-w-[1100px] border border-gray-300 rounded-[30px] p-[30px] bg-[#ffffff]">
+          <div className="flex justify-center gap-[30px] flex-wrap mb-[30px]">
+            <Input
+              label="Date commande"
+              name="orderDate"
+              type="date"
+              value={importForm.orderDate}
+              onChange={handleImportMainChange}
             />
-          )}
-        </button>
 
-        <input
-          type="file"
-          accept=".csv"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          style={{ display: "none" }}
-        />
+            <div className="flex flex-col items-center">
+              <Input
+                label="ID client"
+                name="customerID"
+                type="number"
+                value={importForm.customerID}
+                onChange={handleImportMainChange}
+              />
 
-        <button
-          onClick={handleImportCsv}
-          disabled={importLoading}
-          className="flex flex-col items-center gap-2 px-[100px] py-[30px] mt-[40px] text-[20px] font-[800] rounded-[80px] bg-[#D9D9D9] disabled:opacity-50"
-        >
-          {importLoading ? "Import..." : "Importer le CSV"}
-        </button>
+              {!loadingCustomers && getCustomerName(importForm.customerID) && (
+                <p className="mt-[10px] text-[16px] font-bold text-[#3A0F24]">
+                  {getCustomerName(importForm.customerID)}
+                </p>
+              )}
+
+              {!loadingCustomers &&
+                importForm.customerID &&
+                !getCustomerName(importForm.customerID) && (
+                  <p className="mt-[10px] text-[16px] font-bold text-red-600">
+                    Client introuvable
+                  </p>
+                )}
+            </div>
+
+            <div className="flex flex-col items-center">
+              <Input
+                label="Type ID"
+                name="typeID"
+                type="number"
+                value={importForm.typeID}
+                onChange={handleImportMainChange}
+              />
+
+              {!loadingSupportTypes && getSupportTypeLabel(importForm.typeID) && (
+                <p className="mt-[10px] text-[16px] font-bold text-[#3A0F24]">
+                  {getSupportTypeLabel(importForm.typeID)}
+                </p>
+              )}
+
+              {!loadingSupportTypes &&
+                importForm.typeID &&
+                !getSupportTypeLabel(importForm.typeID) && (
+                  <p className="mt-[10px] text-[16px] font-bold text-red-600">
+                    Type introuvable
+                  </p>
+                )}
+            </div>
+
+            <div className="flex flex-col items-center justify-center">
+              <label className="text-[18px] font-bold mb-[12px]">
+                Prioritaire
+              </label>
+              <input
+                type="checkbox"
+                name="priority"
+                checked={importForm.priority}
+                onChange={handleImportMainChange}
+                className="w-[28px] h-[28px]"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <label className="font-[800] text-[20px]">
+              Ajouter un fichier CSV
+            </label>
+
+            <button
+              onClick={handleClick}
+              type="button"
+              className="flex flex-col items-center gap-2 px-[220px] py-[60px] mt-[30px] text-[20px] font-bold rounded-[40px] bg-[#D9D9D9]"
+            >
+              {fileName ? (
+                <span>{fileName}</span>
+              ) : (
+                <img
+                  src={plusIcon}
+                  alt="Plus Icon"
+                  className="w-[52px] h-[52px] m-[20px]"
+                />
+              )}
+            </button>
+
+            <input
+              type="file"
+              accept=".csv"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+
+            <button
+              onClick={handleImportCsv}
+              disabled={importLoading}
+              className="flex flex-col items-center gap-2 px-[100px] py-[30px] mt-[40px] text-[20px] font-[800] rounded-[80px] bg-[#D9D9D9] disabled:opacity-50"
+            >
+              {importLoading ? "Import..." : "Importer le CSV"}
+            </button>
+          </div>
+        </div>
       </div>
 
       {successMessage && (
@@ -579,7 +844,7 @@ function Input({ label, name, value, onChange, type = "text" }) {
         value={value}
         onChange={onChange}
         placeholder="..."
-        className="w-[180px] px-[18px] py-[18px] border border-gray-300 rounded-[40px] bg-[#CCB5A5] text-center"
+        className="w-[180px] px-[18px] py-[18px] border border-gray-300 rounded-[40px] bg-[#CCB5A5] text-center text-[20px]"
       />
     </div>
   );

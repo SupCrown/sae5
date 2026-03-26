@@ -87,7 +87,7 @@ function GestionEmpl() {
       const response = await fetch(
         `http://147.93.55.68/position/delete/${rowToDelete.id}`,
         {
-          method: "POST",
+          method: "DELETE",
         }
       );
 
