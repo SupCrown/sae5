@@ -206,9 +206,19 @@ public class OrderController {
     @Authorize(roles = Role.ADMIN)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
-        if (!orderRepository.existsById(id)) {
+        Optional<Order> orderOpt = orderRepository.findById(id);
+
+        if (orderOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        Order order = orderOpt.get();
+
+        Iterable<Support> supports = supportRepository.findAllByOrder(order);
+        for (Support support : supports) {
+            List<Contain> contains = containRepository.findBySupport(support);
+            containRepository.deleteAll(contains);
+        }
+        supportRepository.deleteAll(supports);
 
         try {
             orderRepository.deleteById(id);
