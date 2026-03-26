@@ -224,7 +224,7 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `page` : valeur par défaut `0`.
     - `size` : valeur par défaut `20`.
 
-#### CRUD emplacements / allées / niveaux
+#### CRUD emplacements / zone / allées / niveaux
 
 ##### Emplacements
 - `/position/create` **[POST]** / **SUPERVISEUR** : **créer** un emplacement :
@@ -233,7 +233,25 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     - `levelId` : identifiant du niveau.
 - `/position/update/{id}` **[POST]** / **SUPERVISEUR** : **modifier** un emplacement.
 - `/position/delete/{id}` **[DELETE]** / **SUPERVISEUR** : **supprimer** un emplacement.
-- `/position/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un emplacement.
+- `/position/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un emplacement : 
+```json
+{
+    "locationID": "Identifiant de l'emplacement",
+    "locationCode": "Code de l'emplacment",
+    "driveway": {
+        "drivewayID": "Identifiant de l'allée"1,
+        "name": "Nom de l'allée",
+        "zone": {
+            "zoneID": "Identifiant de la zone",
+            "zoneName": "Nom de la zone"
+        }
+    },
+    "level": {
+        "levelID": "Identifiant du niveau",
+        "levelValue": "Valeur du niveau"
+    }
+}
+```
 - `/position/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les emplacements ordonnés par des pages :
     - `page` : valeur par défaut `0`.
     - `size` : valeur par défaut `20`.
