@@ -1,5 +1,3 @@
-import { log } from "three";
-
 export const authService = {
   login: async (pin) => {
     const response = await fetch(`/api/login`, {
@@ -11,6 +9,7 @@ export const authService = {
 
     if (response.ok) {
       const data = await response.json();
+      localStorage.setItem("username", data.username);
       return data;
     }
     
@@ -25,6 +24,7 @@ export const authService = {
         method: "POST",
         credentials: "include"
       });
+      localStorage.removeItem("username");
     } catch (err) {
       console.error("Erreur lors de la déconnexion:", err);
     }

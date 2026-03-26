@@ -14,7 +14,6 @@ export default function Sidebar({ closeSidebar }) {
     });
   }, []); // 'admin' ou 'prep'
 
-  console.log("Rôle actuel:", role); // Debug pour vérifier le rôle récupéré
   // Menu principal (Accessible à tous)
   const mainMenuItems = [
     { label: "Accueil", path: "/" },
@@ -79,7 +78,7 @@ export default function Sidebar({ closeSidebar }) {
         </div>
 
         {/* Section Administration - Affichée UNIQUEMENT pour l'admin */}
-        {role === 'ADMIN' && (
+        {role === "ADMIN" && (
           <div className="py-4 border-t border-gray-50">
             <p className="px-8 text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-2">Administration</p>
             {adminMenuItems.map((item) => (

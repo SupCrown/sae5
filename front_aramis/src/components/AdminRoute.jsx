@@ -2,16 +2,31 @@ import { Navigate } from "react-router-dom";
 import { authService } from "../services/authService";
 import { useState, useEffect } from "react";
 
-export const AdminRoute = ({ children }) => {
+export default function AdminRoute ({ children }){
     const [role, setRole] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(null);
 
     useEffect(() => {
-    authService.getRole().then(userRole => {
-        setRole(userRole);
-    });
+        authService.getRole().then(userRole => {
+            setRole(userRole);
+        });
+        authService.isLoggedIn()
+            .then((data) => {
+                setIsLoggedIn(data);
+            })
+            .catch(() => {
+                setIsLoggedIn(false);
+            });
     }, []);
 
-    if (!authService.isLoggedIn()) return <Navigate to="/auth" replace />;
+    if (isLoggedIn === null) {
+        return <div>Vérification de l'authentification...</div>; 
+    }
+    if (!isLoggedIn) return <Navigate to="/auth" replace />;
+    
+    if (role === null) {
+        return <div>Vérification de l'authentification...</div>; 
+    }
     if (role !== "ADMIN") return <Navigate to="/palette" replace />; // Redirige les prep vers leur page
 
     return children;

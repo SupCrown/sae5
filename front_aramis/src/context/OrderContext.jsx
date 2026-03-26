@@ -10,12 +10,11 @@ export const OrderProvider = ({ children }) => {
   const loadOrder = async () => {
     setLoading(true);
     try {
-      const preparateurId = localStorage.getItem("preparateurId") || 1;
+      
       
       const response = await fetch(`/api/order/autoAssign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preparateurId })
         
       });
 
@@ -49,7 +48,7 @@ export const OrderProvider = ({ children }) => {
       console.error("Erreur lors de l'étape suivante:", err);
     }
   };
-
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {

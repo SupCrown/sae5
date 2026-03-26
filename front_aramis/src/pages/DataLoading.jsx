@@ -23,10 +23,7 @@ export default function DataLoading() {
     const run = async () => {
       try {
         setError(null);
-        const PreparateurID = localStorage.getItem("PreparateurID");
-        const token = localStorage.getItem("token");
         
-        if (!PreparateurID) throw new Error("PreparateurID introuvable.");
 
         const res = await fetch(`/api/order/autoAssign`, {
           method: "POST",
@@ -34,7 +31,6 @@ export default function DataLoading() {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}` // On envoie le token de session
           },
-          body: JSON.stringify({ PreparateurID: parseInt(PreparateurID, 10) }),
           redirect: "manual",
         });
 
