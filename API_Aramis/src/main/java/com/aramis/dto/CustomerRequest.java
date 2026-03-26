@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,9 +21,14 @@ public class CustomerRequest {
     private Integer code;
 
     public Customer toCustomer() {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
         Customer customer = new Customer();
         customer.setCode(code);
         customer.setName(name);
+        customer.setDateCreation(now);
+        customer.setDateModification(now);
+
         return customer;
     }
 }

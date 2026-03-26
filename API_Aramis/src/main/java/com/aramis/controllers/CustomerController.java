@@ -54,7 +54,7 @@ public class CustomerController {
     }
 
     @Authorize(roles = Role.ADMIN)
-    @GetMapping("/create")
+    @PostMapping("/create")
     public ResponseEntity<Object> getAll(@Valid @RequestBody CustomerRequest request) {
         try {
             Customer customer = request.toCustomer();
