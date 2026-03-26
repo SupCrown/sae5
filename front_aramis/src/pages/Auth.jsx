@@ -37,12 +37,21 @@ export default function AuthScreen() {
      setStatus("loading");
     
      try {
-       await authService.login(pin);
-       navigate("/palette");
-     } catch (err) {
-       if (err.message === "Identifiants incorrects") setStatus("error401");
-       else if (err.message === "Accès refusé") setStatus("error403");
-       else setStatus("errorServer");
+      const user = await authService.login(pin); 
+      
+      const role = user?.role || localStorage.getItem("role");
+
+      console.log("Rôle détecté :", role);
+
+      if (role === "ADMIN") {
+        navigate("/gestion-prep");
+      } else {
+        navigate("/loading"); 
+      }
+    } catch (err) {
+          if (err.message === "Identifiants incorrects") setStatus("error401");
+          else if (err.message === "Accès refusé") setStatus("error403");
+          else setStatus("errorServer");
 
 
        setCodes(["", "", ""]);

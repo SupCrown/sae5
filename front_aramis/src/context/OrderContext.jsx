@@ -1,63 +1,47 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const OrderContext = createContext();
 
 export const OrderProvider = ({ children }) => {
   const [currentOrder, setCurrentOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const loadOrder = async () => {
-    setLoading(true);
-    try {
-      
-      
-      const response = await fetch(`/api/order/autoAssign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        
-      });
-
-      if (response.status === 200 || response.status === 307) {
-        const data = await response.json();
-        setCurrentOrder(data); // Contient l'orderId et la première étape
-      } else if (response.status === 204) {
-        setCurrentOrder(null); // Pas de commande disponible
-      }
-    } catch (err) {
-      setError("Erreur de connexion serveur");
-    } finally {
-      setLoading(false);
-    }
+  // Pour injecter la commande depuis DataLoading
+  const setOrderManually = (orderData) => {
+    setCurrentOrder(orderData);
   };
 
-  // 2. Passer à l'étape suivante (ou signaler un manque)
+  // Validation de l'étape (Update commande)
   const validateStep = async (missingItem = false) => {
     if (!currentOrder) return;
 
     try {
+      // Respect de la spec : /order/nextStep?orderID=xxx&missingItem=yyy en GET
       const response = await fetch(
-        `http://147.93.55.68/order/nextStep?orderId=${currentOrder.orderId}${missingItem ? `&missingItem=true` : ''}`,
-        { method: 'POST' }
+        `/api/order/nextStep?orderID=${currentOrder.orderID}&missingItem=${missingItem}`,
+        { method: 'GET' }
       );
+      
+      if (!response.ok) throw new Error("Erreur mise à jour étape");
       
       const nextData = await response.json();
       setCurrentOrder(nextData); 
       return nextData;
     } catch (err) {
-      console.error("Erreur lors de l'étape suivante:", err);
+      console.error("Erreur nextStep:", err);
+      setError("Impossible de charger l'étape suivante");
     }
   };
-  
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      loadOrder(); // Ne s'exécute que si on est connecté
-    }
-  }, []);
 
   return (
-    <OrderContext.Provider value={{ currentOrder, loading, error, validateStep, reloadOrder: loadOrder }}>
+    <OrderContext.Provider value={{ 
+      currentOrder, 
+      loading, 
+      error, 
+      validateStep, 
+      setOrderManually 
+    }}>
       {children}
     </OrderContext.Provider>
   );

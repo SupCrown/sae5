@@ -23,11 +23,11 @@ export default function AdminRoute ({ children }){
         return <div>Vérification de l'authentification...</div>; 
     }
     if (!isLoggedIn) return <Navigate to="/auth" replace />;
-    
+
     if (role === null) {
         return <div>Vérification de l'authentification...</div>; 
     }
-    if (role !== "ADMIN") return <Navigate to="/palette" replace />; // Redirige les prep vers leur page
+    if (role !== "ADMIN") return <Navigate to="/gestion-prep" replace />; // Redirige les prep vers leur page
 
     return children;
 };
