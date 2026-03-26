@@ -1,11 +1,20 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { authService } from "../services/authService";
+import { useState, useEffect } from "react";
 
 export default function Sidebar({ closeSidebar }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const role = authService.getRole(); // 'admin' ou 'prep'
 
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    authService.getRole().then(userRole => {
+      setRole(userRole);
+    });
+  }, []); // 'admin' ou 'prep'
+
+  console.log("Rôle actuel:", role); // Debug pour vérifier le rôle récupéré
   // Menu principal (Accessible à tous)
   const mainMenuItems = [
     { label: "Accueil", path: "/" },
@@ -70,7 +79,7 @@ export default function Sidebar({ closeSidebar }) {
         </div>
 
         {/* Section Administration - Affichée UNIQUEMENT pour l'admin */}
-        {role === 'admin' && (
+        {role === 'ADMIN' && (
           <div className="py-4 border-t border-gray-50">
             <p className="px-8 text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-2">Administration</p>
             {adminMenuItems.map((item) => (
