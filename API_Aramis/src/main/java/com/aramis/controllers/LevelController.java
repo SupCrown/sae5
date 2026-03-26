@@ -34,12 +34,14 @@ public class LevelController {
         this.levelRepository = levelRepository;
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<LevelResponse> getById(@PathVariable Integer id) {
         Optional<Level> level = levelRepository.findById(id);
         return level.map(value -> ResponseEntity.ok(new LevelResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
     public ResponseEntity<Iterable<LevelResponse>> getAll(@PageableDefault(size = 20, sort = "levelID") Pageable pageable) {
         var levels = levelRepository.findAll(pageable);

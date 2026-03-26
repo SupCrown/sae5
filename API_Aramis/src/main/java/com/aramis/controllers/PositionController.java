@@ -39,6 +39,7 @@ public class PositionController {
         this.levelRepository = levelRepository;
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/create")
     public ResponseEntity<Object> create(@RequestBody LocationRequest request) {
         Optional<Driveway> drivewayOpt = drivewayRepository.findById(request.getDrivewayId());
@@ -71,6 +72,7 @@ public class PositionController {
         }
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/update/{id}")
     public ResponseEntity<Object> update(@PathVariable Integer id, @RequestBody LocationRequest request) {
         Optional<Location> existingOpt = locationRepository.findById(id);
@@ -105,6 +107,7 @@ public class PositionController {
         }
     }
 
+    @Authorize(roles = Role.ADMIN)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
         if (!locationRepository.existsById(id)) {
@@ -120,12 +123,14 @@ public class PositionController {
         }
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<LocationResponse> getById(@PathVariable Integer id) {
         Optional<Location> location = locationRepository.findById(id);
         return location.map(value -> ResponseEntity.ok(new LocationResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
     public ResponseEntity<Iterable<LocationResponse>> getAll(@PageableDefault(size = 20, sort = "locationID") Pageable pageable) {
         var locations = locationRepository.findAll(pageable);

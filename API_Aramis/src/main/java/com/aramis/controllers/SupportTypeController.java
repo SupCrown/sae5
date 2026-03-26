@@ -1,11 +1,13 @@
 package com.aramis.controllers;
 
+import com.aramis.annotations.Authorize;
 import com.aramis.dto.DrivewayResponse;
 import com.aramis.dto.SupportTypeResponse;
 import com.aramis.models.driveway.Driveway;
 import com.aramis.models.driveway.DrivewayRepository;
 import com.aramis.models.supportType.SupportType;
 import com.aramis.models.supportType.SupportTypeRepository;
+import com.aramis.utils.Role;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -30,12 +32,14 @@ public class SupportTypeController {
         this.supportTypeRepository = supportTypeRepository;
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<SupportTypeResponse> getById(@PathVariable Integer id) {
         Optional<SupportType> type = supportTypeRepository.findById(id);
         return type.map(value -> ResponseEntity.ok(new SupportTypeResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
     public ResponseEntity<Iterable<SupportTypeResponse>> getAll(@PageableDefault(size = 20, sort = "typeID") Pageable pageable) {
         var types = supportTypeRepository.findAll(pageable);

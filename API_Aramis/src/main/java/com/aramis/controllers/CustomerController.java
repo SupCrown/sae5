@@ -1,5 +1,6 @@
 package com.aramis.controllers;
 
+import com.aramis.annotations.Authorize;
 import com.aramis.dto.CustomerRequest;
 import com.aramis.dto.CustomerResponse;
 import com.aramis.dto.DrivewayResponse;
@@ -7,6 +8,7 @@ import com.aramis.models.customer.Customer;
 import com.aramis.models.customer.CustomerRepository;
 import com.aramis.models.driveway.Driveway;
 import com.aramis.models.driveway.DrivewayRepository;
+import com.aramis.utils.Role;
 import jakarta.validation.Valid;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -31,12 +33,14 @@ public class CustomerController {
         this.customerRepository = customerRepository;
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponse> getById(@PathVariable Integer id) {
         Optional<Customer> customer = customerRepository.findById(id);
         return customer.map(value -> ResponseEntity.ok(new CustomerResponse(value))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
     public ResponseEntity<Iterable<CustomerResponse>> getAll(@PageableDefault(size = 20, sort = "customerID") Pageable pageable) {
         var customers = customerRepository.findAll(pageable);
@@ -49,6 +53,7 @@ public class CustomerController {
         return ResponseEntity.ok(customersResponses);
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/create")
     public ResponseEntity<Object> getAll(@Valid @RequestBody CustomerRequest request) {
         try {
@@ -63,6 +68,7 @@ public class CustomerController {
         }
     }
 
+    @Authorize(roles = Role.ADMIN)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
         if (!customerRepository.existsById(id)) {

@@ -41,6 +41,7 @@ public class UserController {
         this.containRepository = containRepository;
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
     public ResponseEntity<List<UserResponse>> getUsers(@PageableDefault(size = 20, sort = {"lastname", "firstname"}) Pageable pageable) {
         var users = userRepository.findAll(pageable);
@@ -52,6 +53,7 @@ public class UserController {
         return ResponseEntity.ok(userResponseList);
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Integer id) {
         return userRepository.findById(id)
@@ -59,6 +61,7 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/create")
     public ResponseEntity<Object> createUser(@Valid @RequestBody CreateUserRequest request) {
         Optional<User> existingLogin = userRepository.findByLogin(request.getLogin());
@@ -94,6 +97,7 @@ public class UserController {
 
     }
 
+    @Authorize(roles = Role.ADMIN)
     @PostMapping("/update/{id}")
     public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody CreateUserRequest request) {
         Optional<User> existingLogin = userRepository.findByLogin(request.getLogin());
@@ -122,6 +126,7 @@ public class UserController {
         }
     }
 
+    @Authorize(roles = Role.ADMIN)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
         if (!userRepository.existsById(id)) {
@@ -137,6 +142,7 @@ public class UserController {
         }
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/stats/{id}")
     public ResponseEntity<Object> GetUserStats(@PathVariable Integer id) {
         try {
@@ -154,6 +160,7 @@ public class UserController {
         }
     }
 
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/stats")
     public ResponseEntity<Object> GetAllUsersStats() {
         try {
