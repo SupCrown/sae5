@@ -60,7 +60,7 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 
 #### Attribution des commandes et gestion du parcours de collecte
 
-- `/order/autoAssign` **[GET]** : Assignation d'une commande automatiquemenet.
+- `/order/autoAssign` **[GET]** / **PREPARATEUR** : Assignation d'une commande automatiquemenet.
     - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente.
         - `200` : la commande est assignée,
         - `204` : aucune commande à assigner a été trouvée.
@@ -110,8 +110,8 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
     "location": "Empalcement du produit"
 }
 ```
-- `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[GET]** : Assignation d'une commande manuellement en fonction d'un id d'utilisateur et renvoi de la première étape.
-- `/order/nextStep?orderID=xxx?missingItem=yyy` **[GET]** : Udapte d'une commande et renvoi de l'étape suivante :
+- `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[GET]** / **SUPERVISEUR** : Assignation d'une commande manuellement en fonction d'un id d'utilisateur et renvoi de la première étape.
+- `/order/nextStep?orderID=xxx?missingItem=yyy` **[GET]** / **PREPARATEUR** : Udapte d'une commande et renvoi de l'étape suivante :
 ```json
 {
     "type": "Type de retour : NEW_SUPPORT, PICK_PRODUCT, FINISHED, NO_ORDERS, QUEUED",
