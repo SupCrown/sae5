@@ -60,15 +60,83 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 
 #### Attribution des commandes et gestion du parcours de collecte
 
-- `/order/autoAssign` **[POST]** : Assignation d'une commande automatiquemenet (au chargement de l'application) en f° d'un PreparateurID et renvoi de la première étape.
+- `/order/autoAssign` **[GET]** : Assignation d'une commande automatiquemenet.
     - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente.
         - `200` : la commande est assignée,
         - `204` : aucune commande à assigner a été trouvée.
-    - **Sinon** : récupération d'une commande en cours en cas de crash. 
+    - **Sinon** : récupération d'une commande en cours en cas de crash et renvoie de la dernière étape ainsi que tous les produits déjà placés.
         - `307` : la prépration de la commande n'avait pas été finalisée à la dernière fermeture de l'application.
-- `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : Assignation d'une commande manuellement en fonction d'un id d'utilisateur et renvoi de la première étape.
-- `/order/nextStep?orderID=xxx?missingItem=yyy` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante.
-    - Si la **quantité validée == quantité servie** OU s'il y a **au moins un colis manquant** sur la quantité validée.
+```json
+{
+    "type": "Type de retour : NEW_SUPPORT, PICK_PRODUCT, FINISHED, NO_ORDERS, QUEUED",
+    "step": {
+        "productId": "ID du produit de l'étape",
+        "x": "Abscisse de la boite",
+        "y": "Oronnée de la boite",
+        "z": "Altitude de la boite",
+        "dx": "Largeur de la boite",
+        "dy": "Profondeur de la boite",
+        "dz": "Hauteur de la boite",
+        "surfaces": [
+            {
+                "label": "Surfface sur laquelle est posée la boite",
+                "attributes": {}
+            }
+        ]
+    },
+    "placedProducts": [
+        {
+            "productId": "ID du produite déjà placé",
+            "x": "Abscisse de la boite",
+            "y": "Oronnée de la boite",
+            "z": "Altitude de la boite",
+            "dx": "Largeur de la boite",
+            "dy": "Profondeur de la boite",
+            "dz": "Hauteur de la boite",
+            "surfaces": [
+                {
+                    "label": "Surfface sur laquelle est posée la boite",
+                    "attributes": {}
+                }
+            ]
+        },
+        {
+            ...
+        }
+    ],
+    "placedQuantity": "Quantité déjà posée",
+    "quantityToPlace": "Quantité à poser",
+    "orderID": "ID de la commande courante",
+    "location": "Empalcement du produit"
+}
+```
+- `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[GET]** : Assignation d'une commande manuellement en fonction d'un id d'utilisateur et renvoi de la première étape.
+- `/order/nextStep?orderID=xxx?missingItem=yyy` **[GET]** : Udapte d'une commande et renvoi de l'étape suivante :
+```json
+{
+    "type": "Type de retour : NEW_SUPPORT, PICK_PRODUCT, FINISHED, NO_ORDERS, QUEUED",
+    "step": {
+        "productId": "ID du produit de l'étape",
+        "x": "Abscisse de la boite",
+        "y": "Oronnée de la boite",
+        "z": "Altitude de la boite",
+        "dx": "Largeur de la boite",
+        "dy": "Profondeur de la boite",
+        "dz": "Hauteur de la boite",
+        "surfaces": [
+            {
+                "label": "Surfface sur laquelle est posée la boite",
+                "attributes": {}
+            }
+        ]
+    },
+    "placedProducts": null,
+    "placedQuantity": "Quantité déjà posée",
+    "quantityToPlace": "Quantité à poser",
+    "orderID": "ID de la commande courante",
+    "location": "Empalcement du produit"
+}
+```
 
 #### Calcul et envoi des statistiques pour superviseurs et préparateurs
 
