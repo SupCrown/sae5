@@ -315,8 +315,11 @@ public class PickingService {
                         throw new RuntimeException("Commande déjà commencée par un utilisateur.");
                     }
 
-                    if (nextStep == null || nextStep.getType() == PickingTaskResponseType.FINISHED) {
+                    if (nextStep == null) {
                         nextStep = calculateNextProduct(support, false, missingItem);
+                    } else if (nextStep.getType() == PickingTaskResponseType.FINISHED) {
+                        nextStep = calculateNextProduct(support, false, missingItem);
+                        nextStep.setType(PickingTaskResponseType.NEW_SUPPORT);
                     }
                 }
             }
