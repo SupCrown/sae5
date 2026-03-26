@@ -60,9 +60,10 @@ function GestionCommd() {
         setLoading(true);
 
         const response = await fetch(
-          `http://147.93.55.68/order/all?page=${page}&size=${size}`,
+          `/api/order/all?page=${page}&size=${size}`,
           {
             method: "GET",
+            credentials: 'include',
           }
         );
 
@@ -123,9 +124,10 @@ function GestionCommd() {
 
     try {
       const response = await fetch(
-        `http://147.93.55.68/order/delete/${rowToDelete.id}`,
+        `/api/order/delete/${rowToDelete.id}`,
         {
           method: "POST",
+          credentials: 'include',
         }
       );
 

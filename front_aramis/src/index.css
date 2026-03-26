@@ -2,17 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  overflow: hidden !important;
-  display: block !important; /* Annule le flex de Vite */
-}
 
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
+}
+
+body, html, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Empêche les scrolls bizarres */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
@@ -23,4 +23,23 @@ html, body, #root {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
->>>>>>> front_aramis/src/index.css
+
+#root {
+  display: block !important; /* Force le retrait de tout flex global */
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+main {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* On s'assure que le canvas prend bien son parent */
+canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: crosshair !important;
+}

@@ -39,8 +39,9 @@ function ModifCommd() {
       try {
         setLoading(true);
 
-        const response = await fetch(`http://147.93.55.68/order/${id}`, {
+        const response = await fetch(`/api/order/${id}`, {
           method: "GET",
+          credentials: 'include',
         });
 
         if (!response.ok) {
@@ -227,11 +228,12 @@ function ModifCommd() {
     try {
       setSaving(true);
 
-      const response = await fetch(`http://147.93.55.68/order/update/${id}`, {
+      const response = await fetch(`/api/order/update/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 

@@ -49,12 +49,13 @@ function CreerPrep() {
     try {
       setLoading(true);
 
-      const response = await fetch("http://147.93.55.68/user/create", {
+      const response = await fetch("/api/user/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
 
       let data = null;

@@ -38,7 +38,9 @@ function InfosStocks() {
       try {
         setLoading(true);
 
-        const response = await fetch(`http://147.93.55.68/product/${id}`);
+        const response = await fetch(`/api/product/${id}`, {
+          credentials: 'include',
+        });
 
         if (!response.ok) {
           throw new Error("API indisponible");
@@ -124,13 +126,12 @@ function InfosStocks() {
     }
 
     try {
-      setActionLoading(true);
-
-      const response = await fetch("http://147.93.55.68/product/add", {
+      const response = await fetch("/api/product/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify({
           productID: Number(id),
           quantityToAdd: qty,
@@ -192,13 +193,12 @@ function InfosStocks() {
     }
 
     try {
-      setActionLoading(true);
-
-      const response = await fetch("http://147.93.55.68/product/take", {
+      const response = await fetch("/api/product/take", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify({
           productID: Number(id),
           quantityToTake: qty,

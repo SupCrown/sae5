@@ -33,8 +33,9 @@ function Stat() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("http://147.93.55.68/user/stats", {
+        const response = await fetch("/api/user/stats", {
           method: "GET",
+          credentials: 'include',
         });
 
         if (!response.ok) {

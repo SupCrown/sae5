@@ -64,12 +64,13 @@ function CreerStocks() {
     try {
       setLoading(true);
 
-      const response = await fetch("http://147.93.55.68/product/create", {
+      const response = await fetch("/api/product/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
 
       if (!response.ok) {
