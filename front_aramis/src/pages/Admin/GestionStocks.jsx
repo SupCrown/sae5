@@ -68,9 +68,10 @@ function GestionStocks() {
         setLoading(true);
 
         const response = await fetch(
-          `http://147.93.55.68/product/all?page=${page}&size=${size}`,
+          `/api/product/all?page=${page}&size=${size}`,
           {
             method: "GET",
+            credentials: 'include',
           }
         );
 
@@ -124,9 +125,10 @@ function GestionStocks() {
 
     try {
       const response = await fetch(
-        `http://147.93.55.68/product/delete/${rowToDelete.id}`,
+        `/api/product/delete/${rowToDelete.id}`,
         {
           method: "DELETE",
+          credentials: 'include',
         }
       );
 

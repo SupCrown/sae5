@@ -1,10 +1,12 @@
 import React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
-import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Palette from "./pages/palette";
 import StartCommande from "./pages/StartCommande";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { authService } from "./services/authService";
+
+// Pages Admin
 import GestionEmpl from "./pages/Admin/GestionEmpl.jsx";
 import ModifEmpl from "./pages/Admin/ModifEmpl.jsx";
 import CreerEmpl from "./pages/Admin/CreerEmpl.jsx";
@@ -20,138 +22,51 @@ import InfosStocks from "./pages/Admin/InfosStocks.jsx";
 import Stat from "./pages/Admin/Stat.jsx";
 import Listen from "./pages/ListenPage.jsx";
 
+// Composant pour protéger les routes Admin
+const AdminRoute = ({ children }) => {
+  const token = authService.getToken();
+  const role = authService.getRole();
+  
+  if (!token) return <Navigate to="/auth" replace />;
+  if (role !== 'admin') return <Navigate to="/palette" replace />;
+  
+  return children;
+};
 
 export default function AppRouter() {
- return (
-   <Routes>
-     {/* Route publique */}
-     <Route path="/auth" element={<Auth />} />
+  return (
+    <Routes>
+      {/* Route publique */}
+      <Route path="/auth" element={<Auth />} />
 
+      {/* Routes Utilisateurs & Prép (Communes) */}
+      {/* 2. Route Racine : Redirige vers Palette SI connecté, sinon vers Auth via ProtectedRoute */}
+      <Route path="/" element={<ProtectedRoute><Navigate to="/palette" replace /></ProtectedRoute>} />
+      <Route path="/palette" element={<ProtectedRoute><Palette /></ProtectedRoute>} />
+      <Route path="/start" element={<ProtectedRoute><StartCommande /></ProtectedRoute>} />
+      <Route path="/listen" element={<ProtectedRoute><Listen /></ProtectedRoute>} />
 
-     {/* Routes protégées */}
-     <Route path="/" element={
-       <ProtectedRoute>
-         <Home />
-       </ProtectedRoute>
-     } />
-    
-     <Route path="/palette" element={
-       <ProtectedRoute>
-         <Palette />
-       </ProtectedRoute>
-     } />
-    
-     <Route path="/start" element={
-       <ProtectedRoute>
-         <StartCommande />
-       </ProtectedRoute>
-     } />
+      {/* Routes Administration (Protégées par AdminRoute) */}
+      <Route path="/gestion-prep" element={<AdminRoute><GestionPrep /></AdminRoute>} />
+      <Route path="/modif-prep/:id" element={<AdminRoute><ModifPrep /></AdminRoute>} />
+      <Route path="/creer-prep" element={<AdminRoute><CreerPrep /></AdminRoute>} />
 
+      <Route path="/gestion-empl" element={<AdminRoute><GestionEmpl /></AdminRoute>} />
+      <Route path="/modif-empl/:id" element={<AdminRoute><ModifEmpl /></AdminRoute>} />
+      <Route path="/creer-empl" element={<AdminRoute><CreerEmpl /></AdminRoute>} />
 
-           <Route path="gestion-prep" element={
-       <ProtectedRoute>
-         <GestionPrep />
-       </ProtectedRoute>
-     } />
+      <Route path="/gestion-commd" element={<AdminRoute><GestionCommd /></AdminRoute>} />
+      <Route path="/modif-commd/:id" element={<AdminRoute><ModifCommd /></AdminRoute>} />
+      <Route path="/creer-commd" element={<AdminRoute><CreerCommd /></AdminRoute>} />
 
+      <Route path="/gestion-stocks" element={<AdminRoute><GestionStocks /></AdminRoute>} />
+      <Route path="/creer-stocks" element={<AdminRoute><CreerStocks /></AdminRoute>} />
+      <Route path="/infos-stocks/:id" element={<AdminRoute><InfosStocks /></AdminRoute>} />
 
-     <Route path="modif-prep/:id" element={
-       <ProtectedRoute>
-         <ModifPrep />
-       </ProtectedRoute>
-     } />
+      <Route path="/stat" element={<AdminRoute><Stat /></AdminRoute>} />
 
-
-     <Route path="creer-prep" element={
-       <ProtectedRoute>
-         <CreerPrep />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="gestion-empl" element={
-       <ProtectedRoute>
-         <GestionEmpl />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="modif-empl/:id" element={
-       <ProtectedRoute>
-         <ModifEmpl />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="creer-empl" element={
-       <ProtectedRoute>
-         <CreerEmpl />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="gestion-commd" element={
-       <ProtectedRoute>
-         <GestionCommd />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="modif-commd/:id" element={
-       <ProtectedRoute>
-         <ModifCommd />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="creer-commd" element={
-       <ProtectedRoute>
-         <CreerCommd />
-       </ProtectedRoute>
-     } />
-    
-     <Route path="gestion-stocks" element={
-       <ProtectedRoute>
-         <GestionStocks />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="creer-stocks" element={
-       <ProtectedRoute>
-         <CreerStocks />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="infos-stocks/:id" element={
-       <ProtectedRoute>
-         <InfosStocks />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="stat" element={
-       <ProtectedRoute>
-         <Stat />
-       </ProtectedRoute>
-     } />
-
-
-     <Route path="listen" element={
-       <ProtectedRoute>
-         <Listen />
-       </ProtectedRoute>
-     } />
-
-
-     {/* Redirection automatique si la route n'existe pas */}
-     <Route path="*" element={<Navigate to="/" replace />} />
-   </Routes>
- );
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
-
-
-
-
-

@@ -38,11 +38,13 @@ function CreerEmpl() {
         setLoadingOptions(true);
 
         const [drivewayResponse, levelResponse] = await Promise.all([
-          fetch("http://147.93.55.68/driveway/all?page=0&size=100", {
+          fetch("/api/driveway/all?page=0&size=100", {
             method: "GET",
+            credentials: 'include',
           }),
-          fetch("http://147.93.55.68/level/all?page=0&size=100", {
+          fetch("/api/level/all?page=0&size=100", {
             method: "GET",
+            credentials: 'include',
           }),
         ]);
 
@@ -106,12 +108,13 @@ function CreerEmpl() {
     try {
       setLoading(true);
   
-      const response = await fetch("http://147.93.55.68/position/create", {
+      const response = await fetch("/api/position/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
   
       let data = null;

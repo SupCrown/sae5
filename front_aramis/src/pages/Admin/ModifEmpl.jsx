@@ -28,8 +28,9 @@ function ModifEmpl() {
       try {
         setLoading(true);
 
-        const response = await fetch(`http://147.93.55.68/position/${id}`, {
+        const response = await fetch(`/api/position/${id}`, {
           method: "GET",
+          credentials: 'include',
         });
 
         if (!response.ok) {
@@ -87,11 +88,12 @@ function ModifEmpl() {
     try {
       setSaving(true);
 
-      const response = await fetch(`http://147.93.55.68/position/update/${id}`, {
+      const response = await fetch(`/api/position/update/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 

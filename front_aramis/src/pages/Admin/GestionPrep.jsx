@@ -32,9 +32,10 @@ function GestionPrep() {
         setLoading(true);
 
         const response = await fetch(
-          `http://147.93.55.68/user/all?page=${page}&size=${size}`,
+          `/api/user/all?page=${page}&size=${size}`,
           {
             method: "GET",
+            credentials: 'include',
           }
         );
 
@@ -85,9 +86,10 @@ function GestionPrep() {
 
     try {
       const response = await fetch(
-        `http://147.93.55.68/user/delete/${rowToDelete.id}`,
+        `/api/user/delete/${rowToDelete.id}`,
         {
           method: "DELETE",
+          credentials: 'include',
         }
       );
 

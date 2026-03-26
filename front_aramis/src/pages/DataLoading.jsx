@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import chargement from "../assets/chargement.gif";
 
-const API_BASE_URL = import.meta?.env?.VITE_API_BASE_URL ?? "";
 
 async function safeParseJson(res) {
   const ct = res.headers.get("content-type") || "";
@@ -24,14 +23,18 @@ export default function DataLoading() {
     const run = async () => {
       try {
         setError(null);
-
         const PreparateurID = localStorage.getItem("PreparateurID");
+        const token = localStorage.getItem("token");
+        
         if (!PreparateurID) throw new Error("PreparateurID introuvable.");
 
-        const res = await fetch(`${API_BASE_URL}/order/autoAssign`, {
+        const res = await fetch(`/api/order/autoAssign`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ PreparateurID }),
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}` // On envoie le token de session
+          },
+          body: JSON.stringify({ PreparateurID: parseInt(PreparateurID, 10) }),
           redirect: "manual",
         });
 
@@ -40,16 +43,14 @@ export default function DataLoading() {
 
         switch (res.status) {
           case 200: {
-            
-            const nbPalettes =
-              data?.nbPalettes ?? data?.nombrePalette ?? data?.paletteCount;
+            const nbPalettes = data?.nbPalettes ?? data?.nombrePalette ?? data?.paletteCount;
 
             if (nbPalettes == null) {
-              throw new Error("Réponse 200 mais nbPalettes manquant dans la réponse API.");
+              throw new Error("Réponse 200 mais nbPalettes manquant.");
             }
 
-            
-            navigate("RecupCommande", {
+            // Navigation vers RecupCommande avec les données de la commande
+            navigate("/recup-commande", {
               replace: true,
               state: {
                 nbPalettes,
@@ -60,8 +61,7 @@ export default function DataLoading() {
           }
 
           case 204: {
-            
-            navigate("StartCommande", {
+            navigate("/start", {
               replace: true,
               state: { message: "Aucune commande à assigner." },
             });
@@ -69,11 +69,10 @@ export default function DataLoading() {
           }
 
           case 307: {
-           
             navigate("/recover", {
               replace: true,
               state: {
-                message: "Commande en cours détectée, reprise après fermeture.",
+                message: "Commande en cours détectée.",
                 order: data, 
               },
             });
@@ -81,38 +80,38 @@ export default function DataLoading() {
           }
 
           default: {
-            const msg =
-              data?.message ||
-              data?.error ||
-              `Réponse inattendue de l'API: ${res.status}`;
+            const msg = data?.message || data?.error || `Erreur API: ${res.status}`;
             throw new Error(msg);
           }
         }
       } catch (e) {
         if (cancelled) return;
-        const msg = e?.message || "Erreur inconnue";
-        setError(msg);
+        setError(e?.message || "Erreur de connexion au serveur");
       }
     };
 
     run();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 bg-gray-900 text-white mt-[200px]">
-      <h3 className="font-bold font-inter text-[30px] m-[5px] font-intermache">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+      <h3 className="font-bold text-[30px] font-inter">
         Chargement des données...
       </h3>
 
-      <img src={chargement} alt="Chargement" className="w-40 h-40 mt-[70px]" />
+      <img src={chargement} alt="Chargement" className="w-40 h-40 mt-10" />
 
       {error && (
-        <div className="mt-6 max-w-xl text-center">
-          <p className="text-red-300 font-semibold">Erreur</p>
-          <p className="text-red-200">{error}</p>
+        <div className="mt-10 p-4 bg-red-900/50 border border-red-500 rounded-lg max-w-xl text-center">
+          <p className="text-red-300 font-bold uppercase text-xs tracking-widest mb-1">Erreur Serveur</p>
+          <p className="text-white">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 text-sm underline opacity-70 hover:opacity-100"
+          >
+            Réessayer
+          </button>
         </div>
       )}
     </div>

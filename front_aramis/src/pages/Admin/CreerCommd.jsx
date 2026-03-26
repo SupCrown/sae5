@@ -224,12 +224,13 @@ function CreerCommd() {
     try {
       setManualLoading(true);
 
-      const response = await fetch("http://147.93.55.68/order/create", {
+      const response = await fetch("/api/order/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -292,9 +293,10 @@ function CreerCommd() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch("http://147.93.55.68/order/import", {
+      const response = await fetch("/api/order/import", {
         method: "POST",
         body: formData,
+        credentials: 'include',
       });
 
       if (!response.ok) {

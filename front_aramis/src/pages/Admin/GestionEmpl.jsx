@@ -32,9 +32,10 @@ function GestionEmpl() {
         setLoading(true);
 
         const response = await fetch(
-          `http://147.93.55.68/position/all?page=${page}&size=${size}`,
+          `/api/position/all?page=${page}&size=${size}`,
           {
             method: "GET",
+            credentials: 'include',
           }
         );
 
@@ -85,9 +86,10 @@ function GestionEmpl() {
 
     try {
       const response = await fetch(
-        `http://147.93.55.68/position/delete/${rowToDelete.id}`,
+        `/api/position/delete/${rowToDelete.id}`,
         {
           method: "POST",
+          credentials: 'include',
         }
       );
 
