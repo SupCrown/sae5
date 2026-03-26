@@ -7,7 +7,6 @@ export default function RecupCommande() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // On récupère les infos passées par DataLoading
   const { nbPalettes, order } = location.state || { nbPalettes: 0 };
 
   const [username, setUsername] = useState("");

@@ -22,23 +22,7 @@ import CreerStocks from "./pages/Admin/CreerStocks.jsx";
 import InfosStocks from "./pages/Admin/InfosStocks.jsx";
 import Stat from "./pages/Admin/Stat.jsx";
 import Listen from "./pages/ListenPage.jsx";
-
-
-// Composant pour protéger les routes Admin
-const AdminRoute = ({ children }) => {
-  const [role, setRole] = useState(null);
-
-  useEffect(() => {
-    authService.getRole().then(userRole => {
-      setRole(userRole);
-    });
-  }, []);
-  
-  if (!authService.isLoggedIn()) return <Navigate to="/auth" replace />;
-  if (role !== 'ADMIN') return <Navigate to="/palette" replace />;
-  
-  return children;
-};
+import AdminRoute from "./components/AdminRoute.jsx";
 
 export default function AppRouter() {
   return (
