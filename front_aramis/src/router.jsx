@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./pages/Auth";
 import Palette from "./pages/palette";
 import StartCommande from "./pages/StartCommande";
+import DataLoading from "./pages/DataLoading.jsx"; 
+import RecupCommande from "./pages/RecupCommande.jsx"; 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { authService } from "./services/authService";
 import { useState, useEffect } from "react";
@@ -32,10 +34,12 @@ export default function AppRouter() {
 
       {/* Routes Utilisateurs & Prép (Communes) */}
       {/* 2. Route Racine : Redirige vers Palette SI connecté, sinon vers Auth via ProtectedRoute */}
-      <Route path="/" element={<ProtectedRoute><Navigate to="/palette" replace /></ProtectedRoute>} />
+      <Route path="/" element={<ProtectedRoute><Navigate to="/recup-commande" replace /></ProtectedRoute>} />
+      <Route path="/loading" element={<ProtectedRoute><DataLoading /></ProtectedRoute>} />
       <Route path="/palette" element={<ProtectedRoute><Palette /></ProtectedRoute>} />
       <Route path="/start" element={<ProtectedRoute><StartCommande /></ProtectedRoute>} />
       <Route path="/listen" element={<ProtectedRoute><Listen /></ProtectedRoute>} />
+      <Route path="/recup-commande" element={<ProtectedRoute><RecupCommande /></ProtectedRoute>} />
 
       {/* Routes Administration (Protégées par AdminRoute) */}
       <Route path="/gestion-prep" element={<AdminRoute><GestionPrep /></AdminRoute>} />
