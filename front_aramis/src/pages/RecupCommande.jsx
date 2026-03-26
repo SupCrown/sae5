@@ -68,7 +68,7 @@ export default function RecupCommande() {
           onClick={handleConfirmRecup}
           className="bg-black text-white px-16 py-8 rounded-2xl font-bold text-[28px] hover:bg-gray-800 active:scale-95 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.2)]"
         >
-          {order?.type === "PICK_PRODUCT" ? "Reprendre la mission" : `Récupérer ${nbPalettes || 1} palette(s)`}
+          {order?.type === "PICK_PRODUCT" ? "Remplir la palette" : `Récupérer ${nbPalettes || 1} palette(s)`}
         </button>
 
         {/* Info complémentaire discrète */}
