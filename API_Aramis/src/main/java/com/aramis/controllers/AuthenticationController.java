@@ -2,8 +2,10 @@ package com.aramis.controllers;
 
 import com.aramis.configurations.AppConfigurationProperties;
 import com.aramis.dto.AuthRequest;
+import com.aramis.models.user.User;
 import com.aramis.models.user.UserRepository;
 import com.aramis.services.AuthService;
+import com.aramis.utils.Role;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -80,5 +84,35 @@ public class AuthenticationController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    @GetMapping("/getRole")
+    public ResponseEntity<Object> getRole() {
+        try {
+            Integer userID = AuthService.getUserID(request, properties);
+
+            Optional<User> user = userRepository.findById(userID);
+
+            Role role = new Role();
+            if (user.isPresent()) {
+                role.role = user.get().isAdmin() ? com.aramis.utils.Role.ADMIN.toString() : com.aramis.utils.Role.USER.toString();
+            } else {
+                ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok().body(role);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    private static class Role {
+        public String role;
+
+        public Role(String role) {
+            this.role = role;
+        }
+
+        public Role() {}
     }
 }
