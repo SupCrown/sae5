@@ -204,19 +204,18 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 
 #### CRUD clients
 
-- `/order/create` **[POST]** / **SUPERVISEUR** : **créer** un client :
+- `/customer/create` **[POST]** / **SUPERVISEUR** : **créer** un client :
 ```json
 {
     "name" : "Nom du client",
     "code" : "Code à 5 chiffre unique du client"
 }
 ```
-- `/order/delete/{id}` **[DELETE]** / **SUPERVISEUR** : **supprimer** un client.
-- `/order/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un client.
-- `/order/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les clients ordonnés par des pages :
+- `/customer/delete/{id}` **[DELETE]** / **SUPERVISEUR** : **supprimer** un client.
+- `/customer/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un client.
+- `/customer/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les clients ordonnés par des pages :
     - `page` : valeur par défaut `0`.
     - `size` : valeur par défaut `20`.
-- `/order/import` **[POST]** / **SUPERVISEUR** : import CSV.
 
 #### CRUD types de support
 
