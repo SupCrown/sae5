@@ -8,7 +8,7 @@ function ModifEmpl() {
   const testData = {
     locationCode: "E-023",
     drivewayId: 2,
-    levelId: 1,
+    levelId: 6,
   };
 
   const [form, setForm] = useState({
@@ -42,7 +42,7 @@ function ModifEmpl() {
         setForm({
           locationCode: position.locationCode || "",
           drivewayId: position.driveway?.drivewayID ?? "",
-          levelId: position.level?.levelID ?? "",
+          levelId: position.level?.levelValue ?? "",
         });
       } catch (error) {
         console.warn("API non dispo -> fallback test data");
