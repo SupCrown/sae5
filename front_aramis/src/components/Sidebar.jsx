@@ -28,6 +28,7 @@ export default function Sidebar({ closeSidebar }) {
     { label: "Gestion Emplacements", path: "/gestion-empl" },
     { label: "Gestion Commandes", path: "/gestion-commd" },
     { label: "Gestion Stocks", path: "/gestion-stocks" },
+    { label: "Gestion Clients", path: "/gestion-cli" },
     { label: "Statistiques", path: "/stat" },
   ];
 
