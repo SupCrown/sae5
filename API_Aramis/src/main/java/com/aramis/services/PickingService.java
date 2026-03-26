@@ -167,12 +167,14 @@ public class PickingService {
 
             List<Contain> contents = containRepo.findBySupport(support);
 
-            PickingTaskResponseAndContainID resp = getCurrentStep(plan, contents);
-            if (!initOrder) {
+            PickingTaskResponseAndContainID resp = getCurrentStep(plan, contents);;
+            if (initOrder) {
+                resp.response.setPlacedProducts(getPlacedProductPlacements(support));
+            } else {
                 updateSupport(resp.containID, missingItem);
 
                 if (missingItem) {
-                    getProductPlacements(support);
+                    plan = getProductPlacements(support);
                 }
 
                 resp = getCurrentStep(plan, contents);
@@ -206,6 +208,16 @@ public class PickingService {
         support.setNestedProductsPlacements(nestedPlacements);
         supportRepo.save(support);
         return plan;
+    }
+
+    private List<ProductPlacement> getPlacedProductPlacements(Support support) throws JsonProcessingException {
+        List<ProductPlacement> plan = objectMapper.readValue(
+                support.getNestedProductsPlacements(),
+                new TypeReference<>(){}
+        );
+
+        List<Contain> contains = containRepo.findAllBySupportId(support.getSupportID());
+        return SupportService.calculatePlacedSupport(plan, contains);
     }
 
     private static PickingTaskResponseAndContainID getCurrentStep(List<ProductPlacement> plan, List<Contain> contents) {
@@ -263,25 +275,45 @@ public class PickingService {
     // ou marquées comme manquantes.
     // ========================================================================
     @Transactional
-    public PickingTaskResponse getNextStep(int userId, int orderID, boolean missingItem) {
+    public PickingTaskResponse getNextStep(int userID, int orderID, boolean missingItem) {
         Order order = orderRepo.findById(orderID)
                 .orElseThrow(() -> new RuntimeException("Commande introuvable ID: " + orderID));
 
-        Iterable<Support> supports = supportRepo.findAllByOrderOrderBySupportIDDesc(order);
+        Iterable<Support> supportsIterable = supportRepo.findAllByOrderOrderBySupportIDDesc(order);
+
+        List<Support> supports = new ArrayList<>();
+        for (Support support: supportsIterable) {
+            supports.add(support);
+        }
+        supports.sort(Comparator.comparingInt(Support::getSupportID));
+
+        Optional<Support> currentSupport = supports.stream()
+                .filter(s -> s.getStatus() == EPrepareStatus.Preparing && s.getUser().getUserID() == userID)
+                .findFirst();
 
         try {
             PickingTaskResponse nextStep = null;
-            for (Support support : supports) {
-                if (support.getUser() == null ) {
-                    throw new RuntimeException("Commande non débutée.");
-                }
+            if (currentSupport.isPresent())
+            {
+                nextStep = calculateNextProduct(currentSupport.get(), false, missingItem);
+            }
+            if (nextStep == null || nextStep.getType() == PickingTaskResponseType.FINISHED) {
+                for (Support support : supports) {
+                    if (support.getStatus() == EPrepareStatus.Done) {
+                        continue;
+                    }
 
-                if (support.getUser().getUserID() != userId) {
-                    throw new RuntimeException("Commande déjà commencée par un utilisateur.");
-                }
+                    if (support.getUser() == null ) {
+                        throw new RuntimeException("Commande non débutée.");
+                    }
 
-                if (nextStep == null || nextStep.getType() == PickingTaskResponseType.FINISHED) {
-                    nextStep = calculateNextProduct(support, false, missingItem);
+                    if (support.getUser().getUserID() != userID) {
+                        throw new RuntimeException("Commande déjà commencée par un utilisateur.");
+                    }
+
+                    if (nextStep == null || nextStep.getType() == PickingTaskResponseType.FINISHED) {
+                        nextStep = calculateNextProduct(support, false, missingItem);
+                    }
                 }
             }
 
