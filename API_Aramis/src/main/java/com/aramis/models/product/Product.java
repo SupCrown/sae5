@@ -50,4 +50,14 @@ public class Product {
     public Product clone() {
         return new Product(productID, productCode, quantity, libelle, height, length, width, location);
     }
+
+    public void update(Product product) {
+        this.productCode = product.getProductCode();
+        this.quantity = product.getQuantity();
+        this.libelle = product.getLibelle();
+        this.height = product.getHeight();
+        this.length = product.getLength();
+        this.width = product.getWidth();
+        this.location = product.getLocation();
+    }
 }

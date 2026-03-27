@@ -33,6 +33,10 @@
 
 IP : 147.93.55.68
 
+Compte admin : 421
+
+Compte prep : 422, 423
+
 ### Documentation API
 
 Définir les endpoints avant de les développer pour permettre à l'equipe front de travailler sans se poser de questions.
@@ -44,70 +48,271 @@ Définir les endpoints avant de les développer pour permettre à l'equipe front
 
 ### API
 
-- Authentification :
-    - `/login` **[POST]**.: Récupérer le JWT d'authentification.
-      - `login` : entier à trois chiffres (`000 - 999`)
-      - Réponses :
+#### Authentification
+
+- `/login` **[POST]**.: Récupérer le JWT d'authentification.
+    - `login` : entier à trois chiffres (`000 - 999`)
+        - Réponses :
         - `200` : Utilisateur connecté,
         - `401` : Aucune authentification détectée,
         - `403` : Accès refusé par manque de droits.
     - `/logout` **[POST]** : Supprimer le JWT d'authentification.
-- `/order/id?[etape=xxx]` **[GET]**  : Chargement d'une commande en f° d'un id (et en f° ou non d'une étape précise).
-    - trier les colis en fonction du sens de circulation **(I-008-0001 -> H-001-0144)**.
-- Attribution des commandes :
-    - `/order/autoAssign` **[POST]** : automatique (au chargement de l'application) en f° d'un PreparateurID.
-        - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente.
-          - `200` : la commande est assignée,
-          - `204` : aucune commande à assigner a été trouvée.
-        - **Sinon** : récupération d'une commande en cours en cas de crash. 
-          - `307` : la prépration de la commande n'avait pas été finalisée à la dernière fermeture de l'application.
-    - `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[POST]** : manuelle.
-- (Gestion de la dictée vocale)
-- (Gestion de la commande vocal)
-- `/order/nextStep?CommandeID=xxx` **[POST]** : Udapte d'une commande et renvoi de l'étape suivante sous la forme d'un tableau (étape) de tableau (objet) de deux tupples (position, dimension) de taille 3 pour `[[(x,y,z),(w,l,h)],[...], ...]`.
-    - Si la **quantité validée == quantité servie** OU s'il y a ** au moins un colis manquant** sur la quantité validée.
-- Calcul et envoi des statistiques pour superviseurs et préparateurs :
-    - `/preparer/stats/id` **[GET]** : statistique du nombre de colis par heure pour un préparateur.
-    - `/preparer/stats` **[GET]** : statistique générales de tous les préparateurs.
-- CRUD préparateurs :
-    - `/preparer/create` **[POST]** : **créer** un préparateur.
-    - `/preparer/update/id` **[POST]** : **modifier** un préparateur.
-    - `/preparer/delete/id` **[POST]** : **supprimer** un préparateur.
-    - `/preparer/id` **[GET]** : **consulter** un préparateur.
-- CRUD commandes :
-    - `/order/create` **[POST]** : **créer** un commande.
-    - `/order/update/id` **[POST]** : **modifier** un commande.
-    - `/order/delete/id` **[POST]** : **supprimer** un commande.
-    - `/order/id` **[GET]** : **consulter** une commande.
-    - `/order/all` **[GET]** : **consulter** toutes les commandes.
-    - `/order/import` **[POST]** : import CSV.
-- CRUD emplacements :
-    - `/position/create` **[POST]** : **créer** un emplacement.
-    - `/position/update/id` **[POST]** : **modifier** un emplacement.
-    - `/position/delete/id` **[POST]** : **supprimer** un emplacement.
-    - `/position/id` **[GET]** : **consulter** un emplacement.
-- CRUD stocks : entré des stocks en import CSV :
-    - `/product/{id}` **[GET]** / **SUPERVISEUR** : récupérer les infos d'un produit agrâce à son identifiant.
-    - `/product/all` **[GET]** / **SUPERVISEUR** : récupérer la liste de tous les produits.
-    - `/product/add` **[POST]** / **SUPERVISEUR**: ajouter une quantité de stockage à un produit.
-        - `productID`: id de l'objet au quel ajouter une quantité X à la quantité actuelle.
-        - `quantityToAdd`: quantité X à ajouter.
-    - `/product/take` **[POST]** / **SUPERVISEUR** : retier une quantité X à la quantité actuelle. Si la quantité à retirer est supréieure à la quantité en stock, le nouveau stock sera de 0.
-        - `productID`: id de l'objet au quel retier une quantité X à la quantité actuelle. 
-        - `quantityToTake`: quantité X à retirer.
-    - `/product/create` **[POST]** / **SUPERVISEUR** : ajout un nouveau produit à la liste. Si l'emplacement au quel ajouter ce produit est déjà lié à un autre porduit une `BadRequest` est retrounée.
-        - `productCode`: code du produit.
-        - `quantity`: quantité initiale.
-        - `libel` : nom du produit.
-        - `height` : hauteur du produit.
-        - `length` : longueur du produit.
-        - `width` : largeur du produit.
-        - `zone` : nom de la zone de stockage du produit.
-        - `driveway` : nom de l'allée de stockage du produit.
-        - `location` : numéro d'emplacment de stockage du produit.
-        - `level` : numéro du niveau de stockage sur l'empalcement du produit.
-    - `/product/delete/{id}` **[DELETE]** / **SUPERVISEUR**.
-- Génération d'une organisation optimale d'un support en fonction de son contenant et contenu.
+
+#### Attribution des commandes et gestion du parcours de collecte
+
+- `/order/autoAssign` **[GET]** / **PREPARATEUR** : Assignation d'une commande automatiquemenet.
+    - **Si aucune commande en cours pour le préparateur** : chargement d'une commande en attente.
+        - `200` : la commande est assignée,
+        - `204` : aucune commande à assigner a été trouvée.
+    - **Sinon** : récupération d'une commande en cours en cas de crash et renvoie de la dernière étape ainsi que tous les produits déjà placés.
+        - `307` : la prépration de la commande n'avait pas été finalisée à la dernière fermeture de l'application.
+```json
+{
+    "type": "Type de retour : NEW_SUPPORT, PICK_PRODUCT, FINISHED, NO_ORDERS, QUEUED",
+    "step": {
+        "productId": "ID du produit de l'étape",
+        "x": "Abscisse de la boite",
+        "y": "Oronnée de la boite",
+        "z": "Altitude de la boite",
+        "dx": "Largeur de la boite",
+        "dy": "Profondeur de la boite",
+        "dz": "Hauteur de la boite",
+        "surfaces": [
+            {
+                "label": "Surfface sur laquelle est posée la boite",
+                "attributes": {}
+            }
+        ]
+    },
+    "placedProducts": [
+        {
+            "productId": "ID du produite déjà placé",
+            "x": "Abscisse de la boite",
+            "y": "Oronnée de la boite",
+            "z": "Altitude de la boite",
+            "dx": "Largeur de la boite",
+            "dy": "Profondeur de la boite",
+            "dz": "Hauteur de la boite",
+            "surfaces": [
+                {
+                    "label": "Surfface sur laquelle est posée la boite",
+                    "attributes": {}
+                }
+            ]
+        },
+        {
+            ...
+        }
+    ],
+    "placedQuantity": "Quantité déjà posée",
+    "quantityToPlace": "Quantité à poser",
+    "orderID": "ID de la commande courante",
+    "location": "Empalcement du produit"
+}
+```
+- `/order/manualAssign?CommandeID=xxx&PreparateurID=yyy` **[GET]** / **SUPERVISEUR** : Assignation d'une commande manuellement en fonction d'un id d'utilisateur et renvoi de la première étape.
+- `/order/nextStep?orderID=xxx?missingItem=yyy` **[GET]** / **PREPARATEUR** : Udapte d'une commande et renvoi de l'étape suivante :
+```json
+{
+    "type": "Type de retour : NEW_SUPPORT, PICK_PRODUCT, FINISHED, NO_ORDERS, QUEUED",
+    "step": {
+        "productId": "ID du produit de l'étape",
+        "x": "Abscisse de la boite",
+        "y": "Oronnée de la boite",
+        "z": "Altitude de la boite",
+        "dx": "Largeur de la boite",
+        "dy": "Profondeur de la boite",
+        "dz": "Hauteur de la boite",
+        "surfaces": [
+            {
+                "label": "Surfface sur laquelle est posée la boite",
+                "attributes": {}
+            }
+        ]
+    },
+    "placedProducts": null,
+    "placedQuantity": "Quantité déjà posée",
+    "quantityToPlace": "Quantité à poser",
+    "orderID": "ID de la commande courante",
+    "location": "Empalcement du produit"
+}
+```
+
+#### Calcul et envoi des statistiques pour superviseurs et préparateurs
+
+- `/user/stats/{id}` **[GET]** / **SUPERVISEUR** : statistiques d'un préparateur.
+- `/user/stats` **[GET]** / **SUPERVISEUR** : statistiques de tous les préparateurs.
+
+#### CRUD utilisateur `Préparateurs / Superviseurs`
+
+- `/user/create` **[POST]** / **SUPERVISEUR** : **créer** un préparateur :
+    - `firstname` : prénom de l'utilisateur,
+    - `lastname` : nom de l'utilisateur,
+    - `login` : login de l'utilisateur,
+    - `admin` : est-ce que l'utilisateur est un superviseur.
+- `/user/update/{id}` **[POST]** / **SUPERVISEUR**  : **modifier** un préparateur.
+- `/user/delete/{id}` **[DELETE]** / **SUPERVISEUR**  : **supprimer** un préparateur.
+- `/user/{id}` **[GET]** / **SUPERVISEUR**: **consulter** un préparateur.
+- `/user/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les préparateurs ordonnés par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
+#### CRUD commandes
+
+- `/order/create` **[POST]** / **SUPERVISEUR** : **créer** une commande :
+```json
+{
+    "orderDate" : "Date de la commande ex : '2026-03-23'",
+    "customerID" : "ID du clien", 
+    "priority" : "(booléen) est-ce que la commande dois-être réalisée en prioritée",
+    "supports" : [
+        {
+            "typeID" : "Identifiant du type de support",
+            "products" : [
+                {
+                    "productID" : "Identifiant du produit à ajouter dans le support",
+                    "quantity" : "Quantité du produit sur la support de la commande"
+                },
+                {
+                    "..."
+                }
+            ]
+        },
+        {
+            "..."
+        }
+    ],
+}
+```
+- `/order/update/{id}` **[POST]** / **SUPERVISEUR** : **modifier** une commande.
+- `/order/delete/{id}` **[DELETE]** / **SUPERVISEUR** : **supprimer** une commande.
+- `/order/{id}` **[GET]** / **SUPERVISEUR** : **consulter** une commande.
+- `/order/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** toutes les commandes ordonnées par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+- `/order/import` **[POST]** / **SUPERVISEUR** : import CSV : 
+```json
+{
+    "orderDate" : "Date de la commande ex : '2026-03-23'",
+    "customerID" : "ID du clien", 
+    "priority" : "(booléen) est-ce que la commande dois-être réalisée en prioritée",
+    "typeID" : "type des supports à importer",
+    "file" : "fichier csv contenant les infos des support à importer"
+}
+```
+
+
+#### CRUD clients
+
+- `/customer/create` **[POST]** / **SUPERVISEUR** : **créer** un client :
+```json
+{
+    "name" : "Nom du client",
+    "code" : "Code à 5 chiffre unique du client"
+}
+```
+- `/customer/delete/{id}` **[DELETE]** / **SUPERVISEUR** : **supprimer** un client.
+- `/customer/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un client.
+- `/customer/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les clients ordonnés par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
+#### CRUD types de support
+
+- `/supportType/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un type de support.
+- `/supportType/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les types de support ordonnés par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
+#### CRUD emplacements / zone / allées / niveaux
+
+##### Emplacements
+- `/position/create` **[POST]** / **SUPERVISEUR** : **créer** un emplacement :
+    - `locationCode` : code du nouvel emplacement.
+    - `drivewayId` : identifiant de l'allée.
+    - `levelId` : identifiant du niveau.
+- `/position/update/{id}` **[POST]** / **SUPERVISEUR** : **modifier** un emplacement.
+- `/position/delete/{id}` **[DELETE]** / **SUPERVISEUR** : **supprimer** un emplacement.
+- `/position/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un emplacement : 
+```json
+{
+    "locationID": "Identifiant de l'emplacement",
+    "locationCode": "Code de l'emplacment",
+    "driveway": {
+        "drivewayID": "Identifiant de l'allée"1,
+        "name": "Nom de l'allée",
+        "zone": {
+            "zoneID": "Identifiant de la zone",
+            "zoneName": "Nom de la zone"
+        }
+    },
+    "level": {
+        "levelID": "Identifiant du niveau",
+        "levelValue": "Valeur du niveau"
+    }
+}
+```
+- `/position/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les emplacements ordonnés par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
+##### Zones
+
+- `/zone/{id}` **[GET]** / **SUPERVISEUR** : **consulter** une zone.
+- `/zone/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** toutes les zone ordonnées par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
+##### Allées
+
+- `/driveway/{id}` **[GET]** / **SUPERVISEUR** : **consulter** une allée.
+- `/driveway/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** toutes les allées ordonnées par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
+##### Niveaux
+
+- `/level/{id}` **[GET]** / **SUPERVISEUR** : **consulter** un niveau.
+- `/level/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les niveaux ordonnés par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+
+#### CRUD stocks : entré des stocks en import CSV 
+
+- `/product/{id}` **[GET]** / **SUPERVISEUR** : récupérer les infos d'un produit agrâce à son identifiant.
+- `/product/all?page=x?size=y` **[GET]** / **SUPERVISEUR** : **consulter** tous les produits ordonnés par des pages :
+    - `page` : valeur par défaut `0`.
+    - `size` : valeur par défaut `20`.
+- `/product/add` **[POST]** / **SUPERVISEUR**: ajouter une quantité de stockage à un produit.
+```json
+{
+    "productID" : "id de l'objet au quel retier une quantité X à la quantité actuelle",
+    "quantityToAdd" : "quantité X à ajouter"
+}
+```
+- `/product/take` **[POST]** / **SUPERVISEUR** : retier une quantité X à la quantité actuelle. Si la quantité à retirer est supréieure à la quantité en stock, le nouveau stock sera de 0.
+```json
+{
+    "productID" : "id de l'objet au quel retier une quantité X à la quantité actuelle",
+    "quantityToTake" : "quantité X à retirer"
+}
+```
+- `/product/create` **[POST]** / **SUPERVISEUR** : ajout un nouveau produit à la liste. Si l'emplacement au quel ajouter ce produit est déjà lié à un autre porduit une `BadRequest` est retrounée.
+```json
+{
+    "productCode" : "code du produit",
+    "quantity" : "quantité initiale",
+    "libel" : "nom du produit",
+    "height" : "hauteur du produit",
+    "length" : "longueur du produit",
+    "width" : "largeur du produit",
+    "zone" : "nom de la zone de stockage du produit",
+    "driveway" : "nom de l'allée de stockage du produit",
+    "location" : "numéro d'emplacment de stockage du produit",
+    "level" : "numéro d'emplacment de stockage du produit"
+}
+```
+- `/product/delete/{id}` **[DELETE]** / **SUPERVISEUR**.
 
 ## Front
 

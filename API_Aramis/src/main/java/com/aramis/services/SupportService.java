@@ -1,9 +1,11 @@
 package com.aramis.services;
 
+import com.aramis.dto.PickingTaskResponse;
 import com.aramis.dto.ProductPlacement;
 import com.aramis.models.contain.Contain;
 import com.aramis.models.product.Product;
 import com.aramis.models.supportType.SupportType;
+import com.aramis.utils.PickingTaskResponseType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +15,7 @@ import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class SupportService {
 
@@ -66,10 +69,10 @@ public class SupportService {
         return clearedProductPlacements;
     }
 
-    public static List<Product> calculSupport(List<Product> products, List<Contain> contains) {
+    public static List<Product> calculSupport(Iterable<Product> products, List<Contain> contains) {
         List<Product> calculatedProducts = new ArrayList<>();
         for (Product product : products) {
-            Contain contain = contains.stream().filter(filterdContain -> Objects.equals(filterdContain.getContainID(), product.getProductID())).findFirst().orElse(null);
+            Contain contain = contains.stream().filter(filteredContain -> Objects.equals(filteredContain.getProduct().getProductID(), product.getProductID())).findFirst().orElse(null);
             if (contain != null) {
                 int quantity = contain.isMissingItems() ? contain.getServedQuantity() : contain.getApprovedQuantity();
                 for (int i = 0; i < quantity; i++) {
@@ -83,5 +86,40 @@ public class SupportService {
     public static List<ProductPlacement> deserializeNestedProductsPlacements(String nestedProductsPlacement) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(nestedProductsPlacement, new TypeReference<>() {});
+    }
+
+    public static List<ProductPlacement> calculatePlacedSupport(List<ProductPlacement> productPlacements, List<Contain> contains) {
+        List<Integer> placedProductID = new ArrayList<>();
+        for (Contain contain : contains) {
+            if (Objects.equals(contain.getServedQuantity(), contain.getApprovedQuantity()) || contain.isMissingItems()) {
+                placedProductID.add(contain.getProduct().getProductID());
+            }
+        }
+
+        List<ProductPlacement> placedProductsPlacements = new ArrayList<>();
+
+        for (ProductPlacement step : productPlacements) {
+            int pId = step.getProductId();
+            if (placedProductID.contains(pId)) {
+                placedProductsPlacements.add(step);
+            }
+        }
+
+        Optional<Contain> currentPlacingProduct = contains.stream().filter(c ->
+                c.getServedQuantity() > 0
+                && c.getServedQuantity() < c.getApprovedQuantity()
+                && !c.isMissingItems()
+        ).findFirst();
+        if (currentPlacingProduct.isPresent()) {
+            Contain contain = currentPlacingProduct.get();
+            Integer currentPlacingProductID = contain.getProduct().getProductID();
+
+            List<ProductPlacement> currentProductPlacedOccurrences = productPlacements.stream().filter(pp -> pp.getProductId() == currentPlacingProductID).toList();
+            for (int i = 0; i < contain.getServedQuantity(); i ++) {
+                placedProductsPlacements.add(currentProductPlacedOccurrences.get(i));
+            }
+        }
+
+        return placedProductsPlacements;
     }
 }

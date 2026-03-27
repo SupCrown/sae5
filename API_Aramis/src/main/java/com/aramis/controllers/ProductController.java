@@ -43,7 +43,7 @@ public class ProductController {
 
     @Authorize(roles = Role.ADMIN)
     @GetMapping("/all")
-    public ResponseEntity<List<ProductResponse>> getProducts(@PageableDefault(size = 20) Pageable pageable) {
+    public ResponseEntity<List<ProductResponse>> getProducts(@PageableDefault(size = 20, sort = "productID") Pageable pageable) {
         var products = productRepository.findAll(pageable);
 
         List<ProductResponse> productResponseList = new ArrayList<>();
@@ -78,6 +78,42 @@ public class ProductController {
                         .body(response);
             } catch (Exception e) {
                 log.error("Error while creating product", e);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
+            }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Authorize(roles = Role.ADMIN)
+    @PostMapping("/update/{id}")
+    public ResponseEntity<Object> updateProduct(@PathVariable Integer id, @Valid @RequestBody CreateProductRequest request) {
+        Optional<Location> location = locationRepository.findByCodeLevelDrivewayAndZone(request.getLocation(), request.getLevel(), request.getDriveway(), request.getZone());
+
+        if (location.isPresent()) {
+            Optional<Product> alreadyPlacedProduct = productRepository.findByLocation(location.get());
+            if (alreadyPlacedProduct.isPresent() && !Objects.equals(alreadyPlacedProduct.get().getProductID(), id)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request : emplacement déjà utilisé.");
+            }
+
+            Optional<Product> productOptional = productRepository.findById(id);
+            if (productOptional.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            Product existingProduct = productOptional.get();
+
+            Product product = request.toProduct(location.get());
+            try {
+                existingProduct.update(product);
+
+                productRepository.save(existingProduct);
+
+                ProductResponse response = new ProductResponse(product);
+                return ResponseEntity
+                        .status(HttpStatus.CREATED)
+                        .body(response);
+            } catch (Exception e) {
+                log.error("Error while updating product", e);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
             }
         } else {
@@ -137,6 +173,10 @@ public class ProductController {
     @Authorize(roles = Role.ADMIN)
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteProduct(@PathVariable Integer id) {
+        if (!productRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
         try {
             productRepository.deleteById(id);
             return ResponseEntity.ok().build();

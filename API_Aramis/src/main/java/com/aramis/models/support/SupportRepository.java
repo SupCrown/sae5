@@ -19,4 +19,11 @@ public interface SupportRepository extends CrudRepository<Support, Integer> {
     Optional<Support> findFirstByOrderOrderBySupportIDDesc(Order order);
 
     List<Support> findAllByUser(User user);
+
+    Iterable<Support> findAllByOrder(Order order);
+
+    Iterable<Support> findAllByOrderOrderBySupportIDDesc(Order order);
+
+    @Query("SELECT s FROM Support s WHERE s.user = ?1 AND s.status != ?2 ORDER BY s.status DESC")
+    Iterable<Support> findByUserAndStatusNotLike(User user, EPrepareStatus ePrepareStatus);
 }

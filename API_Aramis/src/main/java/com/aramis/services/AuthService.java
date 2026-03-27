@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.WebUtils;
 
 import java.nio.file.AccessDeniedException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Objects;
+import java.util.*;
 
 import static com.aramis.common.JwtUtils.*;
 
@@ -34,12 +31,13 @@ public class AuthService {
         validateAuthRequest(request);
         Integer login = request.getLogin();
 
-        User user = userRepository.findByLogin(login);
+        Optional<User> userOpt = userRepository.findByLogin(login);
 
-        if (user == null) {
+        if (userOpt.isEmpty()) {
             log.error("Invalid login : {}", login);
             throw new RuntimeException("Invalid login");
         }
+        User user = userOpt.get();
 
         var userType = user.isAdmin() ? UserType.SUPERVISOR : UserType.PREPARATOR;
         var role = user.isAdmin() ? Role.ADMIN : Role.USER;
@@ -105,6 +103,6 @@ public class AuthService {
             throw new MissingResourceException("UserID is missing.", "AuthResponse", "UserID");
         }
 
-        return Integer.getInteger(id);
+        return Integer.valueOf(id);
     }
 }

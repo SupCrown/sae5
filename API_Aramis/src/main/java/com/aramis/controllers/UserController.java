@@ -53,22 +53,28 @@ public class UserController {
         return ResponseEntity.ok(userResponseList);
     }
 
-    @Authorize(roles = {Role.ADMIN, Role.USER})
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Integer id) {
-
         return userRepository.findById(id)
                 .map(user -> ResponseEntity.ok(new UserResponse(user)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @Authorize(roles = Role.ADMIN)
-    @PostMapping("/add")
-    public ResponseEntity<Object> addNewUser(@Valid @RequestBody CreateUserRequest request) {
+    @PostMapping("/create")
+    public ResponseEntity<Object> createUser(@Valid @RequestBody CreateUserRequest request) {
+        Optional<User> existingLogin = userRepository.findByLogin(request.getLogin());
+        if (existingLogin.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("Bad Request : un utilisateur avec le login : %03d, existe déjà.", request.getLogin()));
+
+        }
+
         User user = new User();
         user.setFirstname(request.getFirstname());
         user.setLastname(request.getLastname());
         user.setLogin(request.getLogin());
+        user.setAdmin(request.isAdmin());
 
         try {
             User savedUser = userRepository.save(user);
@@ -85,13 +91,58 @@ public class UserController {
                     .status(HttpStatus.CREATED)
                     .body(response);
         } catch (Exception e) {
-            log.error("Error authenticating user", e);
+            log.error("Error while creating user", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
         }
 
     }
 
-    @Authorize(roles = {Role.ADMIN, Role.USER})
+    @Authorize(roles = Role.ADMIN)
+    @PostMapping("/update/{id}")
+    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody CreateUserRequest request) {
+        Optional<User> existingLogin = userRepository.findByLogin(request.getLogin());
+        if (existingLogin.isPresent() && !Objects.equals(existingLogin.get().getUserID(), id)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("Bad Request : un utilisateur avec le login : %03d, existe déjà.", request.getLogin()));
+
+        }
+
+        Optional<User> existingOpt = userRepository.findById(id);
+        if (existingOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User existing = existingOpt.get();
+        existing.setFirstname(request.getFirstname());
+        existing.setLastname(request.getLastname());
+        existing.setLogin(request.getLogin());
+        existing.setAdmin(request.isAdmin());
+
+        try {
+            User saved = userRepository.save(existing);
+            return ResponseEntity.ok(new UserResponse(saved));
+        } catch (Exception e) {
+            log.error("Error while updating user", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
+        }
+    }
+
+    @Authorize(roles = Role.ADMIN)
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Object> delete(@PathVariable Integer id) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            userRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error while deleting user", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: " + e.getMessage());
+        }
+    }
+
+    @Authorize(roles = Role.ADMIN)
     @GetMapping("/stats/{id}")
     public ResponseEntity<Object> GetUserStats(@PathVariable Integer id) {
         try {
@@ -109,8 +160,8 @@ public class UserController {
         }
     }
 
-    @Authorize(roles = {Role.ADMIN, Role.USER})
-    @GetMapping("/all/stats")
+    @Authorize(roles = Role.ADMIN)
+    @GetMapping("/stats")
     public ResponseEntity<Object> GetAllUsersStats() {
         try {
             Iterable<User> users = userRepository.findAllNotAdmin();
@@ -146,25 +197,27 @@ public class UserController {
         List<Order> dailyPreparedOrders = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
         for(Support support : preparedSupports) {
-            LocalDate supportPreparationDate = support.datePreparation.toLocalDate();
-            if(supportPreparationDate.equals(currentDate) && !dailyPreparedSupport.contains(support)) {
-                dailyPreparedSupport.add(support);
-                dailySupportIDs.add(support.supportID);
+            if(support.getDatePreparation() != null ) {
+                LocalDate supportPreparationDate = support.getDatePreparation().toLocalDate();
+                if(supportPreparationDate.equals(currentDate) && !dailyPreparedSupport.contains(support)) {
+                    dailyPreparedSupport.add(support);
+                    dailySupportIDs.add(support.supportID);
 
-                Order order = support.getOrder();
-                if (!dailyPreparedOrders.contains(order)) {
-                    dailyPreparedOrders.add(order);
+                    Order order = support.getOrder();
+                    if (!dailyPreparedOrders.contains(order)) {
+                        dailyPreparedOrders.add(order);
+                    }
                 }
             }
         }
 
         int ordersNumberOfAllTime = preparedOrders.size();
         int supportsNumberOfAllTime = preparedSupports.size();
-        int productsNumberOfAllTime = containRepository.findPlacedProductNumberSumBySupportsIDs(supportIDs);
+        int productsNumberOfAllTime = supportIDs.isEmpty() ? 0 : containRepository.findPlacedProductNumberSumBySupportsIDs(supportIDs);
 
         int ordersNumberOfTheDay = dailyPreparedOrders.size();
         int supportsNumberOfTheDay = dailyPreparedSupport.size();
-        int productsNumberOfTheDay = containRepository.findPlacedProductNumberSumBySupportsIDs(dailySupportIDs);
+        int productsNumberOfTheDay = dailySupportIDs.isEmpty() ? 0 :  containRepository.findPlacedProductNumberSumBySupportsIDs(dailySupportIDs);
 
         return new UserStatsResponse(
                 new UserResponse(user),

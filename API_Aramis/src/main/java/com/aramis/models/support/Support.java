@@ -5,6 +5,7 @@ import com.aramis.models.supportType.SupportType;
 import com.aramis.models.user.User;
 import com.aramis.utils.EPrepareStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -23,12 +24,13 @@ public class Support {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer supportID;
 
+    @Column(columnDefinition="text")
     public String nestedProductsPlacements;
 
     private EPrepareStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "userid")
+    @JoinColumn(name = "userid", nullable = true)
     private User user;
 
     @ManyToOne

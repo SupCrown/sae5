@@ -1,18 +1,21 @@
 package com.aramis.dto;
 
+import com.aramis.utils.PickingTaskResponseType;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class PickingTaskResponse {
-    private String type; // "NEW_SUPPORT", "PICK_PRODUCT", "FINISHED", "NO_ORDERS"
+    private PickingTaskResponseType type;
 
-    private Integer supportId;
-    private Integer productId;
-
-    private int targetX;
-    private int targetY;
-    private int targetZ;
+    private ProductPlacement step;
+    private List<ProductPlacement> placedProducts;
+    private Integer placedQuantity;
+    private Integer quantityToPlace;
+    private Integer orderID;
+    private String location;
 }
