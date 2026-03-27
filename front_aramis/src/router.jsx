@@ -17,7 +17,7 @@ import GestionPrep from "./pages/Admin/GestionPrep.jsx";
 import ModifPrep from "./pages/Admin/ModifPrep.jsx";
 import CreerPrep from "./pages/Admin/CreerPrep.jsx";
 import GestionCommd from "./pages/Admin/GestionCommd.jsx";
-import ModifCommd from "./pages/Admin/ModifCommd.jsx";
+import InfosCommd from "./pages/Admin/InfosCommd.jsx";
 import CreerCommd from "./pages/Admin/CreerCommd.jsx";
 import GestionStocks from "./pages/Admin/GestionStocks.jsx";
 import CreerStocks from "./pages/Admin/CreerStocks.jsx";
@@ -53,7 +53,7 @@ export default function AppRouter() {
       <Route path="/creer-empl" element={<AdminRoute><CreerEmpl /></AdminRoute>} />
 
       <Route path="/gestion-commd" element={<AdminRoute><GestionCommd /></AdminRoute>} />
-      <Route path="/modif-commd/:id" element={<AdminRoute><ModifCommd /></AdminRoute>} />
+      <Route path="/infos-commd/:id" element={<AdminRoute><InfosCommd /></AdminRoute>} />
       <Route path="/creer-commd" element={<AdminRoute><CreerCommd /></AdminRoute>} />
 
       <Route path="/gestion-stocks" element={<AdminRoute><GestionStocks /></AdminRoute>} />

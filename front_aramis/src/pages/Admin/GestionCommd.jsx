@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import plusIcon from "../../assets/saisie-stocks-plus.png";
 import SuppBut from "../../assets/SuppBut.png";
+import InfosBut from "../../assets/ModifBut.png";
 import { useNavigate } from "react-router-dom";
 
 function GestionCommd() {
@@ -50,6 +51,7 @@ function GestionCommd() {
   const [rowToDelete, setRowToDelete] = useState(null);
   const [successOpen, setSuccessOpen] = useState(false);
 
+  const goToInfos = (orderId) => navigate(`/infos-commd/${orderId}`);
   const goToCreer = () => navigate("/creer-commd");
 
   useEffect(() => {
@@ -174,7 +176,7 @@ function GestionCommd() {
                 <th className="py-2 font-bold text-[20px]">Prioritaire</th>
                 <th className="py-2 font-bold text-[20px]">Nb supports</th>
                 <th className="py-2 font-bold text-[20px]">Nb produits</th>
-                <th className="py-2 font-bold text-[20px]">Action</th>
+                <th className="py-2 font-bold text-[20px]">Actions</th>
               </tr>
             </thead>
 
@@ -196,6 +198,18 @@ function GestionCommd() {
                     <td className="py-[10px]">{r.totalProducts}</td>
 
                     <td className="py-[10px]">
+                      <button
+                        className="px-[20px] py-[10px] mr-[10px]"
+                        onClick={() => goToInfos(r.id)}
+                        type="button"
+                      >
+                        <img
+                          src={InfosBut}
+                          alt="Information"
+                          className="w-[20px]"
+                        />
+                      </button>
+
                       <button
                         className="px-[20px] py-[10px]"
                         onClick={() => handleDelete(r.id, idx)}
