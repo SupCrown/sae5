@@ -11,17 +11,79 @@ function ModifEmpl() {
     levelId: 6,
   };
 
+  const fallbackDriveways = [
+    { drivewayID: 1, name: "1", zone: { zoneName: "H" } },
+    { drivewayID: 2, name: "2", zone: { zoneName: "H" } },
+    { drivewayID: 3, name: "3", zone: { zoneName: "A" } },
+  ];
+
+  const fallbackLevels = [
+    { levelID: 1, levelValue: 0 },
+    { levelID: 2, levelValue: 1 },
+    { levelID: 3, levelValue: 2 },
+    { levelID: 4, levelValue: 3 },
+  ];
+
   const [form, setForm] = useState({
     locationCode: "",
     drivewayId: "",
     levelId: "",
   });
 
+  const [driveways, setDriveways] = useState([]);
+  const [levels, setLevels] = useState([]);
+
   const [loading, setLoading] = useState(true);
+  const [loadingOptions, setLoadingOptions] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        setLoadingOptions(true);
+
+        const [drivewayResponse, levelResponse] = await Promise.all([
+          fetch("/api/driveway/all?page=0&size=100", {
+            method: "GET",
+            credentials: "include",
+          }),
+          fetch("/api/level/all?page=0&size=100", {
+            method: "GET",
+            credentials: "include",
+          }),
+        ]);
+
+        if (!drivewayResponse.ok || !levelResponse.ok) {
+          throw new Error("Erreur récupération options");
+        }
+
+        const drivewayData = await drivewayResponse.json();
+        const levelData = await levelResponse.json();
+
+        const drivewayList = Array.isArray(drivewayData)
+          ? drivewayData
+          : drivewayData.content || [];
+
+        const levelList = Array.isArray(levelData)
+          ? levelData
+          : levelData.content || [];
+
+        setDriveways(drivewayList.length ? drivewayList : fallbackDriveways);
+        setLevels(levelList.length ? levelList : fallbackLevels);
+      } catch (error) {
+        console.warn("API options indisponible -> fallback");
+        setDriveways(fallbackDriveways);
+        setLevels(fallbackLevels);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   useEffect(() => {
     const fetchPosition = async () => {
@@ -30,7 +92,7 @@ function ModifEmpl() {
 
         const response = await fetch(`/api/position/${id}`, {
           method: "GET",
-          credentials: 'include',
+          credentials: "include",
         });
 
         if (!response.ok) {
@@ -41,12 +103,16 @@ function ModifEmpl() {
 
         setForm({
           locationCode: position.locationCode || "",
-          drivewayId: position.driveway?.drivewayID ?? "",
-          levelId: position.level?.levelValue ?? "",
+          drivewayId: String(position.driveway?.drivewayID ?? ""),
+          levelId: String(position.level?.levelID ?? ""),
         });
       } catch (error) {
         console.warn("API non dispo -> fallback test data");
-        setForm(testData);
+        setForm({
+          locationCode: testData.locationCode,
+          drivewayId: String(testData.drivewayId),
+          levelId: String(testData.levelId),
+        });
       } finally {
         setLoading(false);
       }
@@ -80,7 +146,7 @@ function ModifEmpl() {
     }
 
     const payload = {
-      locationCode: form.locationCode,
+      locationCode: form.locationCode.trim(),
       drivewayId: Number(form.drivewayId),
       levelId: Number(form.levelId),
     };
@@ -93,7 +159,7 @@ function ModifEmpl() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -143,7 +209,7 @@ function ModifEmpl() {
 
   const goBack = () => navigate("/gestion-empl");
 
-  if (loading) {
+  if (loading || loadingOptions) {
     return (
       <div className="p-4 mt-[200px] flex justify-center text-[24px] font-bold">
         Chargement...
@@ -153,7 +219,7 @@ function ModifEmpl() {
 
   return (
     <div className="p-4 mt-[200px] flex flex-col items-center relative">
-      <div className="w-[900px] flex flex-col items-center">
+      <div className="w-[1000px] flex flex-col items-center">
         <table className="text-center border-collapse">
           <thead>
             <tr>
@@ -161,10 +227,10 @@ function ModifEmpl() {
                 Code emplacement
               </th>
               <th className="text-[30px] font-bold px-[40px] pb-[20px]">
-                ID Allée
+                Allée
               </th>
               <th className="text-[30px] font-bold px-[40px] pb-[20px]">
-                ID Niveau
+                Niveau
               </th>
             </tr>
           </thead>
@@ -182,23 +248,40 @@ function ModifEmpl() {
               </td>
 
               <td className="px-[20px]">
-                <input
-                  type="number"
+                <select
                   name="drivewayId"
                   value={form.drivewayId}
                   onChange={handleChange}
-                  className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
-                />
+                  className="w-[260px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
+                >
+                  <option value="">Choisir une allée</option>
+                  {driveways.map((driveway) => (
+                    <option
+                      key={driveway.drivewayID}
+                      value={String(driveway.drivewayID)}
+                    >
+                      {driveway.zone?.zoneName
+                        ? `${driveway.zone.zoneName} - Allée ${driveway.name}`
+                        : `Allée ${driveway.name}`}
+                    </option>
+                  ))}
+                </select>
               </td>
 
               <td className="px-[20px]">
-                <input
-                  type="number"
+                <select
                   name="levelId"
                   value={form.levelId}
                   onChange={handleChange}
                   className="w-[220px] px-[20px] py-[20px] border border-gray-300 rounded-[50px] bg-[#CCB5A5] text-center text-[20px]"
-                />
+                >
+                  <option value="">Choisir un niveau</option>
+                  {levels.map((level) => (
+                    <option key={level.levelID} value={String(level.levelID)}>
+                      Niveau {level.levelValue}
+                    </option>
+                  ))}
+                </select>
               </td>
             </tr>
           </tbody>
