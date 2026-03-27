@@ -20,11 +20,11 @@
 
 ## Déploiement
 
-Pour le déploiement de l'application nous n'avons intialement pas pris en compte le fait de poster le serveur web sur le serveur car le front aurait du être un client lourd sur l'ordinateur du cient, mais il s'est avérer que le temps nous a forcé à nous rabbatre sur un client web plus léger.
+Pour le déploiement de l'application, nous n'avons initialement pas pris en compte le fait de poster le serveur web sur le serveur car le front aurait dû être un client lourd sur l'ordinateur du client, mais il s'est avéré que le temps nous a forcés à nous rabattre sur un client web plus léger.
 
-Ainsi, nous avons eu besoin de trois conteneurs docker, un pour l'API en elle même, un pour la base de données et enfin un dernier pour un reverse proxy dans l'unique but de ne pas avoir à taper le port 8080 précisément du serveur et simplement le port 80.
+Ainsi, nous avons eu besoin de trois conteneurs Docker, un pour l'API en elle-même, un pour la base de données et enfin un dernier pour un reverse proxy dans l'unique but de ne pas avoir à taper le port 8080 précisément du serveur et simplement le port 80.
 
-En ce qui concerne le reverse proxy, il a fallut ajouter un fichier de [configuration Nginx](./API_Aramis/nginx/nginx.conf) et le tour était joué :
+En ce qui concerne le reverse proxy, il a fallu ajouter un fichier de [configuration Nginx](./API_Aramis/nginx/nginx.conf) et le tour était joué :
 
 ```
 events {
@@ -107,4 +107,8 @@ deploy_job:
     - echo "Application déployée avec succès !"
 ```
 
-On peut y voir plusieurs jobs : `build`, `test` et `deploy`. Actuelement les deux jobs qui sont réélement utiles sont `build` et `deploy`, `test` n'est pas du tou utilisé maus a été prévu dans l'optique d'intégration de tests dnas la CI.
+On peut y voir plusieurs jobs : `build`, `test` et `deploy`. Actuellement, les deux jobs qui sont réellement utiles sont `build` et `deploy`, `test` n'est pas du tout utilisé mais a été prévu dans l'optique d'intégration de tests dans la CI.
+
+## Git workflow
+
+Pour simplifier la gestion du projet, un git workflow a été mis en place avec une branche de production : `main`, deux branches de développement / test : `dev-frontend` et `dev-api`. Chaque fonctionnalité avait sa branche dédiée et les tâches étaient gérées via le système d'issues de GitLab. Chaque équipe (front et back) procédait à des vérifications internes du travail en chaque membre. Autrement dit, quand un membre de l'équipe backend créait une merge request, un autre membre devait d'abord passer par dessus avant de l'accepter pour avoir un regard objectif sur ce qui a été produit.
